@@ -1,3 +1,5 @@
 ^BIRDIE\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
+main_dev
+analysis/*
