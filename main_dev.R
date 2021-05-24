@@ -15,10 +15,10 @@ library(testthat)
 
 
 # Create a package structure
-create_package("D:/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE")
+# create_package("D:/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE")
 
 # Add license
-use_mit_license("BIRDIE Development Team")
+# use_mit_license("BIRDIE Development Team")
 
 # Remember to edit the DESCRIPTION file
 
@@ -36,12 +36,12 @@ use_package("dplyr")
 # Function Example --------------------------------------------------
 
 # Add function
-use_r("Example")
+use_r("checkListEqual")
 
 # test locally
 load_all()
 
-Example("argument")
+checkListEqual(x = list(a = "character", b = c("c", "h")))
 
 # Add documentation
 # Add ROxygen skeleton manually

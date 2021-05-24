@@ -33,7 +33,7 @@ surveys <- map(cards$Card, ~getCwacSurvey(.x))
 counts <- map(surveys, ~.x[["records"]])
 
 # Check that all surveys have the same fields
-BIRDIE::checkAllIdentical(lapply(counts, names))
+BIRDIE::checkListEqual(lapply(counts, names))
 
 # If TRUE bind data frame
 counts <- do.call("rbind", counts)
@@ -42,7 +42,7 @@ counts <- do.call("rbind", counts)
 info <- map(surveys, ~.x[["summary"]])
 
 # Check that all summaries have the same fields
-BIRDIE::checkAllIdentical(lapply(info, names))
+BIRDIE::checkListEqual(lapply(info, names))
 
 # Use data.table to bind dataframes with different fields
 info <- data.table::rbindlist(info, fill = TRUE)
