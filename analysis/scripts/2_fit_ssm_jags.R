@@ -9,7 +9,7 @@ library(jagsUI)
 
 # Load data ---------------------------------------------------------------
 
-counts <- readRDS("analysis/data/barberspan.rds")
+counts <- readRDS("analysis/data/cwacdata.rds")
 
 names(counts)
 

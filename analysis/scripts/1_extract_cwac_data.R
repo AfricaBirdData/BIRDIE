@@ -61,5 +61,5 @@ counts <- left_join(counts, bird_ids, by = c("spp" = "id"))
 
 # Save data ---------------------------------------------------------------
 
-saveRDS(counts, "analysis/data/barberspan.rds")
+saveRDS(counts, "analysis/data/cwacdata.rds")
 
