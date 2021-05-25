@@ -5,7 +5,7 @@
 library(SABAP)
 library(tidyverse)
 library(sf)
-devtools::load_all() # To load BIRDIE package functions
+devtools::load_all() # To load BIRDIE package
 
 rm(list = ls())
 
@@ -34,7 +34,7 @@ plot(st_geometry(region), add = T)
 # Get species list --------------------------------------------------------
 
 # Load CWAC data for Barberspan
-cwacdata <- readRDS("analysis/data/barberspan.rds")
+cwacdata <- readRDS("analysis/data/cwacdata.rds")
 
 # Seems like CWAC and SABAP species codes are the same
 cwacdata %>%
@@ -62,7 +62,6 @@ spp_sel <- spplist %>%
 sabapdata <- SABAP::getSabapData(spp_sel$spp[1], region_type = "province", region = "North West")
 
 
-
 # Prepare occupancy data --------------------------------------------------
 
 occudata <- sabapdata %>%
@@ -77,4 +76,29 @@ occudata <- sabapdata %>%
 occudata <- occudata %>%
     filter(!is.na(lon))
 
+occudata %>%
+    group_by(Pentad) %>%
+    summarize(n = sum(detc),
+              lon = first(lon),
+              lat = first(lat)) %>%
+    mutate(detc = if_else(n == 0, 0, 1)) %>%
+    ungroup() %>%
+    ggplot() +
+    geom_tile(aes(x = lon, y = lat, fill = factor(detc))) +
+    geom_tile(data = pentads, aes(x = lon, y = lat), fill = NA, col = "black") +
+    scale_fill_viridis_d() +
+    coord_equal()
 
+# Filter out pentads where the species has never been observed
+# pentads_sel <- occudata %>%
+#     filter(detc == 1) %>%
+#     pull(Pentad) %>%
+#     unique()
+#
+# occudata <- occudata %>%
+#     filter(Pentad %in% pentads_sel)
+
+
+# Save data ---------------------------------------------------------------
+
+saveRDS(occudata, "analysis/data/occudata.rds")
