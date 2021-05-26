@@ -25,8 +25,8 @@ model {
 
   # summer
   for (t in 1:(N-1)){
-    zeta[t] ~ dnorm(0, sig.zeta)
-    w[t] ~ dnorm(0, sig.w2)
+    zeta[t] ~ dnorm(0, tau.zeta)
+    w[t] ~ dnorm(0, tau.w2)
 
     beta[t+1] = beta[t] + zeta[t]
     mu_t[t+1] = mu_t[t] + beta[t] + w[t]
@@ -34,7 +34,7 @@ model {
 
   # winter
   for (t in 1:(N-1)){
-    eps[t] ~ dnorm(0, sig.eps)
+    eps[t] ~ dnorm(0, tau.eps)
     lambda[t+1] = lambda[t] + eps[t] # winter to summer ratio
   }
 
