@@ -33,31 +33,6 @@ use_pipe()
 use_package("dplyr")
 
 
-# Function checkListEqual --------------------------------------------------
-
-# Add function
-use_r("checkListEqual")
-
-# test locally
-load_all()
-
-checkListEqual(x = list(a = "character", b = c("c", "h")))
-
-# Add documentation
-# Add ROxygen skeleton manually
-document()
-
-check()
-
-# Add tests
-
-use_testthat()
-
-use_test()
-
-test()
-
-
 # Function fitSSM --------------------------------------------------
 
 # Add function
