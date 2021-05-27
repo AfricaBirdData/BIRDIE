@@ -4,7 +4,7 @@
 \alias{fitCwacSsm2ss}
 \title{Fit a 2-season state-space model to CWAC counts}
 \usage{
-fitCwacSsm2ss(counts, mod_file, jags_control = NULL)
+fitCwacSsm2ss(counts, mod_file, param, jags_control = NULL)
 }
 \arguments{
 \item{counts}{A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
@@ -12,7 +12,7 @@ and "season_id" - an integer column that identifies the season (1 for summer and
 
 \item{mod_file}{A character string corresponding to the directory where the JAGS model lives at.}
 
-\item{jags_control}{A list specifying the JAGS MCMC settings. Possible options are: mod.inits - initial parameter values,
+\item{jags_control}{A list specifying the JAGS MCMC settings. Possible options are: inits - initial parameter values,
 ni - total number of iterations, nb - number of iterations to burn, nt - chain thinning, nc - number of chains,
 na - number of adapting iterations, ncores - number of cores to use.}
 }
