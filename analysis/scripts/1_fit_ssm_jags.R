@@ -9,49 +9,16 @@ library(jagsUI)
 
 # Load data ---------------------------------------------------------------
 
-counts <- readRDS("analysis/data/cwacdata.rds")
+# Find location code
+loc_code <- listCwacSites("North West") %>%
+  filter(Name == "Barberspan") %>%
+  pull(Loc_code)
+
+counts <- getCwacSiteCounts(loc_code)
 
 names(counts)
 
 
-# Prepare season info -----------------------------------------------------
-
-unique(counts$Season)
-
-# Some records are classified as "O" (other). We are only interested in summer and winter
-# so we filter out "O"
-counts <- counts %>%
-  filter(Season != "O")
-
-# We also create a dummy season variable
-counts <- counts %>%
-  mutate(season_id = if_else(Season == "W", 2, 1),
-         # and a year variable
-         year = lubridate::year(startDate))
-
-
-# Calculate seasonal counts -----------------------------------------------
-
-# Sum all counts per card
-counts <- counts %>%
-  group_by(card, year, season_id) %>%
-  summarize(count = sum(count)) %>%
-  ungroup()
-
-# Are there more than one card per season and year? It doesn't seem to
-# but we should be careful about this
-counts %>%
-  group_by(year, season_id) %>%
-  summarize(n = n()) %>%
-  pull(n)
-
-# Are there missing years? Yes, there are
-counts %>%
-  complete(year = min(year):max(year), season_id) %>%
-  print(n = Inf)
-
-counts <- counts %>%
-  complete(year = min(year):max(year), season_id)
 
 
 

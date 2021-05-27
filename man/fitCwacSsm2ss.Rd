@@ -12,6 +12,8 @@ and "season_id" - an integer column that identifies the season (1 for summer and
 
 \item{mod_file}{A character string corresponding to the directory where the JAGS model lives at.}
 
+\item{param}{A vector with names of parameters to monitor.}
+
 \item{jags_control}{A list specifying the JAGS MCMC settings. Possible options are: inits - initial parameter values,
 ni - total number of iterations, nb - number of iterations to burn, nt - chain thinning, nc - number of chains,
 na - number of adapting iterations, ncores - number of cores to use.}
@@ -21,4 +23,10 @@ A JAGS fit object
 }
 \description{
 Fit a 2-season state-space model to CWAC counts
+}
+\examples{
+counts <- getCwacSiteCounts(26352535)
+counts <- prepSsmData(counts)
+fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 }

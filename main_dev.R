@@ -31,9 +31,11 @@ use_pipe()
 
 # Import packages
 use_package("dplyr")
+use_package("tidyr")
+use_package("lubridate")
 
 
-# Function fitSSM --------------------------------------------------
+# Function fitCwacSsm2ss --------------------------------------------------
 
 # Add function
 use_r("fitCwacSsm2ss")
@@ -59,6 +61,30 @@ use_test()
 test()
 
 
+# Function prepSsmData --------------------------------------------------
+
+# Add function
+use_r("prepSsmData")
+
+# test locally
+load_all()
+
+counts <- getCwacSiteCounts(26352535)
+prepSsmData(counts)
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
 
 # Install -----------------------------------------------------------------
 
