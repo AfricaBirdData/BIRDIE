@@ -29,25 +29,19 @@ counts <- counts %>%
          # and a year variable
          year = lubridate::year(startDate))
 
-# Remove species with unknown migratory status
-unique(counts$Migrant)
-
-counts <- counts %>%
-  filter(Migrant != "")
-
 
 # Calculate seasonal counts -----------------------------------------------
 
 # Sum all counts per card
 counts <- counts %>%
-  group_by(card, year, season_id, Migrant) %>%
+  group_by(card, year, season_id) %>%
   summarize(count = sum(count)) %>%
   ungroup()
 
 # Are there more than one card per season and year? It doesn't seem to
 # but we should be careful about this
 counts %>%
-  group_by(year, season_id, Migrant) %>%
+  group_by(year, season_id) %>%
   summarize(n = n()) %>%
   pull(n)
 
@@ -60,13 +54,17 @@ counts <- counts %>%
   complete(year = min(year):max(year), season_id)
 
 
-# Filter migrant options --------------------------------------------------
 
-resdt <- counts %>%
-  filter(Migrant == "y" | is.na(Migrant))
+# Fit 2-season fixed trend model ------------------------------------------
 
-migrt <- counts %>%
-  filter(Migrant == "n" | is.na(Migrant))
+fit_fxd <- fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+                         param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+
+
+# Fit 2-season dynamic trend model ----------------------------------------
+
+fit_dyn <- fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
+                         param = c("beta", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 
 
 # Fit resident JAGS model -------------------------------------------------

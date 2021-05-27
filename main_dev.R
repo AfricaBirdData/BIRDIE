@@ -61,12 +61,13 @@ test()
 # Function fitSSM --------------------------------------------------
 
 # Add function
-use_r("fitSSM")
+use_r("fitCwacSsm2ss")
 
 # test locally
 load_all()
 
-checkListEqual(x = list(a = "character", b = c("c", "h")))
+fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+              param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 
 # Add documentation
 # Add ROxygen skeleton manually

@@ -1,12 +1,25 @@
-fitCwacSsm2ss <- function(counts, mod_file, jags_control = NULL){
+#' Fit a 2-season state-space model to CWAC counts
+#'
+#' @param counts A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
+#'     and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).
+#' @param mod_file A character string corresponding to the directory where the JAGS model lives at.
+#' @param jags_control A list specifying the JAGS MCMC settings. Possible options are: inits - initial parameter values,
+#'     ni - total number of iterations, nb - number of iterations to burn, nt - chain thinning, nc - number of chains,
+#'     na - number of adapting iterations, ncores - number of cores to use.
+#'
+#' @return A JAGS fit object
+#' @export
+#'
+#' @examples
+fitCwacSsm2ss <- function(counts, mod_file, param, jags_control = NULL){
 
     # Prepare data
-    mod.data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
+    data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
                      summer = log(counts[counts$season_id == 1, "count", drop = TRUE]),
                      N = nrow(counts)/2)
 
     # MCMC settings
-    mod.inits <- if(!is.null(jags_control$init)) jags_control$init # Inits function
+    inits <- if(!is.null(jags_control$init)) jags_control$init # Inits function
     ni <- if(!is.null(jags_control$ni)) jags_control$ni else 10000 # number of iterations
     nb <- if(!is.null(jags_control$nb)) jags_control$nb else 5000 # burning iterations
     nt <- if(!is.null(jags_control$nt)) jags_control$nt else 1 # chain thinning
@@ -15,17 +28,13 @@ fitCwacSsm2ss <- function(counts, mod_file, jags_control = NULL){
     ncores <- if(!is.null(jags_control$ncores)) jags_control$ncores else 1 # number of cores
     prll <- if(!is.null(jags_control$ncores)) TRUE else FALSE
 
-    # Parameters to estimate
-    mod.param <- c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e")
-    mod.param<- "mu_t"
-
     # Start Gibbs sampling
-    mod.fit <- jags(data = mod.data, inits = mod.inits,
-                    parameters.to.save = mod.param, model.file = "analysis/models/cwac_ssm_2season.jags",
+    fit <- jags(data = data, inits = inits,
+                    parameters.to.save = param, model.file = mod_file,
                     n.chains = nc, n.adapt = na, n.iter = ni, n.burnin = nb, n.thin = nt,
                     modules = c('glm','lecuyer', 'dic'), factories = NULL, parallel = prll, n.cores = ncores,
                     DIC = TRUE, verbose = TRUE)
 
-    return(mod.fit)
+    return(fit)
 
 }
