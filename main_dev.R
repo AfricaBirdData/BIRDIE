@@ -33,6 +33,10 @@ use_pipe()
 use_package("dplyr")
 use_package("tidyr")
 use_package("lubridate")
+use_package("jagsUI")
+use_package("ggplot2")
+use_package("gridExtra")
+use_package("CWAC")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -85,6 +89,42 @@ use_testthat()
 use_test()
 
 test()
+
+
+# Function plotSsm --------------------------------------------------
+
+# Add function
+use_r("plotSsm")
+
+# test locally
+load_all()
+
+counts <- getCwacSiteCounts(26352535)
+prepSsmData(counts)
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Data barberspan -------------------------------------------------------------
+
+# Download Barberspan data and save as package data
+# source("data_prep/barberspan_prep.R")
+
+# Create an ROxygen2 file and document
+document()
+
 
 # Install -----------------------------------------------------------------
 

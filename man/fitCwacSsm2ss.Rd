@@ -25,7 +25,7 @@ A JAGS fit object
 Fit a 2-season state-space model to CWAC counts
 }
 \examples{
-counts <- getCwacSiteCounts(26352535)
+counts <- CWAC::getCwacSiteCounts(26352535)
 counts <- prepSsmData(counts)
 fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
 param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))

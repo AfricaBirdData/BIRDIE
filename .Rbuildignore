@@ -3,3 +3,4 @@
 ^LICENSE\.md$
 main_dev
 analysis/*
+data_prep/*

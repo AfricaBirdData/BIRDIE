@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-#' counts <- getCwacSiteCounts(26352535)
+#' counts <- CWAC::getCwacSiteCounts(26352535)
 #' counts <- prepSsmData(counts)
 #' fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
 #' param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
@@ -34,7 +34,7 @@ fitCwacSsm2ss <- function(counts, mod_file, param, jags_control = NULL){
     prll <- if(!is.null(jags_control$ncores)) TRUE else FALSE
 
     # Start Gibbs sampling
-    fit <- jags(data = data, inits = inits,
+    fit <- jagsUI::jags(data = data, inits = inits,
                     parameters.to.save = param, model.file = mod_file,
                     n.chains = nc, n.adapt = na, n.iter = ni, n.burnin = nb, n.thin = nt,
                     modules = c('glm','lecuyer', 'dic'), factories = NULL, parallel = prll, n.cores = ncores,

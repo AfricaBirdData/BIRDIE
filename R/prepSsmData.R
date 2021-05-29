@@ -19,7 +19,7 @@ prepSsmData <- function(counts){
 
     # We also create a numeric season variable for season
     counts <- counts %>%
-        dplyr::mutate(season_id = if_else(Season == "W", 2, 1),
+        dplyr::mutate(season_id = ifelse(Season == "W", 2, 1),
                # and a year variable
                year = lubridate::year(startDate))
 
@@ -37,7 +37,7 @@ prepSsmData <- function(counts){
     if(identical(length(unique(counts$year)),
                  counts %>%
                  dplyr::group_by(year, season_id) %>%
-                 dplyr::summarize(n = n()) %>%
+                 dplyr::summarize(n = dplyr::n()) %>%
                  dplyr::pull(n) %>%
                  sum())){
         warning("More than one card per year. Data is not appropiate for SSM")

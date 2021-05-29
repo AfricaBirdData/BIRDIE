@@ -4,6 +4,7 @@ rm(list = ls())
 
 library(tidyverse)
 library(CWAC)
+library(BIRDIE)
 library(jagsUI)
 
 
@@ -18,20 +19,32 @@ counts <- getCwacSiteCounts(loc_code)
 
 names(counts)
 
+counts <- barberspan
 
+# Prepare data to fit an SSM ----------------------------------------------
 
+ssmcounts <- prepSsmData(counts)
 
 
 # Fit 2-season fixed trend model ------------------------------------------
 
-fit_fxd <- fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+fit_fxd <- fitCwacSsm2ss(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
                          param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 
 
 # Fit 2-season dynamic trend model ----------------------------------------
 
-fit_dyn <- fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
+fit_dyn <- fitCwacSsm2ss(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
                          param = c("beta", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+
+
+# Explore models ----------------------------------------------------------
+
+fit_fxd
+
+fit_dyn
+
+plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
 
 
 # Fit resident JAGS model -------------------------------------------------

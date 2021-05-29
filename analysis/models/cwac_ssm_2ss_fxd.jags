@@ -51,6 +51,4 @@ model {
     winter[w] ~ dnorm(mu_wt[w], tau.e) # Winter counts
   }
 
-
-
 }
