@@ -1,6 +1,7 @@
 #' Prepare CWAC data to fit a state-space model
 #'
 #' @param counts A data frame with raw CWAC count data
+#' @param species An optional vector of species codes. Only records for these species are prepared for fitting an SSM, others are discarded.
 #'
 #' @return A tibble with clean and prepared data for fitting an SSM (e.g. filled with missing years)
 #' @export
@@ -8,7 +9,20 @@
 #' @examples
 #' counts <- getCwacSiteCounts(26352535)
 #' prepSsmData(counts)
-prepSsmData <- function(counts){
+#' prepSsmData(counts, species = 212)
+#' prepSsmData(counts, species = c(212, 50))
+prepSsmData <- function(counts, species = NULL){
+
+    if(!is.null(spp)){
+        counts <- dplyr::filter(counts, spp %in% species)
+    }
+
+    if(length(unique(counts$spp)) == 1){
+        sp_code <- unique(counts$spp)
+        sp_name <- paste(unique(counts$taxon.Common_group), unique(counts$taxon.Common_species))
+    } else {
+        sp_name <- "multi"
+    }
 
     # Prepare season info -----------------------------------------------------
 
@@ -46,6 +60,9 @@ prepSsmData <- function(counts){
     # Fill in missing years
     counts <- counts %>%
         tidyr::complete(year = min(year):max(year), season_id)
+
+    # Add a column with species name
+    counts$spp <- sp_name
 
     return(counts)
 }

@@ -4,10 +4,12 @@
 \alias{prepSsmData}
 \title{Prepare CWAC data to fit a state-space model}
 \usage{
-prepSsmData(counts)
+prepSsmData(counts, species = NULL)
 }
 \arguments{
 \item{counts}{A data frame with raw CWAC count data}
+
+\item{species}{An optional vector of species codes. Only records for these species are prepared for fitting an SSM, others are discarded.}
 }
 \value{
 A tibble with clean and prepared data for fitting an SSM (e.g. filled with missing years)
@@ -18,4 +20,6 @@ Prepare CWAC data to fit a state-space model
 \examples{
 counts <- getCwacSiteCounts(26352535)
 prepSsmData(counts)
+prepSsmData(counts, species = 212)
+prepSsmData(counts, species = c(212, 50))
 }
