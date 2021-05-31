@@ -10,20 +10,14 @@ library(jagsUI)
 
 # Load data ---------------------------------------------------------------
 
-# Find location code
-loc_code <- listCwacSites("North West") %>%
-  filter(Name == "Barberspan") %>%
-  pull(Loc_code)
-
-counts <- getCwacSiteCounts(loc_code)
-
-names(counts)
+# Barberspan data is already in the package
 
 counts <- barberspan
 
+
 # Prepare data to fit an SSM ----------------------------------------------
 
-ssmcounts <- prepSsmData(counts)
+ssmcounts <- prepSsmData(counts, species = NULL)
 
 
 # Fit 2-season fixed trend model ------------------------------------------
@@ -45,6 +39,11 @@ fit_fxd
 fit_dyn
 
 plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
+
+plotSsm(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE)
+
+
+
 
 
 # Fit resident JAGS model -------------------------------------------------
