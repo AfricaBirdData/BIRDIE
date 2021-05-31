@@ -19,3 +19,13 @@ A plot with summer and winter fitted states, as well as the long-term trend
 \description{
 Plot state series of a CWAC state-space model
 }
+\examples{
+counts <- barberspan
+ssmcounts <- prepSsmData(counts, species = NULL)
+fit_fxd <- fitCwacSsm2ss(ssmcounts,
+                         mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+                         param = c("beta", "sig.w", "sig.eps", "sig.alpha",
+                                   "sig.e", "mu_t", "mu_wt"))
+plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
+
+}

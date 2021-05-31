@@ -9,6 +9,14 @@
 #' @export
 #'
 #' @examples
+#' counts <- barberspan
+#' ssmcounts <- prepSsmData(counts, species = NULL)
+#' fit_fxd <- fitCwacSsm2ss(ssmcounts,
+#'                          mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+#'                          param = c("beta", "sig.w", "sig.eps", "sig.alpha",
+#'                                    "sig.e", "mu_t", "mu_wt"))
+#' plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
+#'
 plotSsm <- function(fit, ssm_counts, dyn = FALSE){
 
     # Create a data frame with the posterior state
@@ -37,16 +45,37 @@ plotSsm <- function(fit, ssm_counts, dyn = FALSE){
                             labeller = ggplot2::labeller(season = c("1" = "Summer", "2" = "Winter"))) +
         ggplot2::xlab("Year") + ggplot2::ylab("log-abundance")
 
-    # Create a data frame with the posterior trend
-    post_trend <- data.frame(trd_est = fit$mean$beta,
-                             trd_lb = fit$q2.5$beta,
-                             trd_ub = fit$q97.5$beta)
+    # Create a plot for the trend
+    if(dyn == FALSE){
 
-    trd_plot <- data.frame(beta = fit$sims.list$beta) %>%
-        ggplot2::ggplot() +
-        ggplot2::geom_density(aes(x = beta), fill = "yellow") +
-        ggplot2::geom_pointrange(data = post_trend, aes(x = trd_est, xmin = trd_lb, xmax = trd_ub, y = 0)) +
-        ggplot2::xlab("Trend (log growth-rate)")
+        # Create a data frame with the posterior trend
+        post_trd <- data.frame(trd_est = fit$mean$beta,
+                                 trd_lb = fit$q2.5$beta,
+                                 trd_ub = fit$q97.5$beta)
+
+        trd_plot <- data.frame(beta = fit$sims.list$beta) %>%
+            ggplot2::ggplot() +
+            ggplot2::geom_density(aes(x = beta), fill = "yellow") +
+            ggplot2::geom_pointrange(data = post_trd, aes(x = trd_est, xmin = trd_lb, xmax = trd_ub, y = 0)) +
+            ggplot2::xlab("Trend (log growth-rate)")
+
+    } else {
+
+        # Create a data frame with the posterior trend
+        post_trd <- data.frame(beta_est = fit$mean$beta,
+                               beta_lb = fit$q2.5$beta,
+                               beta_ub = fit$q97.5$beta,
+                               year = unique(ssm_counts$year))
+
+        # Plot separated by season
+        trd_plot <- post_trd %>%
+            tidyr::pivot_longer(cols = -year,
+                                names_to = "quantile") %>%
+            ggplot2::ggplot() +
+            ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
+            ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
+            ggplot2::xlab("Year") + ggplot2::ylab("log growth-rate")
+    }
 
     # Title
     plottitle <- ifelse(unique(ssm_counts$spp) == "multi",
