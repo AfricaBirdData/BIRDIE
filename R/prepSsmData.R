@@ -13,13 +13,13 @@
 #' prepSsmData(counts, species = c(212, 50))
 prepSsmData <- function(counts, species = NULL){
 
-    if(!is.null(spp)){
+    if(!is.null(species)){
         counts <- dplyr::filter(counts, spp %in% species)
     }
 
     if(length(unique(counts$spp)) == 1){
         sp_code <- unique(counts$spp)
-        sp_name <- paste(unique(counts$taxon.Common_group), unique(counts$taxon.Common_species))
+        sp_name <- paste(unique(counts$taxon.Common_species), unique(counts$taxon.Common_group))
     } else {
         sp_name <- "multi"
     }
