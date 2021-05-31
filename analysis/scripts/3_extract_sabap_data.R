@@ -5,7 +5,8 @@
 library(SABAP)
 library(tidyverse)
 library(sf)
-devtools::load_all() # To load BIRDIE package
+library(BIRDIE)
+library(raster)
 
 rm(list = ls())
 
@@ -24,11 +25,34 @@ pentads <- read.csv("analysis/data/pentads_sabap.csv") %>%
 region <- region %>%
     filter(NAME_1 == "North West")
 
-pentads <- st_intersection(pentads, region) %>%
-    dplyr::select(Name, lon, lat)
+pentads <- st_crop(pentads, extent(region))
+
+# pentads <- st_intersection(pentads, region) %>%
+    # dplyr::select(Name, lon, lat)
 
 plot(st_geometry(pentads))
 plot(st_geometry(region), add = T)
+
+
+# Save North West pentads in raster format --------------------------------
+
+pentads_m <- pentads %>%
+    transmute(x = lon,
+              y = lat,
+              pentad_id = row_number()) %>%
+    st_drop_geometry() %>%
+    as.matrix()
+
+pixels <- sp::SpatialPixelsDataFrame(pentads_m, tolerance = 0.1, as.data.frame(pentads_m))
+
+pentads_r <- raster(pixels, values = FALSE)
+values(pentads_r) <- pentads_m[,"pentad_id"]
+
+plot(pentads_r)
+
+attr(pentads_r, "pentads") <- pentads$Name
+
+saveRDS(pentads_r, "analysis/data/pentads_nw.rds")
 
 
 # Get species list --------------------------------------------------------
