@@ -48,7 +48,13 @@ plotSsm <- function(fit, ssm_counts, dyn = FALSE){
         ggplot2::geom_pointrange(data = post_trend, aes(x = trd_est, xmin = trd_lb, xmax = trd_ub, y = 0)) +
         ggplot2::xlab("Trend (log growth-rate)")
 
+    # Title
+    plottitle <- ifelse(unique(ssm_counts$spp) == "multi",
+                        "Multiple species",
+                        unique(ssm_counts$spp))
+
     gridExtra::grid.arrange(stt_plot, trd_plot,
-                            nrow = 2, heights = c(2/3, 1/3))
+                            nrow = 2, heights = c(2/3, 1/3),
+                            top = plottitle)
 
     }
