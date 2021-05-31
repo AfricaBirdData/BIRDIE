@@ -3,6 +3,7 @@
 export("%>%")
 export(fitCwacSsm2ss)
 export(plotSsm)
+export(plotSsm2ss)
 export(prepSsmData)
 importFrom(ggplot2,aes)
 importFrom(magrittr,"%>%")

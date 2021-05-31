@@ -1,4 +1,4 @@
-#' Plot state series of a CWAC state-space model
+#' Plot state series of a CWAC state-space model with two seasons
 #'
 #' @param fit A JAGS state-space model fitted to CWAC data
 #' @param ssm_counts A data frame with the count data use to fit the state-space model
@@ -17,31 +17,32 @@
 #'                                    "sig.e", "mu_t", "mu_wt"))
 #' plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
 #'
-plotSsm <- function(fit, ssm_counts, dyn = FALSE){
+plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
 
     # Create a data frame with the posterior state
-    post_stt <- data.frame(mu_est = fit$mean$mu_t,
-                           mu_lb = fit$q2.5$mu_t,
-                           mu_ub = fit$q97.5$mu_t,
-                           year = unique(ssm_counts$year),
-                           summer = log(ssm_counts[ssm_counts$season_id==1, "count", drop = T]),
-                           winter = log(ssm_counts[ssm_counts$season_id==2, "count", drop = T]))
+    post_stt <- data.frame(mu_est = c(fit$mean$mu_t, fit$mean$mu_wt),
+                                 mu_lb = c(fit$q2.5$mu_t, fit$q2.5$mu_wt),
+                                 mu_ub = c(fit$q97.5$mu_t, fit$q97.5$mu_wt),
+                                 year = rep(unique(ssm_counts$year), 2),
+                                 season = rep(unique(ssm_counts$season_id), each = nrow(ssm_counts)/2),
+                                 count = c(log(ssm_counts[ssm_counts$season_id==1, "count", drop = T]),
+                                           log(ssm_counts[ssm_counts$season_id==2, "count", drop = T]))) %>%
+        dplyr::group_by(year, season) %>%
+        dplyr::mutate(seas_id = dplyr::cur_group_id()) %>%
+        dplyr::ungroup()
 
-    # Plot single season
-    stt_df <- post_stt %>%
+    # Plot separated by season
+    stt_plot <- post_stt %>%
         tidyr::pivot_longer(cols = c(mu_est, mu_lb, mu_ub),
-                     names_to = "quantile")
-
-    obs_df <- post_stt %>%
-        tidyr::pivot_longer(cols = c(summer, winter),
-                                  names_to = "season")
-
-    stt_plot <- ggplot2::ggplot() +
-        ggplot2::geom_path(data = stt_df, aes(x = year, y = value, linetype = quantile)) +
-        ggplot2::geom_point(data = obs_df, aes(x = year, y = value, col = factor(season))) +
-        ggplot2::scale_colour_discrete(name = "Season", labels = c("Summer", "Winter")) +
+                     names_to = "quantile") %>%
+        ggplot2::ggplot() +
+        ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
+        ggplot2::geom_point(aes(x = year, y = count, col = factor(season)), show.legend = FALSE) +
+        # ggplot2::scale_colour_discrete(name = "Season", labels = c("Summer", "Winter")) +
         ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
                                        #labels = c("Mean", "2.5%", "97.5%")) +
+        ggplot2::facet_wrap("season", nrow = 2,
+                            labeller = ggplot2::labeller(season = c("1" = "Summer", "2" = "Winter"))) +
         ggplot2::xlab("Year") + ggplot2::ylab("log-abundance")
 
     # Create a plot for the trend
