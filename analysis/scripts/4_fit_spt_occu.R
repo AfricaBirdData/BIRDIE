@@ -50,6 +50,8 @@ fit <- spatial.occupancy(
 # Save fit
 saveRDS(fit, "analysis/output/so_fit.rds")
 
+fit <- readRDS("analysis/output/so_fit.rds")
+
 # Plot detection parameters
 plot(fit$beta)
 
