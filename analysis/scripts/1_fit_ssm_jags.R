@@ -22,13 +22,13 @@ ssmcounts <- prepSsmData(counts, species = NULL)
 
 # Fit 2-season fixed trend model ------------------------------------------
 
-fit_fxd <- fitCwacSsm2ss(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
+fit_fxd <- fitCwacSsm(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
                          param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 
 
 # Fit 2-season dynamic trend model ----------------------------------------
 
-fit_dyn <- fitCwacSsm2ss(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
+fit_dyn <- fitCwacSsm(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
                          param = c("beta", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 
 
@@ -45,7 +45,7 @@ plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE)
 
 # Fit model for resident species ------------------------------------------
 
-fit_fxd <- fitCwacSsm2ss(ssmcounts, mod_file = "analysis/models/cwac_ssm_fxd.jags",
+fit_fxd <- fitCwacSsm(ssmcounts, mod_file = "analysis/models/cwac_ssm_fxd.jags",
                          param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t"))
 
 fit_fxd

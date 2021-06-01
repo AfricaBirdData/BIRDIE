@@ -1,4 +1,4 @@
-#' Fit a 2-season state-space model to CWAC counts
+#' Fit a state-space model to CWAC counts
 #'
 #' @param counts A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
 #'     and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).
@@ -16,7 +16,7 @@
 #' counts <- prepSsmData(counts)
 #' fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
 #' param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
-fitCwacSsm2ss <- function(counts, mod_file, param, jags_control = NULL){
+fitCwacSsm <- function(counts, mod_file, param, jags_control = NULL){
 
     # Prepare data
     data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
@@ -28,8 +28,8 @@ fitCwacSsm2ss <- function(counts, mod_file, param, jags_control = NULL){
     ni <- if(!is.null(jags_control$ni)) jags_control$ni else 10000 # number of iterations
     nb <- if(!is.null(jags_control$nb)) jags_control$nb else 5000 # burning iterations
     nt <- if(!is.null(jags_control$nt)) jags_control$nt else 1 # chain thinning
-    nc <- if(!is.null(jags_control$nc)) jags_control$nb else 3 # number of chains
-    na <- if(!is.null(jags_control$na)) jags_control$nb else NULL # (default) adapting iterations
+    nc <- if(!is.null(jags_control$nc)) jags_control$nc else 3 # number of chains
+    na <- if(!is.null(jags_control$na)) jags_control$na else NULL # (default) adapting iterations
     ncores <- if(!is.null(jags_control$ncores)) jags_control$ncores else 1 # number of cores
     prll <- if(!is.null(jags_control$ncores)) TRUE else FALSE
 
