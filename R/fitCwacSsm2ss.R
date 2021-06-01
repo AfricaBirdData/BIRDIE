@@ -20,8 +20,8 @@ fitCwacSsm2ss <- function(counts, mod_file, param, jags_control = NULL){
 
     # Prepare data
     data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
-                     summer = log(counts[counts$season_id == 1, "count", drop = TRUE]),
-                     N = nrow(counts)/2)
+                 summer = log(counts[counts$season_id == 1, "count", drop = TRUE]),
+                 N = nrow(counts)/2)
 
     # MCMC settings
     inits <- if(!is.null(jags_control$init)) jags_control$init # Inits function
