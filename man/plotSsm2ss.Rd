@@ -14,7 +14,9 @@ plotSsm2ss(fit, ssm_counts, dyn = FALSE)
 \item{dyn}{Whether the fitted long-term trend is fixed or dynamic (NOT USED AT PRESENT).}
 }
 \value{
-A plot with summer and winter fitted states, as well as the long-term trend
+A list with two elements: i) comb: a plot with summer and winter fitted states, as well as the long-term trend,
+ii) ind: the individual ggplots used to form i). This is useful for extracting the data used by ggplot to render the plots
+(e.g. for exporting to the dashboard)
 }
 \description{
 Plot state series of a CWAC state-space model with two seasons
