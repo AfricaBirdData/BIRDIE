@@ -10,7 +10,7 @@ The folder *analysis* contains data, scripts and outputs from analyses related t
 
 Data that is meant to be included in and exported with the package should go to the *data* folder, and it should be properly documented (see *main_dev.R* and https://r-pkgs.org/). These data is usually meant for running examples or it may also be data that is used very frequently. Data that is only meant for running anaysis and not to exported with the package, should go to the *analysis/data* folder. It is not necessary to document these data.
 
-## INSTRUCTION TO INSTALL PACKAGE
+## INSTRUCTIONS TO INSTALL PACKAGE
 
 1. Clone the repository to your local machine:
    - In RStudio, create a new project
