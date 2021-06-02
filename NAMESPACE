@@ -2,6 +2,7 @@
 
 export("%>%")
 export(fitCwacSsm)
+export(getRegionPentads)
 export(plotSsm)
 export(plotSsm2ss)
 export(prepSsmData)
