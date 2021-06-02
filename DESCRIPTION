@@ -21,7 +21,9 @@ Imports:
     gridExtra,
     jagsUI,
     lubridate,
+    lwgeom,
     magrittr,
+    sf,
     tidyr
 Depends: 
     R (>= 2.10)

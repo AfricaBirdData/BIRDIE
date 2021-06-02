@@ -37,6 +37,8 @@ use_package("jagsUI")
 use_package("ggplot2")
 use_package("gridExtra")
 use_package("CWAC")
+use_package("sf")
+use_package("lwgeom")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -120,6 +122,41 @@ test()
 # Data barberspan -------------------------------------------------------------
 
 # Download Barberspan data and save as package data
+# source("data_prep/barberspan_prep.R")
+
+# Create an ROxygen2 file and document
+document()
+
+
+# Function getRegionPentads --------------------------------------------------
+
+# Add function
+use_r("getRegionPentads")
+
+# test locally
+load_all()
+
+getRegionPentads(country = "South Africa", province = "North West")
+getRegionPentads(country = "South Africa", province = "North West", path = "analysis/data")
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Data pentads_sabap2 -------------------------------------------------------------
+
+# Prepare pentads
 # source("data_prep/barberspan_prep.R")
 
 # Create an ROxygen2 file and document
