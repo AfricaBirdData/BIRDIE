@@ -20,5 +20,5 @@ you may provide a path where this info will be stored and retreived from permane
 Get SABAP2 pentads for a certain region
 }
 \examples{
-getRegionPentads(country = "South Africa", province = "North West")
+# getRegionPentads(country = "South Africa", province = "North West")
 }

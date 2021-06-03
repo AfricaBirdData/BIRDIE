@@ -159,7 +159,6 @@ ggsave(paste0(figuredir, "ssm_1ss_rare.png"), plot = p$comb)
 
 # Extract plot data -------------------------------------------------------
 
-
 # Prepare data to fit an SSM
 ssmcounts <- prepSsmData(counts, species = NULL)
 
@@ -172,10 +171,31 @@ fit_dyn <- fitCwacSsm(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.ja
 p <- plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE)
 
 # Extract plot data
-plotdata <- lapply(p$ind, ggplot_build)
-plotdata <- lapply(plotdata, "[[", "data")
+plotdata <- p$data
 
 # Export sample
 write.csv(plotdata[[1]][[1]], "analysis/output/plotdata_test.csv")
 
 ggsave(paste0(figuredir, "ssm_dyn_all.png"), plot = p$comb)
+
+dashout <- plotdata[[1]][[1]]
+
+dashout <- dashout %>%
+    dplyr::select(x, y, PANEL, group) %>%
+    pivot_wider(names_from = group, values_from = y) %>%
+    rename(year = x, season = PANEL, )
+
+
+
+    rename(year = x,
+           summer.logest = y)
+
+output1 <- data.frame(species, year, summer.count, winter.count,
+                      log.summer.count, log.winter.count,
+                      summer.logest, winter.logest, winter.logest.ci.lower,
+                      winter.logest.ci.upper,
+                      summer.logest.ci.lower, summer.logest.ci.upper,
+                      slope.est, slope.ci.lower, slope.ci.upper,
+                      winter.prop.est, winter.prop.ci.lower,
+                      winter.prop.ci.upper)
+#change.est, change.ci.lower, change.ci.upper

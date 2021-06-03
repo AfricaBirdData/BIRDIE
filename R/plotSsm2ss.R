@@ -4,21 +4,13 @@
 #' @param ssm_counts A data frame with the count data use to fit the state-space model
 #' @param dyn Whether the fitted long-term trend is fixed or dynamic (NOT USED AT PRESENT).
 #'
-#' @return A list with two elements: i) comb: a plot with summer and winter fitted states, as well as the long-term trend,
-#' ii) ind: the individual ggplots used to form i). This is useful for extracting the data used by ggplot to render the plots
+#' @return A list with two elements: i) plot: a plot with summer and winter fitted states, as well as the long-term trend,
+#' ii) data: the data used to create the individual plots. This is useful for extracting the data used by ggplot to render the plots
 #' (e.g. for exporting to the dashboard)
 #' @importFrom ggplot2 aes
 #' @export
 #'
 #' @examples
-#' counts <- barberspan
-#' ssmcounts <- prepSsmData(counts, species = NULL)
-#' fit_fxd <- fitCwacSsm2ss(ssmcounts,
-#'                          mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
-#'                          param = c("beta", "sig.w", "sig.eps", "sig.alpha",
-#'                                    "sig.e", "mu_t", "mu_wt"))
-#' plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
-#'
 plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
 
     # Create a data frame with the posterior state
@@ -84,9 +76,9 @@ plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
                         "Multiple species",
                         unique(ssm_counts$spp))
 
-    return(list(comb = gridExtra::grid.arrange(stt_plot, trd_plot,
+    return(list(plot = gridExtra::grid.arrange(stt_plot, trd_plot,
                             nrow = 2, heights = c(2/3, 1/3),
                             top = plottitle),
-                ind = list(stt_plot, trd_plot)))
+                data = list(post_stt, post_trd)))
 
     }

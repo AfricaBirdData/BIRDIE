@@ -23,6 +23,8 @@ Imports:
     lubridate,
     lwgeom,
     magrittr,
+    raster,
+    rgeos,
     sf,
     tidyr
 Depends: 
