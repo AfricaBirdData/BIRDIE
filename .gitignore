@@ -2,4 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-analysis/output/*
+analysis/out_nosync/*
