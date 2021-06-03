@@ -39,6 +39,8 @@ use_package("gridExtra")
 use_package("CWAC")
 use_package("sf")
 use_package("lwgeom")
+use_package("raster")
+use_package("rgeos")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------

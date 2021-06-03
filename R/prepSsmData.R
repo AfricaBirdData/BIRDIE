@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-#' counts <- getCwacSiteCounts(26352535)
+#' counts <- barberspan
 #' prepSsmData(counts)
 #' prepSsmData(counts, species = 212)
 #' prepSsmData(counts, species = c(212, 50))

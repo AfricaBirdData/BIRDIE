@@ -14,20 +14,10 @@ plotSsm2ss(fit, ssm_counts, dyn = FALSE)
 \item{dyn}{Whether the fitted long-term trend is fixed or dynamic (NOT USED AT PRESENT).}
 }
 \value{
-A list with two elements: i) comb: a plot with summer and winter fitted states, as well as the long-term trend,
-ii) ind: the individual ggplots used to form i). This is useful for extracting the data used by ggplot to render the plots
+A list with two elements: i) plot: a plot with summer and winter fitted states, as well as the long-term trend,
+ii) data: the data used to create the individual plots. This is useful for extracting the data used by ggplot to render the plots
 (e.g. for exporting to the dashboard)
 }
 \description{
 Plot state series of a CWAC state-space model with two seasons
-}
-\examples{
-counts <- barberspan
-ssmcounts <- prepSsmData(counts, species = NULL)
-fit_fxd <- fitCwacSsm2ss(ssmcounts,
-                         mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
-                         param = c("beta", "sig.w", "sig.eps", "sig.alpha",
-                                   "sig.e", "mu_t", "mu_wt"))
-plotSsm(fit = fit_fxd, ssm_counts = ssmcounts)
-
 }

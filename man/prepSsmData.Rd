@@ -18,7 +18,7 @@ A tibble with clean and prepared data for fitting an SSM (e.g. filled with missi
 Prepare CWAC data to fit a state-space model
 }
 \examples{
-counts <- getCwacSiteCounts(26352535)
+counts <- barberspan
 prepSsmData(counts)
 prepSsmData(counts, species = 212)
 prepSsmData(counts, species = c(212, 50))

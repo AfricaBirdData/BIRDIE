@@ -12,10 +12,6 @@
 #' @export
 #'
 #' @examples
-#' counts <- CWAC::getCwacSiteCounts(26352535)
-#' counts <- prepSsmData(counts)
-#' fitCwacSsm2ss(counts, mod_file = "analysis/models/cwac_ssm_2ss_fxd.jags",
-#' param = c("beta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 fitCwacSsm <- function(counts, mod_file, param, jags_control = NULL){
 
     # Prepare data

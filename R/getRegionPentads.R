@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-#' getRegionPentads(country = "South Africa", province = "North West")
+#' # getRegionPentads(country = "South Africa", province = "North West")
 getRegionPentads <- function(country, province = NULL, path = NULL){
 
     pentads <- pentads
