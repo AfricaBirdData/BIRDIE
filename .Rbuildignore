@@ -4,3 +4,4 @@
 main_dev
 analysis/*
 data_prep/*
+beta/*

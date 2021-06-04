@@ -41,6 +41,7 @@ use_package("sf")
 use_package("lwgeom")
 use_package("raster")
 use_package("rgeos")
+use_package("utils")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -164,6 +165,62 @@ test()
 # Create an ROxygen2 file and document
 document()
 
+
+# Function loopSsmAllSpp --------------------------------------------------
+
+# Add function
+use_r("loopSsmAllSpp")
+
+# test locally
+load_all()
+
+counts <- barberspan %>%
+    dplyr::filter(spp %in% c(6, 41, 54))
+
+loopSsmAllSpp(counts,
+              data_outdir = "analysis/output/dashboard_out/",
+              plot_outdir = "analysis/output/dashboard_out/",
+              param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"),
+              jags_control = list(ncores = 3))
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function writeJagsModelFile --------------------------------------------------
+
+# Add function
+use_r("writeJagsModelFile")
+
+# test locally
+load_all()
+
+modpath <- writeJagsModelFile()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
 
 # Install -----------------------------------------------------------------
 

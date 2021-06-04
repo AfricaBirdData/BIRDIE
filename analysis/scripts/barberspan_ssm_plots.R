@@ -164,7 +164,7 @@ ssmcounts <- prepSsmData(counts, species = NULL)
 
 # Fit 2-season dynamic trend model
 fit_dyn <- fitCwacSsm(ssmcounts, mod_file = "analysis/models/cwac_ssm_2ss_dyn.jags",
-                      param = c("beta", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"),
+                      param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"),
                       jags_control = list(ncores = 3))
 
 # Plot
@@ -173,29 +173,49 @@ p <- plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE)
 # Extract plot data
 plotdata <- p$data
 
+# Prepare state data
+stt_df <- plotdata[[1]]
+
+stt_dfw <- cbind(stt_df %>%
+                     filter(season == 1) %>%
+                     dplyr::select(-season),
+                 stt_df %>%
+                     filter(season == 2) %>%
+                     dplyr::select(-c(year, season)))
+
+names(stt_dfw) <- c("summer.logest", "summer.logest.ci.lower", "summer.logest.ci.upper",
+                    "year", "log.summer.count",
+                    "winter.logest", "winter.logest.ci.lower", "winter.logest.ci.upper",
+                    "log.winter.count")
+
+# Prepare trend data
+trd_df <- plotdata[[2]]
+
+names(trd_df) <- c("slope.est", "slope.ci.lower", "slope.ci.upper",
+                   "winter.prop.est", "winter.prop.ci.lower", "winter.prop.ci.upper",
+                   "year")
+
+# Combine
+out_df <- cbind(stt_dfw, dplyr::select(trd_df, -year))
+
+# Add missing columns
+out_df <- out_df %>%
+    dplyr::mutate(species = "spp",
+                  summer.count = round(exp(log.summer.count)),
+                  winter.count = round(exp(log.winter.count)))
+
+# Order columns
+out_df <- out_df %>%
+    dplyr::select(species, year, summer.count, winter.count,
+                  log.summer.count, log.winter.count,
+                  summer.logest, winter.logest, winter.logest.ci.lower,
+                  winter.logest.ci.upper,
+                  summer.logest.ci.lower, summer.logest.ci.upper,
+                  slope.est, slope.ci.lower, slope.ci.upper,
+                  winter.prop.est, winter.prop.ci.lower,
+                  winter.prop.ci.upper)
+
 # Export sample
-write.csv(plotdata[[1]][[1]], "analysis/output/plotdata_test.csv")
+write.csv(out_df, "analysis/output/dashboard_out/plotdata_test.csv", row.names = FALSE)
 
-ggsave(paste0(figuredir, "ssm_dyn_all.png"), plot = p$comb)
-
-dashout <- plotdata[[1]][[1]]
-
-dashout <- dashout %>%
-    dplyr::select(x, y, PANEL, group) %>%
-    pivot_wider(names_from = group, values_from = y) %>%
-    rename(year = x, season = PANEL, )
-
-
-
-    rename(year = x,
-           summer.logest = y)
-
-output1 <- data.frame(species, year, summer.count, winter.count,
-                      log.summer.count, log.winter.count,
-                      summer.logest, winter.logest, winter.logest.ci.lower,
-                      winter.logest.ci.upper,
-                      summer.logest.ci.lower, summer.logest.ci.upper,
-                      slope.est, slope.ci.lower, slope.ci.upper,
-                      winter.prop.est, winter.prop.ci.lower,
-                      winter.prop.ci.upper)
-#change.est, change.ci.lower, change.ci.upper
+ggsave("analysis/output/dashboard_out/plot_test.png", plot = p$plot)
