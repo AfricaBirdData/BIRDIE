@@ -95,7 +95,7 @@ loopSsmAllSpp <- function(counts, mod_file = NULL, data_outdir, plot_outdir, ...
         utils::write.csv(out_df, datadir, row.names = FALSE)
 
         plotdir <- paste0(plot_outdir, "dashb_plot_", sp, ".png")
-        ggplot2::ggsave(plotdir, plot = p$plot)
+        ggplot2::ggsave(plotdir, plot = p$plot, width = 6.4, height = 5.2)
     }
 
     # Remove temporary model file
