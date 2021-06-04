@@ -11,19 +11,20 @@
 #' @export
 #'
 #' @examples
+#' counts <- barberspan
+#' ssmcounts <- prepSsmData(counts, species = NULL)
+#' fit <- fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+#' plotSsm2ss(fit = fit, ssm_counts = ssmcounts, dyn = TRUE)
 plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
 
     # Create a data frame with the posterior state
     post_stt <- data.frame(mu_est = c(fit$mean$mu_t, fit$mean$mu_wt),
-                                 mu_lb = c(fit$q2.5$mu_t, fit$q2.5$mu_wt),
-                                 mu_ub = c(fit$q97.5$mu_t, fit$q97.5$mu_wt),
-                                 year = rep(unique(ssm_counts$year), 2),
-                                 season = rep(unique(ssm_counts$season_id), each = nrow(ssm_counts)/2),
-                                 count = c(log(ssm_counts[ssm_counts$season_id==1, "count", drop = T]),
-                                           log(ssm_counts[ssm_counts$season_id==2, "count", drop = T]))) %>%
-        dplyr::group_by(year, season) %>%
-        dplyr::mutate(seas_id = dplyr::cur_group_id()) %>%
-        dplyr::ungroup()
+                           mu_lb = c(fit$q2.5$mu_t, fit$q2.5$mu_wt),
+                           mu_ub = c(fit$q97.5$mu_t, fit$q97.5$mu_wt),
+                           year = rep(unique(ssm_counts$year), 2),
+                           season = rep(unique(ssm_counts$season_id), each = nrow(ssm_counts)/2),
+                           count = c(log(ssm_counts[ssm_counts$season_id==1, "count", drop = T]),
+                                     log(ssm_counts[ssm_counts$season_id==2, "count", drop = T])))
 
     # Plot separated by season
     stt_plot <- post_stt %>%
@@ -44,8 +45,11 @@ plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
 
         # Create a data frame with the posterior trend
         post_trd <- data.frame(trd_est = fit$mean$beta,
-                                 trd_lb = fit$q2.5$beta,
-                                 trd_ub = fit$q97.5$beta)
+                               trd_lb = fit$q2.5$beta,
+                               trd_ub = fit$q97.5$beta,
+                               prop_est = fit$mean$lambda,
+                               prop_lb = fit$q2.5$lambda,
+                               prop_ub = fit$q97.5$lambda)
 
         trd_plot <- data.frame(beta = fit$sims.list$beta) %>%
             ggplot2::ggplot() +
@@ -53,22 +57,42 @@ plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
             ggplot2::geom_pointrange(data = post_trd, aes(x = trd_est, xmin = trd_lb, xmax = trd_ub, y = 0)) +
             ggplot2::xlab("Trend (log growth-rate)")
 
+        prop_plot <- data.frame(lambda = fit$sims.list$lambda) %>%
+            ggplot2::ggplot() +
+            ggplot2::geom_density(aes(x = lambda), fill = "yellow") +
+            ggplot2::geom_pointrange(data = post_trd, aes(x = trd_est, xmin = trd_lb, xmax = trd_ub, y = 0)) +
+            ggplot2::xlab("Log propotion summer/winter")
+
     } else {
 
         # Create a data frame with the posterior trend
         post_trd <- data.frame(beta_est = fit$mean$beta,
                                beta_lb = fit$q2.5$beta,
                                beta_ub = fit$q97.5$beta,
+                               prop_est = fit$mean$lambda,
+                               prop_lb = fit$q2.5$lambda,
+                               prop_ub = fit$q97.5$lambda,
                                year = unique(ssm_counts$year))
 
-        # Plot separated by season
+        # Plot trend
         trd_plot <- post_trd %>%
+            dplyr::select(-dplyr::starts_with("prop")) %>%
             tidyr::pivot_longer(cols = -year,
                                 names_to = "quantile") %>%
             ggplot2::ggplot() +
             ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
             ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
             ggplot2::xlab("Year") + ggplot2::ylab("log growth-rate")
+
+        # Plot proportion summer/winter
+        prop_plot <- post_trd %>%
+            dplyr::select(-dplyr::starts_with("beta")) %>%
+            tidyr::pivot_longer(cols = -year,
+                                names_to = "quantile") %>%
+            ggplot2::ggplot() +
+            ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
+            ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
+            ggplot2::xlab("Year") + ggplot2::ylab("Log proportion")
     }
 
     # Title
@@ -76,9 +100,9 @@ plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
                         "Multiple species",
                         unique(ssm_counts$spp))
 
-    return(list(plot = gridExtra::grid.arrange(stt_plot, trd_plot,
-                            nrow = 2, heights = c(2/3, 1/3),
-                            top = plottitle),
+    return(list(plot = gridExtra::grid.arrange(stt_plot, trd_plot, prop_plot,
+                                               nrow = 3, heights = c(2/4, 1/4, 1/4),
+                                               top = plottitle),
                 data = list(post_stt, post_trd)))
 
-    }
+}

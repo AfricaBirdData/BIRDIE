@@ -21,3 +21,9 @@ ii) data: the data used to create the individual plots. This is useful for extra
 \description{
 Plot state series of a CWAC state-space model with two seasons
 }
+\examples{
+counts <- barberspan
+ssmcounts <- prepSsmData(counts, species = NULL)
+fit <- fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+plotSsm2ss(fit = fit, ssm_counts = ssmcounts, dyn = TRUE)
+}
