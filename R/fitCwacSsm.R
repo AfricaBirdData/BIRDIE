@@ -2,7 +2,7 @@
 #'
 #' @param counts A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
 #'     and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).
-#' @param mod_file A character string corresponding to the directory where the JAGS model lives at.
+#' @param mod_file A character string corresponding to the directory where the JAGS model lives at. If not provided, writeJagsModelFile is called to create a "default" model.
 #' @param param A vector with names of parameters to monitor.
 #' @param jags_control A list specifying the JAGS MCMC settings. Possible options are: inits - initial parameter values,
 #'     ni - total number of iterations, nb - number of iterations to burn, nt - chain thinning, nc - number of chains,
@@ -12,7 +12,18 @@
 #' @export
 #'
 #' @examples
-fitCwacSsm <- function(counts, mod_file, param, jags_control = NULL){
+#' counts <- barberspan
+#' ssmcounts <- prepSsmData(counts, species = NULL)
+#' fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta",
+#'  "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+fitCwacSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
+
+    if(is.null(mod_file)){
+        modpath <- BIRDIE::writeJagsModelFile()
+        warning("mod_file not provided, running writeJagsModelFile, see ?writeJagsModelFile")
+    } else {
+        modpath <- mod_file
+    }
 
     # Prepare data
     data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
@@ -31,10 +42,15 @@ fitCwacSsm <- function(counts, mod_file, param, jags_control = NULL){
 
     # Start Gibbs sampling
     fit <- jagsUI::jags(data = data, inits = inits,
-                    parameters.to.save = param, model.file = mod_file,
+                    parameters.to.save = param, model.file = modpath,
                     n.chains = nc, n.adapt = na, n.iter = ni, n.burnin = nb, n.thin = nt,
                     modules = c('glm','lecuyer', 'dic'), factories = NULL, parallel = prll, n.cores = ncores,
                     DIC = TRUE, verbose = TRUE)
+
+    # Remove temporary model file
+    if(is.null(mod_file)){
+        unlink(modpath)
+    }
 
     return(fit)
 

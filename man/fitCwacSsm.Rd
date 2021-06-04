@@ -4,13 +4,13 @@
 \alias{fitCwacSsm}
 \title{Fit a state-space model to CWAC counts}
 \usage{
-fitCwacSsm(counts, mod_file, param, jags_control = NULL)
+fitCwacSsm(counts, mod_file = NULL, param, jags_control = NULL)
 }
 \arguments{
 \item{counts}{A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
 and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).}
 
-\item{mod_file}{A character string corresponding to the directory where the JAGS model lives at.}
+\item{mod_file}{A character string corresponding to the directory where the JAGS model lives at. If not provided, writeJagsModelFile is called to create a "default" model.}
 
 \item{param}{A vector with names of parameters to monitor.}
 
@@ -23,4 +23,10 @@ A JAGS fit object
 }
 \description{
 Fit a state-space model to CWAC counts
+}
+\examples{
+counts <- barberspan
+ssmcounts <- prepSsmData(counts, species = NULL)
+fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta",
+ "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 }
