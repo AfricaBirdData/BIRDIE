@@ -101,12 +101,12 @@ plotSsm2ss <- function(fit, ssm_counts, dyn = FALSE){
                         unique(ssm_counts$spp))
 
     pfile <- tempfile()
-    png(pfile)
+    grDevices::png(pfile)
     return(list(plot = gridExtra::grid.arrange(stt_plot, trd_plot, prop_plot,
                                                nrow = 3, heights = c(2/4, 1/4, 1/4),
                                                top = plottitle),
                 data = list(post_stt, post_trd)))
-    dev.off()
+    grDevices::dev.off()
     unlink(pfile)
 
 }

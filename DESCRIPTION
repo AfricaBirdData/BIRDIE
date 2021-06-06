@@ -18,6 +18,7 @@ Imports:
     CWAC,
     dplyr,
     ggplot2,
+    grDevices,
     gridExtra,
     jagsUI,
     lubridate,

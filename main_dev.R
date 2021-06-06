@@ -42,6 +42,7 @@ use_package("lwgeom")
 use_package("raster")
 use_package("rgeos")
 use_package("utils")
+use_package("grDevices")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
