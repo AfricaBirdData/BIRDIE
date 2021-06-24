@@ -25,9 +25,9 @@ fitCwacSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
         modpath <- mod_file
     }
 
-    # Prepare data
-    data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE]),
-                 summer = log(counts[counts$season_id == 1, "count", drop = TRUE]),
+    # Prepare data (note the addition of 0.1 to avoid infinite values)
+    data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE] + 0.1),
+                 summer = log(counts[counts$season_id == 1, "count", drop = TRUE] + 0.1),
                  N = nrow(counts)/2)
 
     # MCMC settings

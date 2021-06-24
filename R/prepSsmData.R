@@ -77,9 +77,5 @@ prepSsmData <- function(counts, species = NULL){
     # Add a column with species name
     counts$spp <- sp_name
 
-    # Add 0.1 to zero counts otherwise log goes to minus infinity
-    counts <- counts %>%
-        dplyr::mutate(count = ifelse(count == 0, 0.1, count))
-
     return(counts)
 }
