@@ -223,6 +223,59 @@ use_test()
 
 test()
 
+
+# Function findNextIndex --------------------------------------------------
+
+# Add function
+use_r("findNextIndex")
+
+# test locally
+load_all()
+
+x <- rbinom(20, 1, 0.2)
+findNextIndex(x, 1)
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function prepCtSsmData --------------------------------------------------
+
+# Add function
+use_r("prepCtSsmData")
+
+# test locally
+load_all()
+
+counts <- barberspan
+prepCtSsmData(counts)
+prepCtSsmData(counts, species = 212)
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
 # Install -----------------------------------------------------------------
 
 install()
