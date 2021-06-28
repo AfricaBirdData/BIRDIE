@@ -42,14 +42,10 @@ getRegionPentads <- function(country, province = NULL, path = NULL){
     pentads_reg <- sf::st_intersection(pentads, region)
 
     # Remove pentads with less than 50% of area in the province
-    getMode <- function(x) {
-        ux <- unique(x)
-        ux[which.max(tabulate(match(x, ux)))]
-    }
+    aa <- sf::st_area(pentads_reg) %>%
+        as.numeric()
 
-    aa <- sf::st_area(pentads_reg)
-
-    out <- pentads_reg[as.numeric(aa) > getMode(aa)/2,] %>%
+    out <- pentads_reg[aa > max(aa)/2,] %>%
         dplyr::select(Name, province = NAME_1)
 
     return(out)
