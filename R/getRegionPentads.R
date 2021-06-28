@@ -1,11 +1,18 @@
 #' Get SABAP2 pentads for a certain region
 #'
-#' @param country A character string with the name of the country the region of interest is. Capitalize first letters of each word.
-#' @param province A character string. If provided it subsets the region of interest to a specific province. Capitalize first letters of each word.
+#' @param country A character string with the name of the country the region of
+#' interest is at. Capitalize first letters of each word.
+#' @param province A character string. If provided it subsets the region of
+#' interest to a specific province. Capitalize first letters of each word.
+#' @param path A directory where administrative boundaries layer should be found
+#' or stored at.
 #'
-#' @return A simple feature object with those pentads that are contained in the region of interest. A pentads is considered contained if half of its area lies within the region.
-#' Note that the function uses raster::getData function, which will download the administrative boundaries data once per session. Alternatively,
-#' you may provide a path where this info will be stored and retreived from permanently.
+#' @return A simple feature object with those pentads that are contained in the
+#' region of interest. A pentads is considered contained if half of its area
+#' lies within the region. Note that the function uses raster::getData function,
+#' which will download the administrative boundaries data once per session.
+#' Alternatively, you may provide a path where this info will be stored and
+#' retrieved from permanently.
 #' @export
 #'
 #' @examples
@@ -16,12 +23,12 @@ getRegionPentads <- function(country, province = NULL, path = NULL){
 
     # Download/load geographic data
     if(is.null(path)){
-        region <- raster::getData("GADM", download = TRUE, country = country, level = 1,
-                                  path = tempdir()) %>%
+        region <- raster::getData("GADM", download = TRUE, country = country,
+                                  level = 1, path = tempdir()) %>%
             sf::st_as_sf()
     } else {
-        region <- raster::getData("GADM", download = TRUE, country = country, level = 1,
-                                  path = path) %>%
+        region <- raster::getData("GADM", download = TRUE, country = country,
+                                  level = 1, path = path) %>%
             sf::st_as_sf()
     }
 
