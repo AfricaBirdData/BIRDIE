@@ -3,4 +3,9 @@
 .RData
 .Ruserdata
 analysis/out_nosync/*
+
+# Ignore output and auxiliary files in the communications folder
 comms/output/*
+comms/**/*.nav
+comms/**/*.snm
+comms/**/*.toc
