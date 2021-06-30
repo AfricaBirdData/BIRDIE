@@ -3,3 +3,4 @@
 .RData
 .Ruserdata
 analysis/out_nosync/*
+comms/output/*
