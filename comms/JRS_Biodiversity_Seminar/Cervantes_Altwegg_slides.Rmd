@@ -13,6 +13,13 @@ knit: (function(inputFile, encoding) {
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
+## Data pipeline
+
+One slide showing the data pipeline diagram to explain how this part fits into the pipeline
+
+## The types of decisions that need to be supported
+
+Perhaps a brief slide on what kind of decisions / reporting this information is meant to feed into. Unless Nancy / Francis are planning to cover this
 
 ## Objectives
 
@@ -41,11 +48,35 @@ Include the typical HMM schematic plot describing state-space models??
 Go on to say that the process we are interested on can take on different forms
 such as population abundance or occupancy...
 
+## State-space models (simpler syntax but same result)
+
+- Dynamic models describe how processes change.
+- Account for observation error.
+
+Include the typical HMM schematic plot describing state-space models??
+
+Go on to say that the process we are interested on can take on different forms
+such as population abundance or occupancy...
+
 ## Observation error: abundance example
 
 \begin{center}
 \includegraphics[height=7.5cm]{"abund_obs.png"}
 \end{center}
+
+## Observation error: abundance example (more versatile syntax)
+
+```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+knitr::include_graphics("abund_obs.png")
+```
+
+## The SSM
+
+Are you still using Yahkat's model? She has a nice diagram that we could use to explain it. I think it would be good to explain how we can estimate summer and winter trends separately.
+
+## some results
+
+I think we should show some results slides here. Do you have some results ready? Otherwise, we can also show some of the figures from Yahkat or Birgit's papers.
 
 ## Observation error: occupancy example
 
@@ -53,3 +84,9 @@ such as population abundance or occupancy...
 \includegraphics[height=7.5cm]{"occu_obs.png"}
 
 \end{center}
+
+## Occupancy models
+
+I've got a few slides that I normally use to explain the basics about occupancy models; I've used them in a few toolbox seminars and some of the graphs in the 'template' file were from that.
+
+## Indices, etc.
