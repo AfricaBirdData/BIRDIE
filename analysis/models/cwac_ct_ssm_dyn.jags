@@ -4,14 +4,14 @@ model {
 
   # PRIORS -----------------------------------------------------------------
 
+  tau.B ~ dunif(log(1), 1/log(10))
   tau.zeta ~ dunif(log(1), 1/log(3))
-  sig.B ~ dunif(log(1), log(10))
   tau.eps ~ dunif(log(1), 1/log(3))
   tau.alpha ~ dunif(log(1), 1/log(10))
   tau.e ~ dunif(log(1), 1/log(10))
   tau.o ~ dunif(log(1), 1/log(10))
-  gamma ~ dunif(0, 3)
 
+  sig.B = 1/tau.B
   sig.zeta = 1/tau.zeta
   sig.eps = 1/tau.eps
   sig.alpha = 1/tau.alpha
@@ -24,43 +24,8 @@ model {
   # model for summer population increments
   beta[1] ~ dnorm(log(1), log(2)) # prior for initial long-term growth rate
 
-  for(i in 1:(Ns-1)){
-
-    zeta[i] ~ dnorm(0, tau.zeta/sqrt(dsummer[i]))
-    beta[i+1] = beta[i] + zeta[i]
-
-  }
-
   # model for winter population increments
   lambda[1] ~ dnorm(0, 0.001)
-
-  for(i in 1:(Nw-1)){
-
-    eps[i] ~ dnorm(0, tau.eps/sqrt(dwinter[i]))
-    lambda[i+1] = lambda[i] + eps[i]
-
-  }
-
-
-  # MODEL FOR TARGET LATENT STATES -----------------------------------------
-
-  # indices to keep track of the different seasons
-  s[1] = 1
-  w[1] = 1
-
-  theta[1] = mu[1] # this is actually irrelevant, but needs to be filled in
-
-  for(t in 1:(N-1)){
-
-    theta[t+1] = theta[t] - theta[t] * (winter[t] + summer[t]) + # if no winter or summer
-                  (mu[t] + beta[s[t]]) * summer[t] + # if summer
-                  (mu[t] + lambda[w[t]]) * winter[t] # if winter
-
-    s[t+1] = s[t] + 1 * summer[t] * (Ns > s[t]) # if summer
-    w[t+1] = w[t] + 1 * winter[t] * (Nw > w[t]) # if winter
-
-  }
-
 
   # MODEL FOR POPULATION LATENT STATE ---------------------------------------
 
@@ -68,9 +33,14 @@ model {
 
   for(t in 1:(N-1)){
 
-    Diff[t] = (sig.B/(2*gamma))*(1 - exp(-2*gamma*dt[t]))
-    B[t] ~ dnorm(0, 1/sqrt(Diff[t]))
-    mu[t+1] = mu[t]*exp(-gamma*dt[t]) + theta[tgt_idx[t]]*(1-exp(-gamma*dt[t])) + B[t]
+    B[t] ~ dnorm(0, tau.B/sqrt(dt[t]))
+    mu[t+1] = mu[t] + beta[t]*summer[t] + lambda[t]*winter[t] + B[t]
+
+    zeta[t] ~ dnorm(0, tau.zeta/sqrt(dt[t]))
+    eps[t] ~ dnorm(0, tau.eps/sqrt(dt[t]))
+
+    beta[t+1] = beta[t] + zeta[t]
+    lambda[t+1] = lambda[t] + eps[t]
 
   }
 

@@ -45,17 +45,6 @@ prepCtSsmData <- function(counts, species = NULL){
                   count = sum(count)) %>%
         dplyr::mutate(year = lubridate::year(date))
 
-    # Correct dt, time only goes to zero in "W" and "S"
-    for(i in seq_len(nrow(cc) - 1)){
-        if(cc$season[i] == "O"){
-            cc$dt[i+1] <- cc$dt[i+1] + cc$dt[i]
-        }
-    }
-
-    # Find index of target counts ("W" and "S")
-    cc <- cc %>%
-        dplyr::mutate(tgt_idx = findNextIndex(season, c("W", "S")))
-
     # Create dseason, number of seasons between observations
     dseason <- vector("integer", length = nrow(cc))
     ss <- c(diff(cc$year[cc$season == "S"]), NA)
@@ -80,14 +69,6 @@ prepCtSsmData <- function(counts, species = NULL){
 
     cc <- cc %>%
         dplyr::mutate(dseason = dseason)
-
-    # # We also create a numeric season variable for season
-    # cc <- cc %>%
-    #     dplyr::mutate(season_id = dplyr::case_when(season == "S" ~ 1,
-    #                                                season == "W" ~ 2,
-    #                                                season == "O" ~ 0),
-    #                   # and a year variable
-    #                   year = lubridate::year(date))
 
     # We also create dummy variables for the seasons
     cc <- cc %>%

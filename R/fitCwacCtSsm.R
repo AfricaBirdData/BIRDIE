@@ -36,7 +36,6 @@ fitCwacCtSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
                  winter = counts$winter,
                  dsummer = counts$dseason[counts$summer == 1],
                  dwinter = counts$dseason[counts$winter == 1],
-                 tgt_idx = counts$tgt_idx,
                  dt = counts$dt,
                  N = nrow(counts),
                  Ns = sum(counts$summer),

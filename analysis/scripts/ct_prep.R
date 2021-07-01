@@ -1,8 +1,27 @@
 library(BIRDIE)
 library(tidyverse)
 
+rm(list = ls())
+
 counts <- barberspan
 
+ssmcounts <- prepCtSsmData(counts, species = NULL)
+
+fit <- fitCwacCtSsm(ssmcounts, mod_file = "analysis/models/cwac_ct_ssm_dyn.jags",
+                    param = c("beta", "lambda", "sig.B", "sig.zeta", "sig.eps",
+                              "sig.alpha", "sig.e", "sig.o", "mu"))
+
+summary(fit)
+fit
+
+plotCtSsm(fit, ssmcounts)
+
+sig.B = 1/tau.B
+sig.zeta = 1/tau.zeta
+sig.eps = 1/tau.eps
+sig.alpha = 1/tau.alpha
+sig.e = 1/tau.e
+sig.o = 1/tau.o
 # Prepare times and time increments
 datetimes <- data.frame(startDate = unique(counts$startDate)) %>%
     dplyr::arrange(startDate) %>%
@@ -13,6 +32,7 @@ datetimes <- data.frame(startDate = unique(counts$startDate)) %>%
 counts <- counts %>%
     dplyr::left_join(datetimes, by = "startDate")
 
+# Explore results
 counts %>%
     group_by(t) %>%
     summarize(n = sum(count),
@@ -40,6 +60,7 @@ counts %>%
               n = sum(count)) %>%
     print(n = Inf)
 
+# Sum counts of all species
 cc <- counts %>%
     group_by(t) %>%
     summarize(date = unique(startDate),
