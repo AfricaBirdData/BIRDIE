@@ -5,54 +5,12 @@ date: "7/07/2021"
 subtitle: 'JRS Biodiversity Series'
 output: beamer_presentation
 classoption: "aspectratio=169"
-knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
 
-
-## Objectives
-
-\begin{itemize}
-\item Estimate metrics such as:
-    \begin{itemize}
-    \item[-] distribution,
-    \item[-] abundance,
-    \item[-] population trend and,
-    \item[-] species diversity.
-    \end{itemize}
-\item Integrate these metrics for different populations.
-\item Model observation error.
-\end{itemize}
-
-
-## State-space models
-
-\begin{itemize}
-    \item Dynamic models describe how processes change.
-    \item Account for observation error.
-\end{itemize}
-
-Include the typical HMM schematic plot describing state-space models??
-
-Go on to say that the process we are interested on can take on different forms
-such as population abundance or occupancy...
-
-## Observation error: abundance example
-
-\begin{center}
-\includegraphics[height=7.5cm]{"abund_obs.png"}
-\end{center}
-
-## Observation error: occupancy example
-
-\begin{center}
-\includegraphics[height=7.5cm]{"occu_obs.png"}
-
-\end{center}
 
 ## Overview
 

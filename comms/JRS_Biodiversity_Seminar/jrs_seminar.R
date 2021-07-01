@@ -77,19 +77,32 @@ obs[t %in% t_obs] <- logn_obs
 
 df <- data.frame(t = t, dt = dt, logn = logn, obs = obs)
 
-df %>%
+abund_plot <- df %>%
     ggplot() +
-    geom_line(aes(x = t, y = logn), col = "blue") +
-    geom_segment(aes(x = t, y = logn, xend = t, yend = obs, group = seq_along(t)),
-                 col = "darkgrey", linetype = "dashed", size = 1) +
+    geom_line(aes(x = t, y = logn, col = "blue")) +
+    geom_segment(aes(x = t, y = logn,
+                     xend = t, yend = obs, group = seq_along(t),
+                     col = "darkgrey"), linetype = "dashed", size = 1) +
     geom_point(aes(x = t, y = obs, group = seq_along(t)), size = 3) +
-    geom_line(data = df[!is.na(df$obs),], aes(x = t, y = obs)) +
+    geom_line(data = df[!is.na(df$obs),],
+              aes(x = t, y = obs, col = "black")) +
+    geom_point(data = df[!is.na(df$obs),],
+               aes(x = t, y = logn, group = seq_along(t)),
+               col = "darkgrey", shape = 1, size = 3, stroke = 1) +
+    scale_colour_manual(values = c("black", "blue", "darkgrey"),
+                        labels = c("Observed", "True", "Error"),
+                        name = "") +
     xlab("Time") + ylab("Abundance") +
     theme_bw() +
     theme(axis.title = element_text(size = 15),
-          axis.text = element_text(size = 13)) +
+          axis.text = element_text(size = 13),
+          legend.text = element_text(size = 13),
+          legend.position = "top")
+
+abund_plot +
     transition_reveal(t)
 
+ggsave(plot = abund_plot, filename = "comms/output/abund_obs.png")
 anim_save("comms/output/abund_obs_anim.gif")
 
 
@@ -174,15 +187,24 @@ obs <- ifelse(obs == 1, 0.95, 0.05)
 
 df <- data.frame(t = t, dt = dt, p = p, pres = pres, obs = obs)
 
-df %>%
+occu_plot <- df %>%
     ggplot() +
     geom_line(aes(x = t, y = p), col = "blue") +
-    geom_point(aes(x = t, y = pres, group = seq_along(t)), size = 3, col = "blue") +
-    geom_point(aes(x = t, y = obs, group = seq_along(t)), size = 3) +
+    geom_point(aes(x = t, y = pres, group = seq_along(t), col = "blue"), size = 3) +
+    geom_point(aes(x = t, y = obs, group = seq_along(t), col = "black"), size = 3) +
+    scale_colour_manual(values = c("black", "blue"),
+                        labels = c("Observed", "True"),
+                        name = "") +
     xlab("Time") + ylab("Probability of occurrence") +
     theme_bw() +
     theme(axis.title = element_text(size = 15),
-          axis.text = element_text(size = 13)) +
+          axis.text = element_text(size = 13),
+          legend.text = element_text(size = 13),
+          legend.position = "top")
+
+occu_plot +
     transition_reveal(t)
 
+ggsave(plot = occu_plot, filename = "comms/output/occu_obs.png")
 anim_save("comms/output/occu_obs_anim.gif")
+
