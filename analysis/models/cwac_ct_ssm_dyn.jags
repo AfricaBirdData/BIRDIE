@@ -34,7 +34,7 @@ model {
   for(t in 1:(N-1)){
 
     B[t] ~ dnorm(0, tau.B/sqrt(dt[t]))
-    mu[t+1] = mu[t] + beta[t]*summer[t] + lambda[t]*winter[t] + B[t]
+    mu[t+1] = mu[t] + beta[t]*summer[t+1] + lambda[t]*winter[t+1] + B[t]
 
     zeta[t] ~ dnorm(0, tau.zeta/sqrt(dt[t]))
     eps[t] ~ dnorm(0, tau.eps/sqrt(dt[t]))

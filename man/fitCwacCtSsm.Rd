@@ -2,7 +2,8 @@
 % Please edit documentation in R/fitCwacCtSsm.R
 \name{fitCwacCtSsm}
 \alias{fitCwacCtSsm}
-\title{Fit a continuous-time state-space model to CWAC counts}
+\title{Fit a continuous-time state-space model to CWAC counts
+(EXPERIMENTAL)}
 \usage{
 fitCwacCtSsm(counts, mod_file = NULL, param, jags_control = NULL)
 }
@@ -28,10 +29,5 @@ A JAGS fit object
 }
 \description{
 Fit a continuous-time state-space model to CWAC counts
-}
-\examples{
-counts <- barberspan
-ssmcounts <- prepCtSsmData(counts, species = NULL)
-fitCwacCtSsm(ssmcounts, param = c("beta", "lambda", "gamma", "sig.zeta",
- "sig.w", "sig.eps", "sig.alpha", "sig.e", "sig.o", "mu_t", "mu_wt"))
+(EXPERIMENTAL)
 }

@@ -1,4 +1,5 @@
 #' Fit a continuous-time state-space model to CWAC counts
+#' (EXPERIMENTAL)
 #'
 #' @param counts A data frame with at least two columns: "counts" - an integer
 #' column corresponding to the counts of a year and season and "season_id" - an
@@ -17,10 +18,6 @@
 #' @export
 #'
 #' @examples
-#' counts <- barberspan
-#' ssmcounts <- prepCtSsmData(counts, species = NULL)
-#' fitCwacCtSsm(ssmcounts, param = c("beta", "lambda", "gamma", "sig.zeta",
-#'  "sig.w", "sig.eps", "sig.alpha", "sig.e", "sig.o", "mu_t", "mu_wt"))
 fitCwacCtSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
 
     if(is.null(mod_file)){
