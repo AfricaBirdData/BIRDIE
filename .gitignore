@@ -9,3 +9,6 @@ comms/output/*
 comms/**/*.nav
 comms/**/*.snm
 comms/**/*.toc
+comms/**/*.aux
+comms/**/*.log
+comms/**/*.synctex.gz
