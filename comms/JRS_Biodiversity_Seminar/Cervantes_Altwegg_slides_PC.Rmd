@@ -70,20 +70,25 @@ knitr::include_graphics("birdie_str.png")
 knitr::include_graphics("abund_obs.png")
 ```
 
-## The SSM
+## A state-space model for abundance
 
-Are you still using Yahkat's model? She has a nice diagram that we could use to explain it. I think it would be good to explain how we can estimate summer and winter trends separately.
 
-## some results
+```{r, out.width="50%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("ssm_flow_yahkat.png")
+```
+
+
+## A state-space model for abundance
 
 I think we should show some results slides here. Do you have some results ready? Otherwise, we can also show some of the figures from Yahkat or Birgit's papers.
 
+
 ## Observation error: occupancy example
 
-\begin{center}
-\includegraphics[height=7.5cm]{"occu_obs.png"}
+```{r, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+knitr::include_graphics("occu_obs.png")
+```
 
-\end{center}
 
 ## Occupancy models
 
