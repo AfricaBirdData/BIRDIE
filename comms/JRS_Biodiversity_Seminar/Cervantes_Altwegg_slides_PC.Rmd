@@ -15,56 +15,56 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Data pipeline
 
-One slide showing the data pipeline diagram to explain how this part fits into the pipeline
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+knitr::include_graphics("birdie_str.png")
+```
+
 
 ## The types of decisions that need to be supported
 
-Perhaps a brief slide on what kind of decisions / reporting this information is meant to feed into. Unless Nancy / Francis are planning to cover this
+
+- Site reports and management plans.
+
+- Provincial State of Biodiversity Report.
+
+- National State of Environment Report.
+
+- Red List and National Biodiversity Assessments.
+
+- Agreement on the Conservation of African-Eurasian Migratory Waterbirds.
+
+- ...
 
 ## Objectives
 
-\begin{itemize}
-\item Estimate metrics such as:
-    \begin{itemize}
-    \item[-] distribution,
-    \item[-] abundance,
-    \item[-] population trend and,
-    \item[-] species diversity.
-    \end{itemize}
-\item Integrate these metrics for different populations.
-\item Model observation error.
-\end{itemize}
+- Estimate metrics such as:
+
+    - distribution,
+    - abundance,
+    - population trend,
+    - species diversity.
+    
+- Integrate these metrics for different populations.
+
+- Model observation error.
 
 
 ## State-space models
 
-\begin{itemize}
-    \item Dynamic models describe how processes change.
-    \item Account for observation error.
-\end{itemize}
+  - Dynamic models describe how processes change.
+  
+  - Account for observation error.
+  
+\vspace{1cm}
 
-Include the typical HMM schematic plot describing state-space models??
+\begin{center}
+\includegraphics[height=3cm]{"ssm_diagram.png"}
+\end{center}
 
-Go on to say that the process we are interested on can take on different forms
-such as population abundance or occupancy...
-
-## State-space models (simpler syntax but same result)
-
-- Dynamic models describe how processes change.
-- Account for observation error.
-
-Include the typical HMM schematic plot describing state-space models??
-
-Go on to say that the process we are interested on can take on different forms
-such as population abundance or occupancy...
 
 ## Observation error: abundance example
 
-\begin{center}
-\includegraphics[height=7.5cm]{"abund_obs.png"}
-\end{center}
-
-## Observation error: abundance example (more versatile syntax)
 
 ```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
 knitr::include_graphics("abund_obs.png")
