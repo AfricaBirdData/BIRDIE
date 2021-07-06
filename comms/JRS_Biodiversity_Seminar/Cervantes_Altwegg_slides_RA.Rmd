@@ -87,6 +87,154 @@ I think we should show some results slides here. Do you have some results ready?
 
 ## Occupancy models
 
-I've got a few slides that I normally use to explain the basics about occupancy models; I've used them in a few toolbox seminars and some of the graphs in the 'template' file were from that.
+\begin{columns}
+\column{.5\textwidth}{
+\includegraphics[width=\textwidth]{guru2017.png} 
+}
+{\footnotesize Guillera-Arroita 2017}
+\column{.5\textwidth}{
+
+Information about the observation process:\\
+
+\vspace{0.5cm}
+
+\includegraphics[width=\textwidth]{guru2017b.png} 
+ }
+
+\end{columns}
+
+
+## Southern African Bird Atlas Project
+
+\begin{columns}
+\column{.3\textwidth}{
+After 1 year
+\includegraphics[width=\textwidth,angle=0]{sabap1year.png}
+}
+\column{.3\textwidth}{
+After 5 years
+\includegraphics[width=\textwidth,angle=0]{sabap5year.png}
+}
+\column{.3\textwidth}{
+After 10 years
+\includegraphics[width=\textwidth,angle=0]{sabap10year.png}
+}
+\end{columns}
+
+
+
+## The species is not detected in all occupied cells
+\begin{columns}[]
+\column{0.6\textwidth}{
+\includegraphics[height=6.5cm]{detections2.pdf}
+}
+\column{0.4\textwidth}{
+
+Repeated sampling
+
+\vspace{0.5cm}
+
+{\bf Assumptions:}
+\begin{itemize}
+\item Closure (no colonisation or extinction)
+\item No false detections
+%\item No unmodelled heterogeneity
+%\item Independence
+\end{itemize}
+}
+\end{columns}
+
+## Hierarchical model
+
+$\Psi_i =$ probability that site $i$ is occupied
+
+$z_i =$ true occupancy at site $i$: 1 = occupied, 0 = not occupied
+
+$p_{ij} =$ prob of detecting the species at site $i$ during survey $j$
+
+$y_{ij} =$ detection (1) or non-detection (0)  at site $i$ during survey $j$
+
+
+\vspace{1cm}
+
+$$z_i | \Psi_i \sim Bern(\Psi_i)$$
+
+$$y_{ij} | z_i,p_{ij} \sim Bern(z_ip_{ij})$$
+
+
+## Covariate modelling
+
+Want to know how occupancy and detection vary among sites, $i$, and visits, $j$.
+
+\vspace{0.5cm}
+
+$logit(\Psi_i) = \alpha_0 + \alpha_1 x_{i1} + \ldots + \alpha_U x_{iU}$
+
+$logit(p_{ij}) = \beta_0 + \beta_1 x_{i1} + \ldots + \beta_U x_{iU} + \beta_{U+1} y_{ij1} +\ldots + \beta_{U+V} y_{ijV}$
+
+\vspace{0.5cm}
+
+$U$ site-level covariates: $x_{i1}, \ldots, x_{iU}$
+
+$V$ survey-specific covariates: $y_{ij1}, \ldots, y_{ijV}$
+
+## Covariates we used:
+
+\begin{columns}[T]
+\column{.6\textwidth}{
+Occupancy:
+
+\vspace{0.5cm}
+
+\includegraphics[width=\textwidth]{huntleycovariates.pdf}
+}
+
+\column{.4\textwidth}{
+Detection:
+\begin{itemize}
+\item hours spent birding
+\item season
+\item length of list
+\end{itemize}
+}
+\end{columns}
+
+
+## Dynamic occupancy models
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{dynoc.png}\\
+\end{center}
+
+<!--
+$$ z_{i,1} \sim Bern(\Psi_{i,1}), logit(\Psi_{i,1}) = x_i^T\alpha$$
+
+$$ \Psi_{i,t} = z_{i,t-1} \times (1-\epsilon) + (1-z_{i,t-1}) \times \gamma$$
+
+$$ logit(\epsilon_{i}) = x_i^T\beta_{\epsilon} \color{red} + \beta_{\epsilon}^{'} \times D_i$$
+
+$$ logit(\gamma_{i}) = x_i^T\beta_{\gamma} \color{red} + \beta_{\gamma}^{'} \times D_i$$
+-->
+
+## Common myna expansion
+
+\begin{columns}
+\column{.5\textwidth}{
+\begin{itemize}
+\item Invasive in South Africa
+\item Occupancy lower away from cities
+\item Neighbourhood colonisation more important
+\item Colonisation most likely from south
+\item Expanding north-east
+\end{itemize}
+\vspace{3mm}
+\hspace{1cm} \includegraphics[width=0.4\textwidth]{Common-Myna_Clement-Tang_21.jpg}\\
+}
+\column{.5\textwidth}{
+\includegraphics[width=0.85\textwidth]{Broms_etal2016_fig.png}\\
+Broms et al 2016, Ecology
+}
+\end{columns}
+
 
 ## Indices, etc.
