@@ -52,7 +52,7 @@ knitr::include_graphics("birdie_str.png")
 
 ## State-space models
 
-  - Dynamic models describe how processes change.
+  - Dynamic models describe how processes change over time.
   
   - Account for observation error.
   
@@ -66,21 +66,45 @@ knitr::include_graphics("birdie_str.png")
 ## Observation error: abundance example
 
 
-```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F}
 knitr::include_graphics("abund_obs.png")
 ```
 
-## A state-space model for abundance
+## A state-space model for CWAC
+
+\begin{columns}[]
+  \column{0.55\textwidth}{
+    
+    \begin{itemize}
+      \item Two counts per year: summer and winter.
+      \item + additional counts.
+      \item Sites must be well defined in terms of spatial limits.
+      \item Standardized counts in terms of: number of observers,
+      routes, time of day, viewing techniques, etc.
+    \end{itemize}
+    
+  }
+  \column{0.40\textwidth}{
+  \flushleft
+    \includegraphics[width=0.9\textwidth]{cwac_logo.png}
+    http://cwac.birdmap.africa
+  }
+\end{columns}
+
+## A state-space model for CWAC
 
 
-```{r, out.width="50%", include=TRUE, fig.align="center", echo=F}
-knitr::include_graphics("ssm_flow_yahkat.png")
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("ssm_barshep.png")
 ```
 
 
-## A state-space model for abundance
+## A state-space model for CWAC
 
-I think we should show some results slides here. Do you have some results ready? Otherwise, we can also show some of the figures from Yahkat or Birgit's papers.
+
+```{r, out.width="55%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("spp_83.png")
+```
 
 
 ## Observation error: occupancy example
