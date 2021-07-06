@@ -4,14 +4,24 @@
 \alias{plotSsm2ss}
 \title{Plot state series of a CWAC state-space model with two seasons}
 \usage{
-plotSsm2ss(fit, ssm_counts, dyn = FALSE)
+plotSsm2ss(
+  fit,
+  ssm_counts,
+  dyn = FALSE,
+  plot_options = list(colors = NULL, pers_theme = NULL)
+)
 }
 \arguments{
 \item{fit}{A JAGS state-space model fitted to CWAC data}
 
-\item{ssm_counts}{A data frame with the count data use to fit the state-space model}
+\item{ssm_counts}{A data frame with the count data use to fit the
+state-space model}
 
 \item{dyn}{Whether the fitted long-term trend is fixed or dynamic (NOT USED AT PRESENT).}
+
+\item{plot_options}{A list with two elements: colors - the colours of the
+points that will appear in the plot (two values), and pers_theme  - A
+personalized ggplot theme.}
 }
 \value{
 A list with two elements: i) plot: a plot with summer and winter fitted states, as well as the long-term trend,
