@@ -3,11 +3,12 @@ title: "Statistical models for the BIRDIE pipeline"
 author: "Francisco Cervantes and Res Altwegg"
 date: "07/07/2021"
 subtitle: 'JRS Biodiversity Series'
-output: beamer_presentation
 classoption: "aspectratio=169"
 header-includes:
 - \usepackage{caption}
 - \captionsetup[figure]{labelformat=empty} # This gets rid of figure numbering!
+- \titlegraphic{\centering \includegraphics[width=10cm]{SEEC_03_B.pdf}}
+output: beamer_presentation
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
 ---
@@ -109,12 +110,6 @@ knitr::include_graphics("ssm_barshep.png")
 knitr::include_graphics("spp_83.png")
 ```
 
-
-## Observation error: occupancy example
-
-```{r, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
-knitr::include_graphics("occu_obs.png")
-```
 
 ## Occupancy models
 
