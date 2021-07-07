@@ -7,7 +7,7 @@ classoption: "aspectratio=169"
 header-includes:
 - \usepackage{caption}
 - \captionsetup[figure]{labelformat=empty} # This gets rid of figure numbering!
-- \titlegraphic{\centering \includegraphics[width=10cm]{SEEC_03_B.pdf}}
+- \titlegraphic{\centering \includegraphics[width=8cm]{SEEC_03_B.pdf} \includegraphics[width=2cm]{UCTNewCrest.JPG}}
 output: beamer_presentation
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
