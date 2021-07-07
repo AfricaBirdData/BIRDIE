@@ -1,10 +1,13 @@
 ---
 title: "Statistical models for the BIRDIE pipeline"
 author: "Francisco Cervantes and Res Altwegg"
-date: "7/07/2021"
+date: "07/07/2021"
 subtitle: 'JRS Biodiversity Series'
 output: beamer_presentation
 classoption: "aspectratio=169"
+header-includes:
+- \usepackage{caption}
+- \captionsetup[figure]{labelformat=empty} # This gets rid of figure numbering!
 knit: (function(inputFile, encoding) {
   rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
 ---
@@ -15,75 +18,103 @@ knitr::opts_chunk$set(echo = FALSE)
 
 ## Data pipeline
 
-One slide showing the data pipeline diagram to explain how this part fits into the pipeline
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("birdie_str.png")
+```
+
 
 ## The types of decisions that need to be supported
 
-Perhaps a brief slide on what kind of decisions / reporting this information is meant to feed into. Unless Nancy / Francis are planning to cover this
+
+- Site reports and management plans.
+
+- Provincial State of Biodiversity Report.
+
+- National State of Environment Report.
+
+- Red List and National Biodiversity Assessments.
+
+- Agreement on the Conservation of African-Eurasian Migratory Waterbirds.
+
+- ...
 
 ## Objectives
 
-\begin{itemize}
-\item Estimate metrics such as:
-    \begin{itemize}
-    \item[-] distribution,
-    \item[-] abundance,
-    \item[-] population trend and,
-    \item[-] species diversity.
-    \end{itemize}
-\item Integrate these metrics for different populations.
-\item Model observation error.
-\end{itemize}
+- Estimate metrics such as:
+
+    - distribution,
+    - abundance,
+    - population trend,
+    - species diversity.
+    
+- Integrate these metrics for different populations.
+
+- Model observation error.
 
 
 ## State-space models
 
-\begin{itemize}
-    \item Dynamic models describe how processes change.
-    \item Account for observation error.
-\end{itemize}
+  - Dynamic models describe how processes change over time.
+  
+  - Account for observation error.
+  
+\vspace{1cm}
 
-Include the typical HMM schematic plot describing state-space models??
+\begin{center}
+\includegraphics[height=3cm]{"ssm_diagram.png"}
+\end{center}
 
-Go on to say that the process we are interested on can take on different forms
-such as population abundance or occupancy...
-
-## State-space models (simpler syntax but same result)
-
-- Dynamic models describe how processes change.
-- Account for observation error.
-
-Include the typical HMM schematic plot describing state-space models??
-
-Go on to say that the process we are interested on can take on different forms
-such as population abundance or occupancy...
 
 ## Observation error: abundance example
 
-\begin{center}
-\includegraphics[height=7.5cm]{"abund_obs.png"}
-\end{center}
 
-## Observation error: abundance example (more versatile syntax)
-
-```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F}
 knitr::include_graphics("abund_obs.png")
 ```
 
-## The SSM
+## A state-space model for CWAC
 
-Are you still using Yahkat's model? She has a nice diagram that we could use to explain it. I think it would be good to explain how we can estimate summer and winter trends separately.
+\begin{columns}[]
+  \column{0.55\textwidth}{
+    
+    \begin{itemize}
+      \item Two counts per year: summer and winter.
+      \item + additional counts.
+      \item Sites must be well defined in terms of spatial limits.
+      \item Standardized counts in terms of: number of observers,
+      routes, time of day, viewing techniques, etc.
+    \end{itemize}
+    
+  }
+  \column{0.40\textwidth}{
+  \flushleft
+    \includegraphics[width=0.9\textwidth]{cwac_logo.png}
+    http://cwac.birdmap.africa
+  }
+\end{columns}
 
-## some results
+## A state-space model for CWAC
 
-I think we should show some results slides here. Do you have some results ready? Otherwise, we can also show some of the figures from Yahkat or Birgit's papers.
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F, fig.cap = "Barshep et al. 2017. Global Ecology and Conservation, 12"}
+knitr::include_graphics("ssm_barshep.png")
+```
+
+
+## A state-space model for CWAC
+
+
+```{r, out.width="55%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("spp_83.png")
+```
+
 
 ## Observation error: occupancy example
 
-\begin{center}
-\includegraphics[height=7.5cm]{"occu_obs.png"}
-
-\end{center}
+```{r, out.width="50%", include=TRUE, fig.align="center", echo=F, fig.cap = "Some figure legend, if needed..."}
+knitr::include_graphics("occu_obs.png")
+```
 
 ## Occupancy models
 
