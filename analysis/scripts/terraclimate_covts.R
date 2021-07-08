@@ -23,18 +23,18 @@ region <- raster::getData("GADM", download = TRUE, country = "South Africa",
 # Download data from TerraClimate server
 dat <- getTerraClim(region,
                   param = "prcp",
-                  startDate = "1992-01-01",
+                  startDate = "2003-01-01",
                   endDate = "2019-12-31")
 
 dat <- dat[[1]]
 
 
-# Calculate annual means for the 27 years ---------------------------------
+# Calculate annual means for the 17 years ---------------------------------
 
-ss <- vector("list", length = 27)
+ss <- vector("list", length = 17)
 
-yy <- 1992
-for(i in 1:27){
+yy <- 2003
+for(i in 1:17){
     ry <- raster::subset(dat, grep(yy, names(dat)))
     ry <- calc(ry, fun = mean)
     names(ry) <- yy
@@ -47,4 +47,4 @@ ss <- stack(ss)
 plot(ss)
 
 # Save
-writeRaster(ss, "analysis/out_nosync/prcp_92_19_nw_prov.grd", format = "raster")
+writeRaster(ss, "analysis/out_nosync/prcp_03_19_nw_prov.grd", format = "raster")
