@@ -43,6 +43,8 @@ use_package("raster")
 use_package("rgeos")
 use_package("utils")
 use_package("grDevices")
+use_package("mgcv")
+use_package("stocc")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -261,6 +263,31 @@ load_all()
 counts <- barberspan
 prepCtSsmData(counts)
 prepCtSsmData(counts, species = 212)
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function prepOccuData --------------------------------------------------
+
+# Add function
+use_r("prepOccuData")
+
+# test locally
+load_all()
+
+
 
 # Add documentation
 # Add ROxygen skeleton manually

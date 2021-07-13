@@ -24,9 +24,11 @@ Imports:
     lubridate,
     lwgeom,
     magrittr,
+    mgcv,
     raster,
     rgeos,
     sf,
+    stocc,
     tidyr,
     utils
 Depends: 

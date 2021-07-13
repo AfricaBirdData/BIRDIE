@@ -1,15 +1,23 @@
 #' Loop a state-space model through all species
 #'
-#' @description A wrapper around fitCwacSsm that runs a model for each species and produces specific output.
-#' @param counts A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
-#'     and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).
-#' @param mod_file A character string corresponding to the directory where the JAGS model lives at. If not provided, writeJagsModelFile is called to create a "default" model.
+#' @description A wrapper around fitCwacSsm that runs a model for each species
+#' and produces specific output.
+#' @param counts A data frame with at least four columns: "counts" - an integer
+#' column corresponding to the counts of a year and season, "season_id" - an
+#' integer column that identifies the season (1 for summer and 2 for winter),
+#' "spp" the species codes and "Loc_Code" the code for the site the counts where
+#' taken at.
+#' @param mod_file A character string corresponding to the directory where the
+#' JAGS model lives at. If not provided, writeJagsModelFile is called to create
+#' a "default" model.
 #' @param data_outdir Directory where data outputs should be saved
 #' @param plot_outdir Directory where plot outputs should be saved
 #' @param ... Other arguments passed on to fitCwacSsm.
 #'
-#' @return The function returns the results from fitting a state-space model to each of the species in two formats: i) a dataframe with summer and winter states,
-#' as well as, trends and winter proportions, and ii) plots showing the evolution of these variables.
+#' @return The function returns the results from fitting a state-space model to
+#' each of the species in two formats: i) a dataframe with summer and winter
+#' states, as well as, trends and winter proportions, and ii) plots showing the
+#' evolution of these variables.
 #' @export
 #'
 #' @examples
@@ -27,6 +35,13 @@ loopSsmAllSpp <- function(counts, mod_file = NULL, data_outdir, plot_outdir, ...
         warning("mod_file not provided, running writeJagsModelFile, see ?writeJagsModelFile")
     } else {
         modpath <- mod_file
+    }
+
+    # Identify site
+    site_id <- unique(counts$Loc_Code)
+
+    if(length(site_id) != 1){
+        stop("Either location code is missing or there are multiple sites.")
     }
 
     # Get species list
@@ -91,10 +106,10 @@ loopSsmAllSpp <- function(counts, mod_file = NULL, data_outdir, plot_outdir, ...
                           winter.prop.ci.upper)
 
         # Export sample
-        datadir <- paste0(data_outdir, "dashb_dat_", sp, ".csv")
+        datadir <- paste0(data_outdir, sp, "/ssm_dat_", site_id, "_", sp, ".csv")
         utils::write.csv(out_df, datadir, row.names = FALSE)
 
-        plotdir <- paste0(plot_outdir, "dashb_plot_", sp, ".png")
+        plotdir <- paste0(plot_outdir, sp, "/ssm_plot_", site_id, "_", sp, ".png")
         ggplot2::ggsave(plotdir, plot = p$plot, width = 6.4, height = 5.2)
     }
 
