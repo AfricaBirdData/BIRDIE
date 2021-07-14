@@ -38,8 +38,8 @@ spp <- barberspan %>%
 #                                                     region = "North West"))
 
 # For a single species
-occu_nw <- SABAP::getSabapData(spp[1], region_type = "province",
-                               region = "North West")
+occu_nw <- SABAP::getSabapData(spp[1], .region_type = "province",
+                               .region = "North West")
 
 occu_nw <- occu_nw %>%
     mutate(year = lubridate::year(StartDate))
