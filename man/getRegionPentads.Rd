@@ -4,16 +4,16 @@
 \alias{getRegionPentads}
 \title{Get SABAP2 pentads for a certain region}
 \usage{
-getRegionPentads(country, province = NULL, path = NULL)
+getRegionPentads(.country, .province = NULL, .path = NULL)
 }
 \arguments{
-\item{country}{A character string with the name of the country the region of
+\item{.country}{A character string with the name of the country the region of
 interest is at. Capitalize first letters of each word.}
 
-\item{province}{A character string. If provided it subsets the region of
+\item{.province}{A character string. If provided it subsets the region of
 interest to a specific province. Capitalize first letters of each word.}
 
-\item{path}{A directory where administrative boundaries layer should be found
+\item{.path}{A directory where administrative boundaries layer should be found
 or stored at.}
 }
 \value{
