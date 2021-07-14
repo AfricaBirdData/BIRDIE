@@ -45,6 +45,7 @@ use_package("utils")
 use_package("grDevices")
 use_package("mgcv")
 use_package("stocc")
+use_package("furrr")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -287,7 +288,51 @@ use_r("prepOccuData")
 # test locally
 load_all()
 
+# Add documentation
+# Add ROxygen skeleton manually
+document()
 
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function extractVisitCovt --------------------------------------------------
+
+# Add function
+use_r("extractVisitCovt")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function addOccVisitCovts --------------------------------------------------
+
+# Add function
+use_r("addOccVisitCovts")
+
+# test locally
+load_all()
 
 # Add documentation
 # Add ROxygen skeleton manually
