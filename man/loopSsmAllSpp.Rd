@@ -7,10 +7,15 @@
 loopSsmAllSpp(counts, mod_file = NULL, data_outdir, plot_outdir, ...)
 }
 \arguments{
-\item{counts}{A data frame with at least two columns: "counts" - an integer column corresponding to the counts of a year and season
-and "season_id" - an integer column that identifies the season (1 for summer and 2 for winter).}
+\item{counts}{A data frame with at least four columns: "counts" - an integer
+column corresponding to the counts of a year and season, "season_id" - an
+integer column that identifies the season (1 for summer and 2 for winter),
+"spp" the species codes and "Loc_Code" the code for the site the counts where
+taken at.}
 
-\item{mod_file}{A character string corresponding to the directory where the JAGS model lives at. If not provided, writeJagsModelFile is called to create a "default" model.}
+\item{mod_file}{A character string corresponding to the directory where the
+JAGS model lives at. If not provided, writeJagsModelFile is called to create
+a "default" model.}
 
 \item{data_outdir}{Directory where data outputs should be saved}
 
@@ -19,11 +24,14 @@ and "season_id" - an integer column that identifies the season (1 for summer and
 \item{...}{Other arguments passed on to fitCwacSsm.}
 }
 \value{
-The function returns the results from fitting a state-space model to each of the species in two formats: i) a dataframe with summer and winter states,
-as well as, trends and winter proportions, and ii) plots showing the evolution of these variables.
+The function returns the results from fitting a state-space model to
+each of the species in two formats: i) a dataframe with summer and winter
+states, as well as, trends and winter proportions, and ii) plots showing the
+evolution of these variables.
 }
 \description{
-A wrapper around fitCwacSsm that runs a model for each species and produces specific output.
+A wrapper around fitCwacSsm that runs a model for each species
+and produces specific output.
 }
 \examples{
 counts <- barberspan
