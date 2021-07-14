@@ -18,15 +18,23 @@ region <- raster::getData("GADM", download = TRUE, country = "South Africa",
     dplyr::filter(NAME_1 == "North West")
 
 
-# Download precipitation data ---------------------------------------------
+# Download climatic data ---------------------------------------------
+
+vars <- c("prcp", "tmax", "tmin", "aet", "pet")
 
 # Download data from TerraClimate server
-dat <- getTerraClim(region,
-                  param = "prcp",
-                  startDate = "2003-01-01",
-                  endDate = "2019-12-31")
+for(i in seq_along(vars)){
+    dat <- getTerraClim(region,
+                        param = vars[i],
+                        startDate = "2003-01-01",
+                        endDate = "2019-12-31")
 
-dat <- dat[[1]]
+    dat <- dat[[1]]
+
+    fileout <- paste0("analysis/out_nosync/terraClim_", vars[i], "_03_19_nw.rds")
+    saveRDS(dat, fileout)
+
+}
 
 
 # Calculate annual means for the 17 years ---------------------------------
