@@ -2,8 +2,7 @@
 
 export("%>%")
 export(addOccSiteCovt)
-export(addOccVisitCovts)
-export(extractVisitCovt)
+export(addOccVisitCovt)
 export(findNextIndex)
 export(fitCwacCtSsm)
 export(fitCwacSsm)
