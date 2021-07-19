@@ -1,4 +1,22 @@
-getOccVisitData <- function(region_type, region, species, ...){
+#' Get detection/non-detection data
+#'
+#' @description This is a wrapper around getRegionPentads and
+#' SABAP::getSabapData that prepares SABAP detection/non-detection data to be
+#' analysed in an occupancy model.
+#' @param region_type The type of region we are interested on.
+#' Three options: "country", "province" and "pentad".
+#' @param region A character string corresponding to the specific region we are
+#' interested in. It can be either a country in Southern Africa, a South African
+#' province or a pentad code.
+#' @param species The code of the species we are interested in.
+#' @param path A directory where administrative boundaries layer should be
+#' looked for.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getOccVisitData <- function(region_type, region, species, path){
 
     # Find pentads in the region
     pentads_sel <- readRDS("analysis/data/pentads_nw.rds")
@@ -11,7 +29,7 @@ getOccVisitData <- function(region_type, region, species, ...){
     }
 
     sf::sf_use_s2(FALSE) # s2 intersection takes very long
-    pentads_sel <- getRegionPentads(.country = country, .province = province, ...)
+    pentads_sel <- getRegionPentads(.country = country, .province = province, .path = path)
 
     # Add centroid coordinates
     sf::sf_use_s2(TRUE)
