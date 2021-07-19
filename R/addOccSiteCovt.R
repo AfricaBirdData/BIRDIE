@@ -25,17 +25,8 @@ addOccSiteCovt <- function(sites, covt, years, covts_dir, file_fix, ncores = 1){
                              grep(paste(years, collapse = "|"),
                                   names(covt_r), value = TRUE))
 
-    # Set up multicore processing
-    if (ncores > 1) {
-        pnow <- future::plan()
-        on.exit(future::plan(pnow), add = TRUE)
-
-        if (ncores > future::availableCores()) {
-            stop("Not enough available cores")
-        } else {
-            future::plan("multiprocess", workers = ncores)
-        }
-    }
+    # Transform to spatial sites to sp package to avoid problems with furrr
+    sites <- sf::as_Spatial(sites)
 
     print(paste("Extracting variable", covt))
 
@@ -47,17 +38,22 @@ addOccSiteCovt <- function(sites, covt, years, covts_dir, file_fix, ncores = 1){
 
         covt_name <- paste0(.covt, "_", .yr)
 
+        vv <- raster::extract(ry, .sites, fun = mean)
+
         covt_out <- .sites %>%
-            sf::st_drop_geometry() %>%
-            dplyr::mutate(!!covt_name := raster::extract(ry, as(.sites, "Spatial"), fun = mean)) %>%
+            as.data.frame() %>%
+            dplyr::mutate(!!covt_name := vv[,1]) %>%
             dplyr::select(dplyr::all_of(covt_name))
 
         return(covt_out)
     }
 
-    out <- furrr::future_map_dfc(years, ~f(.x))
+    out <- furrr::future_map_dfc(years, ~f(.x),
+                                 .options = furrr::furrr_options(seed = TRUE))
 
-    out <- cbind(sites, out)
+    out <- sites %>%
+        sf::st_as_sf() %>%
+        cbind(out)
 
     return(out)
 }

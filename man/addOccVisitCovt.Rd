@@ -4,7 +4,7 @@
 \alias{addOccVisitCovt}
 \title{Add occupancy visit covariate}
 \usage{
-addOccVisitCovt(visits, sites, covt, covts_dir, file_fix, ncores = 1)
+addOccVisitCovt(visits, sites, covt, covts_dir, file_fix)
 }
 \arguments{
 \item{visits}{A dataframe with detection/non-detection data. It must contain
@@ -21,8 +21,6 @@ that covariates are found at: "covts_dir_file_fix\link{1}covt_file_fix\link{2}.r
 
 \item{file_fix}{A character vector with two elements corresponding to
 additional characters that are found before and after covts.}
-
-\item{ncores}{Number of cores to be used for the extraction. Defaults to 1}
 }
 \value{
 The sites dataframe with an additional column corresponding to
