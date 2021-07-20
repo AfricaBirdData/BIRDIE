@@ -6,16 +6,12 @@ library(dplyr)
 library(stocc)
 library(BIRDIE)
 
-
 rm(list = ls())
 
 
 # Load occupancy data -----------------------------------------------------
 
-occudata <- readRDS("analysis/data/occudata.rds")
-
-# Load covariates
-covts <- readRDS("analysis/data/pentd_nw_prcp.rds")
+occudata <- readRDS("analysis/data/pa_dat_6_wcovts_nw.rds")
 
 
 # Prepare spatial occupancy data ------------------------------------------
@@ -23,21 +19,41 @@ covts <- readRDS("analysis/data/pentd_nw_prcp.rds")
 # Subset one year
 yr <- 2008
 
-# Rename covariates
-covts <- covts %>%
-    rename_with(.fn = ~gsub("X", "prcp_", .x), .cols = contains("X"))
+occudata$visits <- occudata$visits %>%
+    filter(year == yr) %>%
+    as.data.frame()
 
-# Prepare data
-so_data <- prepOccuData(occudata, yr, covts)
+occudata$sites <- occudata$sites %>%
+    sf::st_drop_geometry() %>%
+    dplyr::select(Name, lon, lat, contains(as.character(yr))) %>%
+    rename_with(.fn = ~gsub(paste0("_", yr), "", .x))
+
+# Define visit and site covariates
+covts_s <- c("prcp", "tmax", "tmin", "det")
+covts_v <- c("prcp", "tmax", "tmin", "det")
+
+# det is the difference of actual and potential evapotranspiration (aet - pet)
+# Also, scale and centre covariates
+occudata$visits <- occudata$visits %>%
+    dplyr::mutate(det = aet - pet) %>%
+    dplyr::mutate(across(all_of(covts_v), ~scale(.x)))
+
+occudata$sites <- occudata$sites %>%
+    dplyr::mutate(det = aet - pet) %>%
+    dplyr::mutate(across(all_of(covts_s), ~scale(.x)))
+
+# Prepare data for stocc
+so_data <- stocc::make.so.data(visit.data = occudata$visits,
+                               site.data = occudata$sites,
+                               names = list(visit = list(site = "SiteName", obs = "PAdata"),
+                                            site = list(site = "Name", coords = c("lon", "lat"))))
 
 
-# Fit occupancy model -----------------------------------------------------
+# Fit simple model --------------------------------------------------------
 
-# This spatial model does not allow the inclusion of year as a covariate for occupancy
 fit <- spatial.occupancy(
-    detection.model = reformulate(c("log(TotalHours)", paste0("cyclic.", 1:11))),
-    # detection.model = ~log(TotalHours),
-    occupancy.model = reformulate(c(1, paste("prcp", yr, sep = "_"))),
+    detection.model = reformulate(c("log(TotalHours)")),
+    occupancy.model = reformulate(covts_s),
     spatial.model = list(model="rsr", threshold = 1,
                          moran.cut = 0.1*nrow(so_data$site)),
     so.data = so_data,
@@ -47,9 +63,57 @@ fit <- spatial.occupancy(
     control = list(burnin=1000/5, iter=4000/5, thin=5)
 )
 
+unlist(fit[c("D.m", "G.m", "P.m")])
+
+
+# Model selection ---------------------------------------------------------
+
+mods <- list("log(TotalHours)",
+             c("log(TotalHours)", covts_v),
+             c("log(TotalHours)", paste0("toy.", 1:4)),
+             c(covts_v, "log(TotalHours)", paste0("toy.", 1:4)))
+
+PPL <- vector("list", length = length(mods))
+
+for(i in seq_along(mods)){
+
+    fit <- spatial.occupancy(
+        detection.model = reformulate(mods[[i]]),
+        occupancy.model = reformulate(covts_s),
+        spatial.model = list(model="rsr", threshold = 1,
+                             moran.cut = 0.1*nrow(so_data$site)),
+        so.data = so_data,
+        prior = list(a.tau=0.5, b.tau=0.00005,
+                     Q.b=0.1,
+                     Q.g=0.1),
+        control = list(burnin=1000/5, iter=4000/5, thin=5)
+    )
+
+    PPL[[i]] <- unlist(fit[c("D.m", "G.m", "P.m")])
+
+}
+
+PPL
+
+
+# Fit best model ----------------------------------------------------------
+
+fit <- spatial.occupancy(
+    detection.model = reformulate(mods[[4]]),
+    occupancy.model = reformulate(covts_s),
+    spatial.model = list(model="rsr", threshold = 1,
+                         moran.cut = 0.1*nrow(so_data$site)),
+    so.data = so_data,
+    prior = list(a.tau=0.5, b.tau=0.00005,
+                 Q.b=0.1,
+                 Q.g=0.1),
+    control = list(burnin=1000/5, iter=4000/5, thin=5)
+)
+
+unlist(fit[c("D.m", "G.m", "P.m")])
+
 # Save fit
 saveRDS(fit, "analysis/output/so_fit.rds")
-
 
 
 # Explore model -----------------------------------------------------------

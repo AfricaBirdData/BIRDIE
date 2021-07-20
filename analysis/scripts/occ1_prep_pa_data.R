@@ -9,15 +9,18 @@ library(tidyverse)
 rm(list = ls())
 
 
-# Prepare data occupancy visit data ----------------------------------------
+# Select a species and a region -------------------------------------------
+
+sp_sel <- 6
+
+region <- "North West"
+
+
+# Prepare occupancy visit data -------------------------------------------
 
 # Prepare SABAP data and pentads for species 6 in the North West province.
-pa_dat <- getOccVisitData(region_type = "province", region = "North West",
-                          species = 6, path = "analysis/data")
-
-saveRDS(pa_dat, "analysis/out_nosync/pa_dat_6_nw.rds")
-
-pa_dat <- readRDS("analysis/out_nosync/pa_dat_6_nw.rds")
+pa_dat <- getOccVisitData(region_type = "province", region = region,
+                          species = sp_sel, path = "analysis/data")
 
 # Annotate occupancy visit data with climatic covariates
 covts = c("prcp", "tmax", "tmin", "aet", "pet")
@@ -37,7 +40,7 @@ future::plan("sequential")
 saveRDS(pa_dat, "analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
 
 
-# Prepare site covariates -------------------------------------------------
+# Prepare occupancy site data -------------------------------------------
 
 # Load detection/non-detection data
 pa_dat <- readRDS("analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
@@ -59,3 +62,17 @@ future::plan("sequential")
 
 saveRDS(pa_dat, "analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
 
+
+# Prepare non-linear terms ------------------------------------------------
+
+# Load detection/non-detection data
+pa_dat <- readRDS("analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
+
+# Add cyclic basis values for time of year to visit data
+spl_bs <- mgcv::cSplineDes(x = pa_dat$visits$month,
+                           knots = seq(1, 12, length.out = 5),
+                           ord = 4, derivs = 0)
+colnames(spl_bs) <- paste0("toy.", 1:ncol(spl_bs))
+pa_dat$visits <- cbind(pa_dat$visits, spl_bs)
+
+saveRDS(pa_dat, "analysis/data/pa_dat_6_wcovts_nw.rds")
