@@ -3,6 +3,7 @@
 export("%>%")
 export(addOccSiteCovt)
 export(addOccVisitCovt)
+export(exactExtractParll)
 export(findNextIndex)
 export(fitCwacCtSsm)
 export(fitCwacSsm)

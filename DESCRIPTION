@@ -17,6 +17,7 @@ RoxygenNote: 7.1.1
 Imports: 
     CWAC,
     dplyr,
+    exactextractr,
     furrr,
     ggplot2,
     grDevices,

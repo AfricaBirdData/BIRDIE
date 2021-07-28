@@ -46,6 +46,7 @@ use_package("grDevices")
 use_package("mgcv")
 use_package("stocc")
 use_package("furrr")
+use_package("exactextractr")
 
 
 # Function fitCwacSsm2ss --------------------------------------------------
@@ -330,6 +331,28 @@ test()
 
 # Add function
 use_r("addOccVisitCovts")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+# Function exactExtractParll --------------------------------------------------
+
+# Add function
+use_r("exactExtractParll")
 
 # test locally
 load_all()
