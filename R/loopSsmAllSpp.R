@@ -21,13 +21,13 @@
 #' @export
 #'
 #' @examples
-#' counts <- barberspan
-#' counts <- counts[counts$spp %in% c(6, 41),]
-#' loopSsmAllSpp(counts,
-#'               data_outdir = "tempdir()",
-#'               plot_outdir = "tempdir()",
-#'               param = c("beta", "lambda", "sig.zeta", "sig.w",
-#'                "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+#' #counts <- barberspan
+#' #counts <- counts[counts$spp %in% c(6, 41),]
+#' #loopSsmAllSpp(counts,
+#' #              data_outdir = "mydatadir/",
+#' #              plot_outdir = "myoutdir/",
+#' #              param = c("beta", "lambda", "sig.zeta", "sig.w",
+#' #               "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 loopSsmAllSpp <- function(counts, mod_file = NULL, data_outdir, plot_outdir, ...){
 
     if(is.null(mod_file)){
