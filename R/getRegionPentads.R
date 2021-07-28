@@ -19,7 +19,7 @@
 #' # getRegionPentads(country = "South Africa", province = "North West")
 getRegionPentads <- function(.country, .province = NULL, .path = NULL){
 
-    pentads <- pentads
+    pentads <- BIRDIE::pentads
 
     # Download/load geographic data
     if(is.null(.path)){
@@ -45,8 +45,12 @@ getRegionPentads <- function(.country, .province = NULL, .path = NULL){
     aa <- sf::st_area(pentads_reg) %>%
         as.numeric()
 
-    out <- pentads_reg[aa > max(aa)/2,] %>%
-        dplyr::select(Name, province = NAME_1)
+    keep <- pentads_reg[aa > max(aa)/2,] %>%
+        dplyr::pull(Name) %>%
+        unique()
+
+    out <- pentads %>%
+        dplyr::filter(Name %in% keep)
 
     return(out)
 }
