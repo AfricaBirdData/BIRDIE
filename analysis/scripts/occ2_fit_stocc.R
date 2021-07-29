@@ -9,9 +9,16 @@ library(BIRDIE)
 rm(list = ls())
 
 
+# Select a species and a region -------------------------------------------
+
+sp_sel <- 41
+
+region <- "North West"
+
+
 # Load occupancy data -----------------------------------------------------
 
-occudata <- readRDS("analysis/data/pa_dat_6_wcovts_nw.rds")
+occudata <- readRDS(paste0("analysis/data/pa_dat_", sp_sel, "_wcovts_nw.rds"))
 
 
 # Prepare spatial occupancy data ------------------------------------------
@@ -29,18 +36,18 @@ occudata$sites <- occudata$sites %>%
     rename_with(.fn = ~gsub(paste0("_", yr), "", .x))
 
 # Define visit and site covariates
-covts_s <- c("prcp", "tmax", "tmin", "det")
-covts_v <- c("prcp", "tmax", "tmin", "det")
+covts_s <- c("prcp", "tmax")
+covts_v <- c("prcp", "tmax")
 
 # det is the difference of actual and potential evapotranspiration (aet - pet)
 # Also, scale and centre covariates
-occudata$visits <- occudata$visits %>%
-    dplyr::mutate(det = aet - pet) %>%
-    dplyr::mutate(across(all_of(covts_v), ~scale(.x)))
-
-occudata$sites <- occudata$sites %>%
-    dplyr::mutate(det = aet - pet) %>%
-    dplyr::mutate(across(all_of(covts_s), ~scale(.x)))
+# occudata$visits <- occudata$visits %>%
+#     dplyr::mutate(det = aet - pet) %>%
+#     dplyr::mutate(across(all_of(covts_v), ~scale(.x)))
+#
+# occudata$sites <- occudata$sites %>%
+#     dplyr::mutate(det = aet - pet) %>%
+#     dplyr::mutate(across(all_of(covts_s), ~scale(.x)))
 
 # Prepare data for stocc
 so_data <- stocc::make.so.data(visit.data = occudata$visits,
@@ -99,7 +106,7 @@ PPL
 # Fit best model ----------------------------------------------------------
 
 fit <- spatial.occupancy(
-    detection.model = reformulate(mods[[4]]),
+    detection.model = reformulate(mods[[3]]),
     occupancy.model = reformulate(covts_s),
     spatial.model = list(model="rsr", threshold = 1,
                          moran.cut = 0.1*nrow(so_data$site)),
@@ -107,21 +114,23 @@ fit <- spatial.occupancy(
     prior = list(a.tau=0.5, b.tau=0.00005,
                  Q.b=0.1,
                  Q.g=0.1),
-    control = list(burnin=1000/5, iter=4000/5, thin=5)
+    control = list(burnin=2000/5, iter=8000/5, thin=5)
 )
 
 unlist(fit[c("D.m", "G.m", "P.m")])
 
 # Save fit
-saveRDS(fit, "analysis/output/so_fit.rds")
+saveRDS(fit, paste0("analysis/output/", sp_sel, "_so_fit.rds"))
 
 
 # Explore model -----------------------------------------------------------
 
-fit <- readRDS("analysis/output/so_fit.rds")
+fit <- readRDS(paste0("analysis/output/", sp_sel, "_so_fit.rds"))
 
 # Plot detection parameters
 plot(fit$beta)
+
+coda::traceplot(fit$beta)
 
 # Plot occupancy parameters
 plot(fit$gamma)

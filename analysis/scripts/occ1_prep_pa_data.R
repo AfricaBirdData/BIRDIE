@@ -37,15 +37,15 @@ for(i in seq_along(covts)){
 
 future::plan("sequential")
 
-saveRDS(pa_dat, "analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
+saveRDS(pa_dat, paste0("analysis/out_nosync/pa_dat_", sp_sel, "_wcovts_nw.rds"))
 
 
 # Prepare occupancy site data -------------------------------------------
 
 # Load detection/non-detection data
-pa_dat <- readRDS("analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
+pa_dat <- readRDS(paste0("analysis/out_nosync/pa_dat_", sp_sel, "_wcovts_nw.rds"))
 
-# Define covariates
+# Define climatic covariates
 covts <- c("prcp", "tmax", "tmin", "aet", "pet")
 
 future::plan("multisession", workers = 6)
@@ -60,13 +60,13 @@ for(i in seq_along(covts)){
 
 future::plan("sequential")
 
-saveRDS(pa_dat, "analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
+saveRDS(pa_dat, paste0("analysis/out_nosync/pa_dat_", sp_sel, "_wcovts_nw.rds"))
 
 
 # Prepare non-linear terms ------------------------------------------------
 
 # Load detection/non-detection data
-pa_dat <- readRDS("analysis/out_nosync/pa_dat_6_wcovts_nw.rds")
+pa_dat <- readRDS(paste0("analysis/out_nosync/pa_dat_", sp_sel, "_wcovts_nw.rds"))
 
 # Add cyclic basis values for time of year to visit data
 spl_bs <- mgcv::cSplineDes(x = pa_dat$visits$month,
@@ -75,4 +75,34 @@ spl_bs <- mgcv::cSplineDes(x = pa_dat$visits$month,
 colnames(spl_bs) <- paste0("toy.", 1:ncol(spl_bs))
 pa_dat$visits <- cbind(pa_dat$visits, spl_bs)
 
-saveRDS(pa_dat, "analysis/data/pa_dat_6_wcovts_nw.rds")
+saveRDS(pa_dat, paste0("analysis/data/pa_dat_", sp_sel, "_wcovts_nw.rds"))
+
+
+# Prepare surface water ---------------------------------------------------
+
+library(raster)
+
+# Load data
+pa_dat <- readRDS(paste0("analysis/out_nosync/pa_dat_", sp_sel, "_wcovts_nw.rds"))
+
+# Extract pentads
+pentads_sel <- pa_dat$sites
+
+# Load water raster
+water <- raster::raster("analysis/data/surf_water_20E_20S.tif")
+
+water <- raster::crop(water, pentads_sel)
+
+future::plan("multisession", workers = 6)
+pentads_water <- BIRDIE::exactExtractParll(water, pentads_sel,
+                                           ncores = future::nbrOfWorkers(),
+                                           fun = "sum")
+future::plan("sequential")
+
+pentads_water <- pentads_water %>%
+    rename(water = vals)
+
+# Save
+pa_dat$sites <- pentads_water
+
+saveRDS(pa_dat, paste0("analysis/data/pa_dat_", sp_sel, "_wcovts_nw.rds"))
