@@ -15,6 +15,11 @@ data {
   matrix[D, M] H;
   // time intervals
   vector[N-1] dt;
+  // Priors for initial values
+  real pmu_mu0;
+  real psig_mu0;
+  real psig_beta0;
+  real psig_lambda0;
   // Priors for rate parameters
   real<lower = 0> psig_alpha;
   real<lower = 0> psig_beta;
@@ -117,9 +122,9 @@ transformed parameters {
 
 model {
   // Priors for initial states
-  mu0 ~ normal(5, 5);
-  beta0 ~ normal(0, 5);
-  lambda0 ~ normal(0, 5);
+  mu0 ~ normal(pmu_mu0, psig_mu0);
+  beta0 ~ normal(0, psig_beta0);
+  lambda0 ~ normal(0, psig_lambda0);
 
   // Priors for standard deviation of rate parameters
   sig_alpha ~ cauchy(0, psig_alpha);

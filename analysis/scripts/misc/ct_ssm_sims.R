@@ -101,6 +101,11 @@ data.bundle <- list(  # number of observations
     H = matrix(c(1, 0, 0), nrow = 1),
     # time increments
     dt = dt,
+    # Priors for initial values
+    pmu_mu0 = 5,
+    psig_mu0 = 3,
+    psig_beta0 = 3,
+    psig_lambda0 = 3,
     # Priors for rate parameters
     psig_alpha = 2,
     psig_beta = 2,
@@ -122,7 +127,7 @@ stan_mod <- stan_model(file = "analysis/models/cwac_kalman_smooth.stan")
 
 # Define initial values
 init = function() list(
-  mu0 = rexp(1, 1),
+  mu0 = rexp(1, 0.1),
   beta0  = rnorm(1, 3, 3),
   lambda0  = rnorm(1, -3, 3),
 
