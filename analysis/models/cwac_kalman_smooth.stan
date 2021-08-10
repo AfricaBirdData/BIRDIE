@@ -55,9 +55,9 @@ transformed parameters {
   // Predicted covariance
   matrix[M, M] P[N];
   // Estimated states
-  vector[M] ahat[N];
+  vector[M] ahat[N-1];
   // Estimated covariances
-  matrix[M, M] Phat[N];
+  matrix[M, M] Phat[N-1];
   // Transition matrices
   matrix[M,M] At[N-1];
   matrix[M,M] Qt[N-1];
@@ -142,11 +142,31 @@ model {
 
 generated quantities{
 
+  // Smoothed states
+  vector[M] a_s[N];
+  matrix[M, M] P_s[N];
+  // Smoothing gain
+  matrix[M, M] G[N];
   // predicted states
   vector[M] pred[N];
 
+  // Initial prediction
+  a_s[N] = a[N];
+  P_s[N] = P[N];
+
+  for(k in 2:N){
+    int i = N - k + 1;
+
+    // Kalman gain
+    G[i] = mdivide_right_spd(P[i] * At[i]', Phat[i]);
+
+    a_s[i] = a[i] + G[i] * (a_s[i+1] - ahat[i]);
+    P_s[i] = P[i] + G[i] * (P_s[i+1] - Phat[i]) * G[i]';
+  }
+
+
   for(i in 1:N){
-    pred[i] = multi_normal_rng(a[i], P[i]);
+    pred[i] = multi_normal_rng(a_s[i], P_s[i]);
   }
 
 }
