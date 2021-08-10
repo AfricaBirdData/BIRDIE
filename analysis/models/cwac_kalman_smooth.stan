@@ -140,6 +140,17 @@ model {
   target += sum(llik_obs);
 }
 
+generated quantities{
+
+  // predicted states
+  vector[M] pred[N];
+
+  for(i in 1:N){
+    pred[i] = multi_normal_rng(a[i], P[i]);
+  }
+
+}
+
 // generated quantities{
 //   // Smoothed states
 //   vector[M] a_s[N];
