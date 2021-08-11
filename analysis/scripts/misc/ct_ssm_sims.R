@@ -120,7 +120,7 @@ data.bundle <- list(  # number of observations
 paramToPlot <- c("sig_alpha", "sig_beta", "sig_lambda",
                  "sig_s", "sig_w", "sig_o", "mu0", "beta0", "lambda0")
 
-param <- c(paramToPlot)
+param <- c(paramToPlot, "pred")
 
 # Compile model
 stan_mod <- stan_model(file = "analysis/models/cwac_kalman_smooth.stan")
@@ -155,6 +155,26 @@ print(fit, pars = paramToPlot, probs = c(0.025, 0.5, 0.975),
       digits_summary = 3, use_cache = F)
 
 fit$sig_lambda
+
+
+# Plot estimates ----------------------------------------------------------
+
+musamples <- rstan::extract(fit, pars = "pred")$pred[,,1]
+
+muhat <- data.frame(est = apply(musamples, 2, mean),
+                    lb = apply(musamples, 2, quantile, 0.025),
+                    ub = apply(musamples, 2, quantile, 0.975),
+                    obs = y,
+                    stt = X[1,],
+                    t = cumsum(c(0, dt)))
+
+ggplot(muhat) +
+  geom_line(aes(x = t, y = stt), col = "grey") +
+  geom_point(aes(x = t, y = obs), col = "red") +
+  geom_point(aes(x = t, y = est)) +
+  geom_line(aes(x = t, y = lb), linetype = 2) +
+  geom_line(aes(x = t, y = ub), linetype = 2)
+
 
 
 
