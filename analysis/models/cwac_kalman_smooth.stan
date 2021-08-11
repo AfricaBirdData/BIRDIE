@@ -78,7 +78,7 @@ transformed parameters {
   a[1] = aa1;
   P[1] = diag_matrix(pp1);
   R[1] = var_s * summer[1] + var_w * winter[1] + var_o - var_o * (summer[1] + winter[1]);
-  llik_obs[1] += normal_lpdf(y[1]| mu0+beta0, sqrt(R[1]));
+  llik_obs[1] += normal_lpdf(y[1]| mu0 + (beta0*summer[1] + lambda0*winter[1]), sqrt(R[1]));
 
   // precompute all transition matrices
   for(i in 1:(N-1)){
