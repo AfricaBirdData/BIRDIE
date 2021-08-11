@@ -2,7 +2,12 @@
 .Rhistory
 .RData
 .Ruserdata
+
+# Ignore output files in out_nosync
 analysis/out_nosync/*
+
+# Ignore compiled models
+analysis/models/*.rds
 
 # Ignore output and auxiliary files in the communications folder
 comms/output/*
