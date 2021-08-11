@@ -1,0 +1,17 @@
+---
+title: "South African Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE)"
+author: "Francisco Cervantes"
+date: "07/07/2021"
+subtitle: 'National Wetlands Indaba 2021'
+output: pdf_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Abstract
+
+With ever-increasing pressure on wetlands due to the scarcity of freshwater on Earth, there is an urgent need to monitor the status of these ecosystems. In this context, waterbirds often serve as flagship and indicator species for other less accessible ecological riches. In this talk, we will learn about the South African Biodiversity Data Pipeline for Wetlands and Waterbirds, affectively named BIRDIE. This project emerges from a collaboration between multiple organizations, with the overarching objective of serving as a link between South African nation-wide waterbird data collection programmes and conservation managers, researchers and other stakeholders. More precisely, the project will use data from the Coordinated Waterbird Counts and the Southern African Bird Atlas Project to understand the distribution and population dynamics of waterbird species. Recognizing the value of coupling the powerful, but sometimes ungovernable citizen-science data, with rigorous statistical analysis, BIRDIE aims at presenting processed information freely on an online platform. In the future, we hope to expand BIRDIE to other regions and integrate it with other biodiversity portals to promote a better understanding of the interactions between different taxonomic groups associated to wetlands.
