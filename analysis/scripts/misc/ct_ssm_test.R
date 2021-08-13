@@ -24,9 +24,14 @@ out$data
 
 # Kalman smoother ---------------------------------------------------------
 
+library(rstan)
+
+options(mc.cores = parallel::detectCores() - 2)
+rstan_options(auto_write = TRUE)
+
 counts <- barberspan
 
-ssmcounts <- prepCtSsmData(counts, species = 4)
+ssmcounts <- prepCtSsmData(counts, species = 83)
 
 # Bundle data
 data.bundle <- list(  # number of observations
