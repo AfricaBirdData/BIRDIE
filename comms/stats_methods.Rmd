@@ -1,0 +1,101 @@
+---
+title: "Statistical and Technical Methods in BIRDIE"
+author: "Francisco Cervantes"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+output: pdf_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "output") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Introduction
+
+This document provides details on the statistical models and used in the data pipeline and their implementation.
+
+# State-space models
+
+State-space models are fitted to CWAC data to decouple the underlying process of interest, namely, the population size of waterbird species, from observational artifacts that translate in counting errors. 
+
+State-space models are use to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider a process of interest that evolves with time and which we may observe at certain occasions. However, our observations may be distorted by some imperfect observation process. For example, we might be interested in estimating the number of birds present at a certain site, but often field observers will miss some birds. By taking repeated measurements (counts in our example) over time, and assuming that the process of interest should evolve slowly compared to observation error, we may be able to disentangle these two processes.
+
+In the particular case of CWAC data, we let the population size of a certain species at a given site at time $t$ be denoted by $\mu_t$. Actually, $\mu_t$ is the log of the population size (I should explain this better). Observers count the number of birds at this site at times $t = 1, 2, ..., N$, for a total of $N$ measurements. Note that for simplicity we are assuming that sampling occasions are regularly spaced, although they need not be, as we will see later. Within the CWAC programme framework, there are yearly counts and therefore, $t$ indexes the different years. Then,
+
+\begin{equation}
+    \begin{aligned}
+        \mu_{t} &= \mu_{t-1} + \alpha_t,\ \alpha_t \sim N(0, \sigma_{\alpha}^2)\\
+        y_t &= \mu_t + e_t,\ e_t \sim N(0, \sigma_{e}^2),
+    \end{aligned}
+\end{equation}
+
+where $\mu_t$ represents the number of birds present at the site at time $t$ and $y_t$ represents the number of birds counted at the site at time $t$. The terms $\alpha_t$ and $e_t$ denote stochastic changes in abundance and stochastic errors in the measurements respectively. Note that the state at time $t$, $\mu_t$ depends on the state at time $t-1$, therefore there should be a temporal structure in the process $\mu_t$ that is not present in the observations $y_t$, if we condition on $\mu_t$.
+
+We can now extend the model to account for the fact that many sites host migrant species that arrive during the summer months. Therefore, we would expect an influx of birds to the population that we will denote by $\beta_t$. A proportion of these birds, stay during the winter months, while others leave to their breeding grounds in the North. The change in population size during the winter months due to the wintering migrants is denoted by $\lambda_t$. Then,
+
+\begin{equation}
+    \begin{aligned}
+        \mu_{t} &= \mu_{t-1} + \beta_{t-1} \textrm{summer}_t + \lambda_t \textrm{winter}_t + \omega_t,\ \omega_t \sim N(0, \sigma_{\omega}^2)\\
+        \beta_t &= \beta_{t-1} + \zeta_t, \ \zeta_t \sim N(0, \sigma_{\zeta}^2)\\
+        \lambda_t &= \lambda_{t-1} + \epsilon_t, \ \epsilon_t \sim N(0, \sigma_{\epsilon}^2)\\
+        y_t &= \mu_t + \alpha_t \textrm{summer}_t + e_t\textrm{winter}_t ,\ \alpha_t \sim N(0, \sigma_{\alpha}^2),\ e_t \sim N(0, \sigma_{e}^2)\\ 
+    \end{aligned}
+\end{equation}
+
+As previously, $\mu_t$ denotes the size of the population at time $t$. The variables $summer_t$ and $winter_t$ are indicators of summer period and winter period respectively (i.e., $summer_t$ equals 1 in summer and 0 in winter, and $winter_t$ is the opposite). The summer population at time $t$, $\mu_t$, is calculated by adding a quantity $\beta_{t-1}$ to the population at time $t-1$, $\mu_{t-1}$. Then, the winter population at time $t$ is calculated by adding a quantity $\lambda_t$, representing the difference between the summer and winter population at time $t$, to the summer population of that same time (year) $t$.
+
+(There is something strange here: $\beta_{t-1}$ actually is the difference between the summer population and the previous winter, when a portion of the previous summer migrants was still present (let's call these "wintering" birds). Or are we assuming that wintering birds left? Is it important at all?)
+
+As we can see both $\mu_t$ and $\lambda_t$ change over time and depend on their value at the previous time. This specification correspond to parameters that perform a random walk over time.
+
+### Implementation:
+
+At the moment this state-space model is fitted in `R` with the package `jagsUI` that uses `rjags`. We have written a few functions in `BIRDIE` to make fitting and plotting output from these models easy. The basic workflow to fit this model to a species at a certain site (we use Barberspan as an example) is the following:
+
+```{r, eval=FALSE, echo=TRUE}
+
+# Load data (Barberspan example)
+counts <- BIRDIE::barberspan
+
+# Select a species (ADU code)
+sp <- 83
+
+# Prepare data to fit an SSM
+ssmcounts <- BIRDIE::prepSsmData(counts, species = sp)
+
+# Fit 2-season dynamic trend model
+fit_dyn <- BIRDIE::fitCwacSsm(ssmcounts, mod_file = BIRDIE::writeJagsModelFile(),
+                              param = c("beta", "lambda", "sig.zeta", "sig.w",
+                                        "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+```
+
+We can then create plots and prepare data to export to use in the dashboard by doing:
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# Plot
+pers_theme <- ggplot2::theme_bw()
+p <- BIRDIE::plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE,
+                        plot_options = list(pers_theme = pers_theme,
+                                            colors = c("#71BD5E", "#B590C7")))
+
+plot(p$plot)
+```
+
+There is also a function that allows us to fit a model and produce output for all the species detected at a certain site at once to facilitate automation:
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# Load data (Barberspan example)
+counts <- BIRDIE::barberspan
+
+# Fit all species and save data outputs and plots to "analysis/out_nosync/".
+BIRDIE::loopSsmAllSpp(barberspan, data_outdir = "analysis/out_nosync/",
+                      plot_outdir = "analysis/out_nosync/",
+                      param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps",
+                                "sig.alpha", "sig.e", "mu_t", "mu_wt"),
+                      jags_control = list(ncores = 3))
+```
