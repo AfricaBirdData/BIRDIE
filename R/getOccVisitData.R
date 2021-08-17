@@ -18,14 +18,12 @@
 #' @examples
 getOccVisitData <- function(region_type, region, species, path){
 
-    # Find pentads in the region
-    pentads_sel <- readRDS("analysis/data/pentads_nw.rds")
-
-    # OR
-
     if(region_type == "province"){
         country <- "South Africa"
         province <- region
+    } else if(region_type == "country"){
+        country <- region
+        province = NULL
     }
 
     sf::sf_use_s2(FALSE) # s2 intersection takes very long
