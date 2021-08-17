@@ -49,10 +49,11 @@ addOccVisitCovt <- function(visits, sites, covt, covts_dir, file_fix){
 
         subsites <- .sites[.sites$Name %in% .visits$SiteName,]
 
-        vv <- raster::extract(ry, subsites, fun = mean)
+        vv <- exactextractr::exact_extract(ry, subsites, fun = "mean",
+                                           progress = FALSE)
 
         subsites <- as.data.frame(subsites) %>%
-            dplyr::mutate(!!.covt := vv[,1]) %>%
+            dplyr::mutate(!!.covt := vv) %>%
             dplyr::select(SiteName = Name, dplyr::all_of(.covt))
 
         covt_out <- .visits %>%
