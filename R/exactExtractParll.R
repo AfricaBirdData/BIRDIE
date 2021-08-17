@@ -1,6 +1,6 @@
 #' Fast raster extraction in parallel
 #'
-#' @description This function is a wrapper around exactextractr::exactextract()
+#' @description This function is a wrapper around exactextractr::exact_extract()
 #' to perform extraction of raster values within polygons in parallel. It
 #' divides the data into blocks and performs extraction using one core per block.
 #' @param rst A raster or raster stack/brick

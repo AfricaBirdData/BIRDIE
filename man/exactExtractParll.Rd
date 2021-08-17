@@ -24,7 +24,7 @@ An spatial polygon object with an extract column containing the
 summary of raster values per polygon
 }
 \description{
-This function is a wrapper around exactextractr::exactextract()
+This function is a wrapper around exactextractr::exact_extract()
 to perform extraction of raster values within polygons in parallel. It
 divides the data into blocks and performs extraction using one core per block.
 }
