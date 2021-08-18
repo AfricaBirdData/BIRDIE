@@ -18,9 +18,9 @@
 #' @examples
 exactExtractParll <- function(rst, spt, ncores, fun, ... ){
 
-    if(!"raster" %in% .packages()){
-        stop("Package raster needs to be loaded")
-    }
+    # if(!"raster" %in% .packages()){
+    #     stop("Package raster needs to be loaded")
+    # }
 
     spt$grp <- ceiling(seq_len(nrow(spt)) / (nrow(spt) / ncores))
 
