@@ -25,9 +25,6 @@ addOccSiteCovt <- function(sites, covt, years, covts_dir, file_fix, ncores = 1){
                              grep(paste(years, collapse = "|"),
                                   names(covt_r), value = TRUE))
 
-    # Transform to spatial sites to sp package to avoid problems with furrr
-    sites <- sf::as_Spatial(sites)
-
     print(paste("Extracting variable", covt))
 
     f <- function(.yr, .covt_r=covt_r, .covt=covt, .sites=sites){
@@ -38,18 +35,20 @@ addOccSiteCovt <- function(sites, covt, years, covts_dir, file_fix, ncores = 1){
 
         covt_name <- paste0(.covt, "_", .yr)
 
-        vv <- raster::extract(ry, .sites, fun = mean)
+        vv <- exactextractr::exact_extract(ry, .sites, fun = "mean",
+                                           progress = FALSE)
 
         covt_out <- .sites %>%
             as.data.frame() %>%
-            dplyr::mutate(!!covt_name := vv[,1]) %>%
+            dplyr::mutate(!!covt_name := vv) %>%
             dplyr::select(dplyr::all_of(covt_name))
 
         return(covt_out)
     }
 
     out <- furrr::future_map_dfc(years, ~f(.x),
-                                 .options = furrr::furrr_options(seed = TRUE))
+                                 .options = furrr::furrr_options(seed = TRUE,
+                                                                 packages = c("sf", "raster")))
 
     out <- sites %>%
         sf::st_as_sf() %>%

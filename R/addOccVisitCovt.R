@@ -38,9 +38,6 @@ addOccVisitCovt <- function(visits, sites, covt, covts_dir, file_fix){
     # Need to subset sites for each year month
     visits <- dplyr::nest_by(visits, yearmonth)
 
-    # Transform to spatial sites to sp package to avoid problems with furrr
-    sites <- sf::as_Spatial(sites)
-
     print(paste("Extracting variable", covt))
 
     f <- function(.yr, .visits, .sites=sites, .covt_r=covt_r, .covt=covt){
@@ -65,7 +62,8 @@ addOccVisitCovt <- function(visits, sites, covt, covts_dir, file_fix){
     out <- furrr::future_map2_dfr(visits$yearmonth,
                                   visits$data,
                                   ~f(.yr = .x, .visits = .y),
-                                  .options = furrr::furrr_options(seed = TRUE))
+                                  .options = furrr::furrr_options(seed = TRUE,
+                                                                  packages = c("sf", "raster")))
 
     return(out)
 }
