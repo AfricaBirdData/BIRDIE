@@ -371,6 +371,51 @@ use_test()
 
 test()
 
+# Function prllOccSPATlogit --------------------------------------------------
+
+# Add function
+use_r("prllOccSPATlogit")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+# Function extractParRcppocc --------------------------------------------------
+
+# Add function
+use_r("extractParRcppocc")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
 # Install -----------------------------------------------------------------
 
 devtools::install()
