@@ -41,11 +41,19 @@ getRegionPentads <- function(.country, .province = NULL, .path = NULL){
     # Find pentads that touch the region
     pentads_reg <- sf::st_intersection(pentads, region)
 
-    # Remove pentads with less than 50% of area in the province
+    # Remove pentads with less than 50% of area in the province:
+
+    # Calculate area
     aa <- sf::st_area(pentads_reg) %>%
         as.numeric()
 
-    keep <- pentads_reg[aa > max(aa)/2,] %>%
+    # Some pentads might appear more than once (we are interested in total area)
+    keep <- pentads_reg %>%
+        sf::st_drop_geometry() %>%
+        dplyr::mutate(area = aa) %>%
+        dplyr::group_by(Name) %>%
+        dplyr::summarize(total_area = sum(area)) %>%
+        dplyr::filter(total_area > (max(total_area)/2)) %>%
         dplyr::pull(Name) %>%
         unique()
 
