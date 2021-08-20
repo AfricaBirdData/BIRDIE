@@ -73,6 +73,6 @@ getOccVisitData <- function(region_type, region, species, path){
     pa_dat <- pa_dat %>%
         dplyr::filter(year < 2020)
 
-    return(list(visits = pa_dat, sites = pentads_sel))
+    return(pa_dat)
 
 }
