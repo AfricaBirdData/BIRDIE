@@ -8,6 +8,9 @@
 #' @param region A character string corresponding to the specific region we are
 #' interested in. It can be either a country in Southern Africa, a South African
 #' province or a pentad code.
+#' @param pentads Optional. If supplied, SABAP detection data will be extracted
+#' for these pentads. region and region_type would no longer be needed. 'pentads'
+#' must be an sf object.
 #' @param species The code of the species we are interested in.
 #' @param path A directory where administrative boundaries layer should be
 #' looked for.
@@ -16,7 +19,8 @@
 #' @export
 #'
 #' @examples
-getOccVisitData <- function(region_type, region, species, path){
+getOccVisitData <- function(region_type = NULL, region = NULL, pentads = NULL,
+                            species, path){
 
     if(region_type == "province"){
         country <- "South Africa"
@@ -26,8 +30,15 @@ getOccVisitData <- function(region_type, region, species, path){
         province = NULL
     }
 
-    sf::sf_use_s2(FALSE) # s2 intersection takes very long
-    pentads_sel <- getRegionPentads(.country = country, .province = province, .path = path)
+    if(is.null(pentads)){
+        sf::sf_use_s2(FALSE) # s2 intersection takes very long
+        pentads_sel <- getRegionPentads(.country = country, .province = province, .path = path)
+    } else {
+        if(!"sf" %in% class(pentads)){
+            stop("if supplied, 'pentads' must be an sf object")
+        }
+        pentads_sel <- pentads
+    }
 
     # Add centroid coordinates
     sf::sf_use_s2(TRUE)

@@ -4,7 +4,13 @@
 \alias{getOccVisitData}
 \title{Get detection/non-detection data}
 \usage{
-getOccVisitData(region_type, region, species, path)
+getOccVisitData(
+  region_type = NULL,
+  region = NULL,
+  pentads = NULL,
+  species,
+  path
+)
 }
 \arguments{
 \item{region_type}{The type of region we are interested on.
@@ -13,6 +19,10 @@ Three options: "country", "province" and "pentad".}
 \item{region}{A character string corresponding to the specific region we are
 interested in. It can be either a country in Southern Africa, a South African
 province or a pentad code.}
+
+\item{pentads}{Optional. If supplied, SABAP detection data will be extracted
+for these pentads. region and region_type would no longer be needed. 'pentads'
+must be an sf object.}
 
 \item{species}{The code of the species we are interested in.}
 
