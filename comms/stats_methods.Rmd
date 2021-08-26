@@ -1,5 +1,5 @@
 ---
-title: "Statistical and Technical Methods in BIRDIE"
+title: "Statistical and Technical Methods in BIRDIE (DRAFT)"
 author: "Francisco Cervantes"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
 output: pdf_document
@@ -15,9 +15,11 @@ knitr::opts_chunk$set(echo = FALSE)
 
 This document provides details on the statistical models and used in the data pipeline and their implementation.
 
-# State-space models
+# Abundance and population trends
 
-State-space models are fitted to CWAC data to decouple the underlying process of interest, namely, the population size of waterbird species, from observational artifacts that translate in counting errors. 
+## State-space models
+
+State-space models are fitted to CWAC data to decouple the underlying process of interest, namely, the population size of waterbird species, from observational artifacts that translate into counting errors. 
 
 State-space models are use to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider a process of interest that evolves with time and which we may observe at certain occasions. However, our observations may be distorted by some imperfect observation process. For example, we might be interested in estimating the number of birds present at a certain site, but often field observers will miss some birds. By taking repeated measurements (counts in our example) over time, and assuming that the process of interest should evolve slowly compared to observation error, we may be able to disentangle these two processes.
 
@@ -99,3 +101,45 @@ BIRDIE::loopSsmAllSpp(barberspan, data_outdir = "analysis/out_nosync/",
                                 "sig.alpha", "sig.e", "mu_t", "mu_wt"),
                       jags_control = list(ncores = 3))
 ```
+
+# Species distribution
+
+## Occupancy modelling
+
+Occupancy models are fitted to detection/non-detection data from the Southern Africa Bird Atlas Project (SABAP) to delineate the distribution of waterbird species and its dynamics over time.  Within the SABAP framework observers visit pentads and make a list of the bird species detected during the visit. Detection data is assumed to work perfectly (i.e., there are no identification errors), but non-detections may be caused by either the species not being present in the pentad or by the observers not being able to detect it, although it was present. Therefore, occupancy models describe two processes simultaneously: i) the underlying occupancy of the sites (pentads), and ii) the observation process whereby species present might or might not be observed.
+
+More precisely, we define $z_{it}$ to be the true occupancy of site $i$ in year $t$, which can be 1 (if species present) or 0 (if species absent) and has distribution:
+
+\begin{equation}
+	z_{it}|\psi_{it} \sim \textrm{Bernoulli}(\psi_{it}),
+\end{equation}
+
+where $\psi_{it}$ is the occupancy probability at site $i$ and year $t$. The logit transformation of $\psi_{it}$ can be modelled as a linear combination of covariates and smooth functions of covariates, such that:
+
+\begin{equation}
+	\textrm{logit}(\psi_{it}) = \boldsymbol{x}_{it}^\intercal \boldsymbol{\beta} + \sum_{k=1}^K f_k(u_{ik})\\
+\end{equation}
+
+where $u_{ik}$ is a smooth function of the covariate $u_k$, which is defined as
+
+\begin{equation}
+	f_k(u_{ik}) = \sum_{j=1}^J \textrm{B}_j(u_{ijk})\gamma_{ijk}
+\end{equation}
+
+where the smooth function $f$ is represented by a set of basis functions $\textrm{B}_j$ evaluated at the value of the covariates associated with site $i$ at time $t$. A notable case for the use of such functions is to incorporate temporal and spatial effects.
+
+Then, the probability of detection of a species that is present in site $i$ on visit $j$ is denoted by $p_{ij}$. Following the same logic as for the probability of occupancy, the logit transformation of $p$ is modelled as a linear combination of covariates and smooth functions:
+
+\begin{equation}
+	\textrm{logit}(p_{ij})= \boldsymbol{w}_{ij}^\intercal \boldsymbol{\alpha} + \sum_{h=1}^H f_h(v_{ih})\\,
+\end{equation}
+
+Finally, the likelihood of observation $y_{ij}$ can be written as:
+
+\begin{equation}
+	y_{ij}|z_{it},p_{ij} \sim \textrm{Bernoulli}(z_{it}p_{ij})
+\end{equation}
+
+## Implementation
+
+We use the functionality provided by the `R` package developed by Richard Glennie `occuR`.
