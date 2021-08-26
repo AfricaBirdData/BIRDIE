@@ -13,9 +13,9 @@ rm(list = ls())
 # Define region of interest -----------------------------------------------
 
 region <- raster::getData("GADM", download = TRUE, country = "South Africa",
-                          level = 1, path = "analysis/data") %>%
-    sf::st_as_sf() %>%
-    dplyr::filter(NAME_1 == "North West")
+                          level = 1, path = "analysis/downloads") %>%
+    sf::st_as_sf() #%>%
+    # dplyr::filter(NAME_1 == "North West")
 
 
 # Download climatic data ---------------------------------------------
@@ -31,7 +31,8 @@ for(i in seq_along(vars)){
 
     dat <- dat[[1]]
 
-    fileout <- paste0("analysis/out_nosync/terraClim_", vars[i], "_03_19_nw.rds")
+    # fileout <- paste0("analysis/out_nosync/terraClim_", vars[i], "_03_19_nw.rds")
+    fileout <- paste0("analysis/downloads/terraClim_", vars[i], "_03_19.rds")
     saveRDS(dat, fileout)
 
 }
@@ -55,4 +56,4 @@ ss <- stack(ss)
 plot(ss)
 
 # Save
-writeRaster(ss, "analysis/out_nosync/prcp_03_19_nw_prov.grd", format = "raster")
+writeRaster(ss, "analysis/downloads/prcp_03_19_nw_prov.grd", format = "raster")
