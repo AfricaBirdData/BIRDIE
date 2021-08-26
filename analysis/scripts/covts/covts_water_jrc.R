@@ -6,22 +6,52 @@
 # We can try rgee Google Earth Engine for R to download the time series if we
 # want
 
+library(raster)
+
 rm(list = ls())
 
 # Set URL to download the watersurface occurrence map
-url <- "https://storage.googleapis.com/global-surface-water/downloads2020/occurrence/occurrence_20E_20Sv1_3_2020.tif"
+cc <- list(c(10, 20),
+           c(20, 20),
+           c(30, 20),
+           c(10, 30),
+           c(20, 30),
+           c(30, 30))
 
-# Download
-download.file(url, destfile = "analysis/data/surf_water_20E_20S.tif")
+# url <- "https://storage.googleapis.com/global-surface-water/downloads2020/occurrence/occurrence_20E_20Sv1_3_2020.tif"
+
+for(i in seq_along(cc)){
+
+    url <- paste0("https://storage.googleapis.com/global-surface-water/downloads2020/occurrence/occurrence_", cc[[i]][1], "E_", cc[[i]][2], "Sv1_3_2020.tif")
+
+    # Download
+    download.file(url, destfile = paste0("analysis/downloads/surf_water_", cc[[i]][1], "E_", cc[[i]][2], "S.tif"))
+
+}
 
 # Visualize
-library(raster)
-
-water <- raster("analysis/data/surf_water_20E_20S.tif")
+water <- raster("analysis/downloads/surf_water_20E_20S.tif")
 plot(water)
+
+# Resolution
+res(water)
+
+
+# Merge all water layers --------------------------------------------------
+
+ff <- list.files("analysis/downloads", pattern = "surf_water")
+
+rr <- vector("list", length = length(ff))
+
+for(i in seq_along(ff)){
+    rr[[i]] <- raster(paste0("analysis/downloads/", ff[i]))
+}
+
+r <- do.call(merge, rr)
 
 
 # Subset to North West province -------------------------------------------
+
 library(sf)
 
 pentads_nw <- BIRDIE::getRegionPentads("South Africa", "North West", .path = "analysis/data/")
