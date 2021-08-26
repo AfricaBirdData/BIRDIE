@@ -6,6 +6,9 @@
 # Ignore output files in out_nosync
 analysis/out_nosync/*
 
+# And downloaded files
+analysis/downloads/*
+
 # Ignore compiled models
 analysis/models/*.rds
 
