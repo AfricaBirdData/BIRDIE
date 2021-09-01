@@ -19,7 +19,7 @@
 #' # getRegionPentads(country = "South Africa", province = "North West")
 getRegionPentads <- function(.country, .province = NULL, .path = NULL){
 
-    pentads <- BIRDIE::pentads
+    pentads <- SABAP::pentads_sabap
 
     # Download/load geographic data
     if(is.null(.path)){
