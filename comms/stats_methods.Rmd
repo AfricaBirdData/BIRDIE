@@ -142,4 +142,114 @@ Finally, the likelihood of observation $y_{ij}$ can be written as:
 
 ## Implementation
 
-We use the functionality provided by the `R` package developed by Richard Glennie `occuR`.
+We use the functionality provided by the `R` package developed by Richard Glennie `occuR`. We have also created functions in the `BIRDIE` package to simplify this process and facilitate automation. The basic workflow entails:
+
+- Defining a region and a species of interest we want to estimate occupancy for.
+
+```{r, eval=FALSE, echo=TRUE}
+library(BIRDIE)
+
+# SABAP code for the species of interest
+sp_sel <- 6
+
+# Region of interest
+region <- "South Africa"
+
+```
+
+- Next we need to extract all pentads in the region and annotate them with covariates. Currently we are using climatic covariates provided by the TerraClimate data set and the surface water dataset provided by the European Commission Joint Research Centre.
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# Set up multicore
+future::plan("multisession", workers = 6)
+
+sites <- prepOccSiteData(region = region,
+                         years = 2008:2011,
+                         clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
+                         covts_dir = "analysis/downloads/",
+                         file_fix = c("terraClim_", "_03_19"),
+                         savedir = "analysis/data/pentads_sa.rds")
+
+future::plan("sequential")
+
+```
+
+- Next, we need to prepare occupancy records for the selected pentads. For this, we download data from the SABAP project and annotate this records with covariates.
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# Set up multicore
+future::plan("multisession", workers = 6)
+
+pa_dat <- prepOccVisitData(region = "South Africa",
+                           sites = sites,
+                           species = sp_sel,
+                           years = 2008:2011,
+                           clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
+                           covts_dir = "analysis/downloads/",
+                           file_fix = c("terraClim_", "_03_19"),
+                           savedir = "analysis/data/pentads_sa.rds")
+
+future::plan("sequential")
+
+```
+
+- With these two elements we are ready to fit an occupancy model with `occuR`:
+
+
+```{r, eval=FALSE, echo=TRUE}
+
+# First, we need to give data the correct format
+visits <- pa_dat %>%
+    distinct(Pentad, year) %>%
+    mutate(keep = 1)
+
+sites <- unique(pa_dat$Pentad)
+
+site_data <- sites %>%
+    dplyr::select(-id) %>%
+    sf::st_drop_geometry()  %>%
+    tidyr::pivot_longer(cols = -c(Name, lon, lat, water)) %>%
+    tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
+    pivot_wider(names_from = covt, values_from = value) %>%
+    mutate(year = as.numeric(year)) %>%
+    left_join(visits, by = c("Name" = "Pentad", "year" = "year")) %>%
+    filter(keep == 1) %>%
+    dplyr::select(-keep) %>%
+    arrange(lat, lon) %>%
+    group_by(Name) %>%
+    mutate(site = cur_group_id()) %>%
+    ungroup() %>%
+    group_by(year) %>%
+    mutate(occasion = cur_group_id()) %>%
+    ungroup() %>%
+    data.table::as.data.table()
+
+visit_data <- pa_dat %>%
+    filter(year %in% unique(site_data$year)) %>%
+    ungroup() %>%
+    dplyr::left_join(site_data %>%
+                         dplyr::select(Name, site) %>%
+                         distinct(),
+                     by = c("Pentad" = "Name")) %>%
+    left_join(site_data %>%
+                  dplyr::select(year, occasion) %>%
+                  distinct(),
+              by = "year") %>%
+    group_by(site, occasion) %>%
+    mutate(visit = row_number()) %>%
+    ungroup() %>%
+    data.table::as.data.table()
+
+
+# Smooth for spatial effect on psi
+fit <- fit_occu(list(psi ~ 1 + prcp + log(water+0.1) +
+                         t2(lon, lat, occasion, k = c(25, 3), bs = c("ts", "cs"), d = c(2,1)),
+                     p ~ 1 + log(TotalHours+0.1) + s(month, bs = "cs")),
+                visit_data, site_data)
+
+```
+
