@@ -5,7 +5,7 @@
 #' extracted. The names must correspond to the names contained the covariate
 #' file name (e.g. "prcp", "tmax", etc.). At the moment the function assumes
 #' that covariates are found at: "covts_dir_file_fix[1]covt_file_fix[2].rds"
-#' @param covts_dir Directory where covariate are found.
+#' @param covts_dir Directory where covariate data are found.
 #' @param years A vector of years that we want to extract
 #' @param file_fix A character vector with two elements corresponding to
 #' additional characters that are found before and after covts.
