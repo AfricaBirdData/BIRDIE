@@ -1,7 +1,7 @@
 #' Add occupancy visit covariate
 #'
 #' @param visits A dataframe with detection/non-detection data. It must contain
-#' at least the following columns: "year", "month", "SiteName".
+#' at least the following columns: "year", "month", "Pentad".
 #' @param sites A spatial object with the sites where data was collected.
 #' @param covt A character string with the names of the covariate to be
 #' extracted. The names must correspond to the names contained the covariate
@@ -44,17 +44,17 @@ addOccVisitCovt <- function(visits, sites, covt, covts_dir, file_fix){
 
         ry <- raster::subset(.covt_r, grep(.yr, names(.covt_r)))
 
-        subsites <- .sites[.sites$Name %in% .visits$SiteName,]
+        subsites <- .sites[.sites$Name %in% .visits$Pentad,]
 
         vv <- exactextractr::exact_extract(ry, subsites, fun = "mean",
                                            progress = FALSE)
 
         subsites <- as.data.frame(subsites) %>%
             dplyr::mutate(!!.covt := vv) %>%
-            dplyr::select(SiteName = Name, dplyr::all_of(.covt))
+            dplyr::select(Pentad = Name, dplyr::all_of(.covt))
 
         covt_out <- .visits %>%
-            dplyr::left_join(subsites, by = "SiteName")
+            dplyr::left_join(subsites, by = "Pentad")
 
         return(covt_out)
     }
