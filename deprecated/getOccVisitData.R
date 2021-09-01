@@ -19,40 +19,48 @@
 #' @export
 #'
 #' @examples
-getOccVisitData <- function(region_type = NULL, region = NULL, pentads = NULL,
-                            species, path){
-
-    if(region_type == "province"){
-        country <- "South Africa"
-        province <- region
-    } else if(region_type == "country"){
-        country <- region
-        province = NULL
-    }
+getOccVisitData <- function(region_type = NULL, region = NULL, pentads,
+                            species, path = NULL){
 
     if(is.null(pentads)){
-        sf::sf_use_s2(FALSE) # s2 intersection takes very long
-        pentads_sel <- getRegionPentads(.country = country, .province = province, .path = path)
+        if(region_type == "province"){
+
+            country <- "South Africa"
+            province <- region
+
+        } else if(region_type == "country"){
+
+            country <- region
+            province = NULL
+
+        }
+
     } else {
+
         if(!"sf" %in% class(pentads)){
             stop("if supplied, 'pentads' must be an sf object")
         }
+
+        region_type <- "pentad"
+        region <- unique(pentads$Name)
         pentads_sel <- pentads
+
     }
 
     # Add centroid coordinates
     sf::sf_use_s2(TRUE)
+    cc <- pentads_sel %>%
+        sf::st_centroid() %>%
+        sf::st_coordinates()
+
     pentads_sel <- pentads_sel %>%
-        dplyr::mutate(lon = sf::st_coordinates(sf::st_centroid(.))[,1],
-                      lat = sf::st_coordinates(sf::st_centroid(.))[,2])
+        dplyr::mutate(lon = cc[,1],
+                      lat = cc[,2])
 
     attr(pentads_sel$lon, "names") <- NULL
     attr(pentads_sel$lat, "names") <- NULL
 
-    # Correct potential name problems and get SABAP data
-    # region <- tolower(region)
-    # region <- gsub(" ", "", region)
-
+    # Get SABAP data
     pa_dat <- SABAP::getSabapData(.spp_code = species,
                                   .region_type = region_type,
                                   .region = region)
@@ -81,8 +89,8 @@ getOccVisitData <- function(region_type = NULL, region = NULL, pentads = NULL,
                       SiteName = Pentad, TotalHours, PAdata)
 
     # There are no covariates for 2020 so...
-    pa_dat <- pa_dat %>%
-        dplyr::filter(year < 2020)
+    # pa_dat <- pa_dat %>%
+    #     dplyr::filter(year < 2020)
 
     return(pa_dat)
 

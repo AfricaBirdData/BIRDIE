@@ -8,7 +8,7 @@ addOccVisitCovt(visits, sites, covt, covts_dir, file_fix)
 }
 \arguments{
 \item{visits}{A dataframe with detection/non-detection data. It must contain
-at least the following columns: "year", "month", "SiteName".}
+at least the following columns: "year", "month", "Pentad".}
 
 \item{sites}{A spatial object with the sites where data was collected.}
 

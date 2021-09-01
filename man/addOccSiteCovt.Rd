@@ -16,7 +16,7 @@ that covariates are found at: "covts_dir_file_fix\link{1}covt_file_fix\link{2}.r
 
 \item{years}{A vector of years that we want to extract}
 
-\item{covts_dir}{Directory where covariate are found.}
+\item{covts_dir}{Directory where covariate data are found.}
 
 \item{file_fix}{A character vector with two elements corresponding to
 additional characters that are found before and after covts.}

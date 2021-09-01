@@ -162,15 +162,6 @@ use_test()
 test()
 
 
-# Data pentads_sabap2 -------------------------------------------------------------
-
-# Prepare pentads
-# source("data_prep/barberspan_prep.R")
-
-# Create an ROxygen2 file and document
-document()
-
-
 # Function loopSsmAllSpp --------------------------------------------------
 
 # Add function
@@ -415,6 +406,51 @@ use_test()
 
 test()
 
+
+# Function prepOccSiteData --------------------------------------------------
+
+# Add function
+use_r("prepOccSiteData")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function prepOccVisitData --------------------------------------------------
+
+# Add function
+use_r("prepOccVisitData")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
 
 # Install -----------------------------------------------------------------
 
