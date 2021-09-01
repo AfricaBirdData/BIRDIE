@@ -6,3 +6,4 @@ analysis/*
 data_prep/*
 beta/*
 comms/*
+deprecated/*
