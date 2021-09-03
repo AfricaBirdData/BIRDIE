@@ -452,6 +452,51 @@ use_test()
 
 test()
 
+# Function prepDataOccuR --------------------------------------------------
+
+# Add function
+use_r("prepDataOccuR")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function selOccuRmod --------------------------------------------------
+
+# Add function
+use_r("selOccuRmod")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
 # Install -----------------------------------------------------------------
 
 devtools::install()

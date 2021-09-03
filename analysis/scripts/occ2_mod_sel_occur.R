@@ -1,129 +1,213 @@
 library(occuR)
 library(tidyverse)
+library(BIRDIE)
 
 rm(list = ls())
 
 
-# Select a species and a region -------------------------------------------
+# Load general data -------------------------------------------------------
 
-sp_sel <- 6
+# We want to select species present at Barberspan
+bbpan <- barberspan
 
-
-# Load occupancy data -----------------------------------------------------
+# Sample 10 species
+set.seed(378465)
+spp <- sample(unique(bbpan$spp), 10)
+set.seed(NULL)
 
 # Load site data
 sitedata <- readRDS("analysis/data/site_dat_sa_wcovts.rds")
 
-# Load visit data
-visitdata <- readRDS(paste0("analysis/data/visit_dat_", sp_sel, "_wcovts.rds"))
-
-
-# Format to occuR ---------------------------------------------------------
-
-# Visited sites
-visits <- visitdata %>%
-    distinct(SiteName, year) %>%
-    mutate(keep = 1)
-
-sites <- unique(visitdata$SiteName)
-
-site_data <- sitedata %>%
-    dplyr::select(-id) %>%
-    sf::st_drop_geometry()  %>%
-    tidyr::pivot_longer(cols = -c(Name, lon, lat, water)) %>%
-    tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-    pivot_wider(names_from = covt, values_from = value) %>%
-    mutate(year = as.numeric(year)) %>%
-    left_join(visits, by = c("Name" = "SiteName", "year" = "year")) %>%
-    filter(keep == 1) %>%
-    dplyr::select(-keep) %>%
-    arrange(lat, lon) %>%
-    group_by(Name) %>%
-    mutate(site = cur_group_id()) %>%
-    ungroup() %>%
-    group_by(year) %>%
-    mutate(occasion = cur_group_id()) %>%
-    ungroup() %>%
-    data.table::as.data.table()
-
-visit_data <- visitdata %>%
-    filter(year %in% unique(site_data$year)) %>%
-    rename(obs = PAdata) %>%
-    ungroup() %>%
-    dplyr::left_join(site_data %>%
-                         dplyr::select(Name, site) %>%
-                         distinct(),
-                     by = c("SiteName" = "Name")) %>%
-    left_join(site_data %>%
-                  dplyr::select(year, occasion) %>%
-                  distinct(),
-              by = "year") %>%
-    group_by(site, occasion) %>%
-    mutate(visit = row_number()) %>%
-    ungroup() %>%
-    data.table::as.data.table()
-
-
 
 # Define models -----------------------------------------------------------
 
+# Detection.
+# I wanted to test whether a smooth effect of TotalHours works better than
+# the log of TotalHours. However, we run into fitting problems when TotalHours
+# are very high (> 100 or so).
 visit_covts <- list(mod1 = "1",
                     mod2 = c("1", "log(TotalHours+1)"),
-                    mod3 = c("1", "s(TotalHours, bs = 'cs')"),
-                    mod4 = c("1", "s(TotalHours, bs = 'cs')", "s(month, bs = 'cs')"))
+                    # mod3 = c("1", "s(TotalHours, bs = 'cs')"),
+                    mod3 = c("1", "log(TotalHours+1)", "s(month, bs = 'cs')"))
 
+# Occupancy
 site_covts <- list(mod1 = "1",
                    mod2 = c("1", "log(water+0.1)"),
                    mod3 = c("1", "s(water, bs = 'cs')"),
                    mod4 = c("1", "s(water, bs = 'cs')", "prcp"))
 
+# Create output lists
+aic_site <- vector("list", length = length(site_covts))
+aic_visit <- vector("list", length = length(visit_covts))
 
-# Select visit model ------------------------------------------------------
 
-fits_visit <- vector("list", length = length(visit_covts))
+# Iterate and fit models --------------------------------------------------
 
-for(i in seq_along(visit_covts)){
+for(i in seq_along(spp)){
 
-    fit <- fit_occu(forms = list(reformulate(visit_covts[[i]], response = "p"),
-                                 reformulate(site_covts[[1]], response = "psi")),
-                    visit_data = visit_data,
-                    site_data = site_data)
+    # Prepare visit data
+    sp_sel <- spp[i]
 
-    fits_visit[[i]] <- fit
+    future::plan("multisession", workers = 6)
+
+    visitdata <- prepOccVisitData(region = "South Africa",
+                                  sites = sitedata,
+                                  species = sp_sel,
+                                  years = 2008:2011,
+                                  clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
+                                  covts_dir = "analysis/downloads/",
+                                  file_fix = c("terraClim_", "_03_19"),
+                                  savedir = "analysis/data/pentads_sa.rds")
+
+    future::plan("sequential")
+
+
+    # Format to occuR ---------------------------------------------------------
+
+    occuRdata <- prepDataOccuR(sitedata, visitdata)
+
+
+    # Fit detection models -----------------------------------------------------
+
+    future::plan("multisession", workers = 6)
+
+    aic_visit[[i]] <- furrr::future_map2_dfr(visit_covts, names(visit_covts),
+                                             ~selOccuRmod(forms = list(reformulate(.x, response = "p"),
+                                                                       reformulate(site_covts[[1]], response = "psi")),
+                                                          type = "visit",
+                                                          visit_data = occuRdata$visit,
+                                                          site_data = occuRdata$site,
+                                                          mod_id = paste0("sp_", sp_sel, "_", .y)),
+                                             .options = furrr::furrr_options(packages = "occuR"))
+
+
+    # Select site model ------------------------------------------------------
+
+    aic_site[[i]] <- furrr::future_map2_dfr(site_covts, names(site_covts),
+                                            ~selOccuRmod(forms = list(reformulate(visit_covts[[1]], response = "p"),
+                                                                      reformulate(.x, response = "psi")),
+                                                         type = "site",
+                                                         visit_data = occuRdata$visit,
+                                                         site_data = occuRdata$site,
+                                                         mod_id = paste0("sp_", sp_sel, "_", .y)),
+                                            .options = furrr::furrr_options(packages = "occuR"))
+
+    future::plan("sequential")
 
 }
 
-#do.call("AIC", fits_visit) # kills the session for some reason
 
-aic_visit <- AIC(fits_visit[[1]], fits_visit[[2]], fits_visit[[3]], fits_visit[[4]])
 
-aic_visit <- aic_visit %>%
-    mutate(form = map(visit_covts, ~reformulate(.x)))
+# Create dataframes
+aic_visit <- do.call(rbind, aic_visit)
+aic_site <- do.call(rbind, aic_site)
 
+# Save results
 saveRDS(aic_visit, file = "analysis/output/aic_visit.rds")
-
-
-# Select site model ------------------------------------------------------
-
-fits_site <- vector("list", length = length(site_covts))
-
-for(i in seq_along(site_covts)){
-
-    fit <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
-                                 reformulate(site_covts[[i]], response = "psi")),
-                    visit_data = visit_data,
-                    site_data = site_data)
-
-    fits_site[[i]] <- fit
-
-}
-
-#do.call("AIC", fits) # kills the session for some reason
-
-aic_site <- AIC(fits_site[[1]], fits_site[[2]], fits_site[[3]], fits_site[[4]])
-
-aic_site <- aic_site %>%
-    mutate(form = map(site_covts, ~reformulate(.x)))
-
 saveRDS(aic_site, file = "analysis/output/aic_site.rds")
 
+# Calculate Akaike weights
+aic_visit <- aic_visit %>%
+    group_by(species) %>%
+    mutate(delta_aic = AIC - min(AIC),
+           lik_aic = exp(-0.5*delta_aic),
+           w = round(lik_aic/sum(lik_aic), 3)) %>%
+    ungroup()
+
+aic_site <- aic_site %>%
+    group_by(species) %>%
+    mutate(delta_aic = AIC - min(AIC),
+           lik_aic = exp(-0.5*delta_aic),
+           w = round(lik_aic/sum(lik_aic), 3)) %>%
+    ungroup()
+
+# Check that weights add up to one
+aic_visit %>%
+    group_by(species) %>%
+    summarize(total = sum(w))
+
+
+
+
+# Plot
+aic_site %>%
+    ggplot() +
+    geom_boxplot(aes(x = factor(mod), y = w)) +
+    geom_jitter(aes(x = factor(mod), y = w), col = "red", alpha = 0.5)
+
+aic_visit %>%
+    ggplot() +
+    geom_boxplot(aes(x = factor(mod), y = w)) +
+    geom_jitter(aes(x = factor(mod), y = w), col = "red", alpha = 0.5)
+
+
+
+# Test new models ---------------------------------------------------------
+
+# Load existing AIC scores
+aic_visit <- readRDS(file = "analysis/output/aic_visit.rds")
+aic_site <- readRDS(file = "analysis/output/aic_site.rds")
+
+
+# Iterate and fit models --------------------------------------------------
+
+for(i in seq_along(spp)){
+
+    # Prepare visit data
+    sp_sel <- spp[i]
+
+    future::plan("multisession", workers = 6)
+
+    visitdata <- prepOccVisitData(region = "South Africa",
+                                  sites = sitedata,
+                                  species = sp_sel,
+                                  years = 2008:2011,
+                                  clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
+                                  covts_dir = "analysis/downloads/",
+                                  file_fix = c("terraClim_", "_03_19"),
+                                  savedir = "analysis/data/pentads_sa.rds")
+
+    future::plan("sequential")
+
+
+    # Format to occuR ---------------------------------------------------------
+
+    occuRdata <- prepDataOccuR(sitedata, visitdata)
+
+    # Define new models
+    new_visit_mod <- list(c("1", "log(TotalHours+1)", "s(prcp, bs = 'cs')"))
+    new_site_mod <- list(c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')"))
+
+    # Maximum model index
+    max_visit_idx <- max(as.numeric(gsub("mod", "", unique(aic_visit$mod))))
+    max_site_idx <- max(as.numeric(gsub("mod", "", unique(aic_site$mod))))
+
+    # Name new models
+    names(new_visit_mod) <- paste0("mod", max_visit_idx+1)
+    names(new_site_mod) <- paste0("mod", max_site_idx+1)
+
+    # Fit new visit model
+    fit <- fit_occu(forms = list(reformulate(new_visit_mod[[1]], response = "p"),
+                                 reformulate("1", response = "psi")),
+                    visit_data = occuRdata$visit,
+                    site_data = occuRdata$site)
+
+    new_aic_visit <- aics %>%
+        mutate(form = map(visit_covts, ~reformulate(.x)),
+               species = sp_sel,
+               mod = names(visit_covts))
+
+    # Fit new site model
+    fit <- fit_occu(forms = list(reformulate("1", response = "p"),
+                             reformulate(new_site_mod[[1]], response = "psi")),
+                    visit_data = occuRdata$visit,
+                    site_data = occuRdata$site)
+
+    new_aic_site <- data.frame(df = dof.occuR(fit, each = FALSE),
+                               form = new_site_mod[[1]],
+                               AIC = AIC(fit),
+                               species = sp_sel[i],
+                               mod = names(new_site_mod),
+                               delta_aic = NA,
+                               lik_aic = NA,
+                               w = NA)
