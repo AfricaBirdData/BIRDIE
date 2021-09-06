@@ -67,7 +67,7 @@ for(i in seq_along(spp)){
     occuRdata <- prepDataOccuR(sitedata, visitdata)
 
 
-    # Fit detection models -----------------------------------------------------
+    # Select visit model -----------------------------------------------------
 
     future::plan("multisession", workers = 6)
 
@@ -108,6 +108,8 @@ saveRDS(aic_site, file = "analysis/output/aic_site.rds")
 
 # Calculate Akaike weights
 aic_visit <- aic_visit %>%
+    mutate(species = gsub("sp_|_mod.*", "", mod),
+           mod = gsub("sp_.*_", "", mod)) %>%
     group_by(species) %>%
     mutate(delta_aic = AIC - min(AIC),
            lik_aic = exp(-0.5*delta_aic),
@@ -115,6 +117,8 @@ aic_visit <- aic_visit %>%
     ungroup()
 
 aic_site <- aic_site %>%
+    mutate(species = gsub("sp_|_mod.*", "", mod),
+           mod = gsub("sp_.*_", "", mod)) %>%
     group_by(species) %>%
     mutate(delta_aic = AIC - min(AIC),
            lik_aic = exp(-0.5*delta_aic),
@@ -125,8 +129,6 @@ aic_site <- aic_site %>%
 aic_visit %>%
     group_by(species) %>%
     summarize(total = sum(w))
-
-
 
 
 # Plot
@@ -142,7 +144,7 @@ aic_visit %>%
 
 
 
-# Test new models ---------------------------------------------------------
+# TEST NEW MODELS ---------------------------------------------------------
 
 # Load existing AIC scores
 aic_visit <- readRDS(file = "analysis/output/aic_visit.rds")
@@ -151,7 +153,12 @@ aic_site <- readRDS(file = "analysis/output/aic_site.rds")
 
 # Iterate and fit models --------------------------------------------------
 
+# Define new models (REMEMBER TO CHANGE MODEL NAME IN THE LIST)
+new_visit_mod <- list(mod4 = c("1", "log(TotalHours+1)", "s(aet, bs = 'cs')"))
+# new_site_mod <- list(mod8 = c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(aet/pet, bs = 'cs')"))
+
 for(i in seq_along(spp)){
+# for(i in 7:length(spp)){
 
     # Prepare visit data
     sp_sel <- spp[i]
@@ -174,40 +181,67 @@ for(i in seq_along(spp)){
 
     occuRdata <- prepDataOccuR(sitedata, visitdata)
 
-    # Define new models
-    new_visit_mod <- list(c("1", "log(TotalHours+1)", "s(prcp, bs = 'cs')"))
-    new_site_mod <- list(c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')"))
-
-    # Maximum model index
-    max_visit_idx <- max(as.numeric(gsub("mod", "", unique(aic_visit$mod))))
-    max_site_idx <- max(as.numeric(gsub("mod", "", unique(aic_site$mod))))
-
-    # Name new models
-    names(new_visit_mod) <- paste0("mod", max_visit_idx+1)
-    names(new_site_mod) <- paste0("mod", max_site_idx+1)
-
     # Fit new visit model
-    fit <- fit_occu(forms = list(reformulate(new_visit_mod[[1]], response = "p"),
-                                 reformulate("1", response = "psi")),
-                    visit_data = occuRdata$visit,
-                    site_data = occuRdata$site)
+    new_aic_visit <- selOccuRmod(forms = list(reformulate(new_visit_mod[[1]], response = "p"),
+                                              reformulate("1", response = "psi")),
+                                 type = "visit",
+                                 visit_data = occuRdata$visit,
+                                 site_data = occuRdata$site,
+                                 mod_id = paste0("sp_", sp_sel, "_", names(new_visit_mod)))
 
-    new_aic_visit <- aics %>%
-        mutate(form = map(visit_covts, ~reformulate(.x)),
-               species = sp_sel,
-               mod = names(visit_covts))
+    aic_visit <- rbind(aic_visit,
+                       new_aic_visit)
 
     # Fit new site model
-    fit <- fit_occu(forms = list(reformulate("1", response = "p"),
-                             reformulate(new_site_mod[[1]], response = "psi")),
-                    visit_data = occuRdata$visit,
-                    site_data = occuRdata$site)
+    # new_aic_site <- selOccuRmod(forms = list(reformulate("1", response = "p"),
+    #                                          reformulate(new_site_mod[[1]], response = "psi")),
+    #                             type = "site",
+    #                             visit_data = occuRdata$visit,
+    #                             site_data = occuRdata$site,
+    #                             mod_id = paste0("sp_", sp_sel, "_", names(new_site_mod)))
+    #
+    #
+    # aic_site <- rbind(aic_site,
+    #                   new_aic_site)
 
-    new_aic_site <- data.frame(df = dof.occuR(fit, each = FALSE),
-                               form = new_site_mod[[1]],
-                               AIC = AIC(fit),
-                               species = sp_sel[i],
-                               mod = names(new_site_mod),
-                               delta_aic = NA,
-                               lik_aic = NA,
-                               w = NA)
+}
+
+# Save results
+saveRDS(aic_visit, file = "analysis/output/aic_visit.rds")
+saveRDS(aic_site, file = "analysis/output/aic_site.rds")
+
+# Calculate Akaike weights
+aic_visit <- aic_visit %>%
+    mutate(species = gsub("sp_|_mod.*", "", mod),
+           mod = gsub("sp_.*_", "", mod)) %>%
+    group_by(species) %>%
+    mutate(delta_aic = AIC - min(AIC),
+           lik_aic = exp(-0.5*delta_aic),
+           w = round(lik_aic/sum(lik_aic), 3)) %>%
+    ungroup()
+
+aic_site <- aic_site %>%
+    mutate(species = gsub("sp_|_mod.*", "", mod),
+           mod = gsub("sp_.*_", "", mod)) %>%
+    group_by(species) %>%
+    mutate(delta_aic = AIC - min(AIC),
+           lik_aic = exp(-0.5*delta_aic),
+           w = round(lik_aic/sum(lik_aic), 3)) %>%
+    ungroup()
+
+# Check that weights add up to one
+aic_visit %>%
+    group_by(species) %>%
+    summarize(total = sum(w))
+
+
+# Plot
+aic_site %>%
+    ggplot() +
+    geom_boxplot(aes(x = factor(mod), y = w)) +
+    geom_jitter(aes(x = factor(mod), y = w), col = "red", alpha = 0.5)
+
+aic_visit %>%
+    ggplot() +
+    geom_boxplot(aes(x = factor(mod), y = w)) +
+    geom_jitter(aes(x = factor(mod), y = w), col = "red", alpha = 0.5)
