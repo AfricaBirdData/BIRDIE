@@ -47,6 +47,7 @@ prepDataOccuR <- function(site_data, visit_data){
         dplyr::group_by(site, occasion) %>%
         dplyr::mutate(visit = row_number()) %>%
         dplyr::ungroup() %>%
+        dplyr::select(-c(id, CardNo, StartDate, EndDate, month_p)) %>%
         data.table::as.data.table()
 
     return(list(site = sitedata, visit = visitdata))
