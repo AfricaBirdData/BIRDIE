@@ -13,7 +13,7 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a species and a region -------------------------------------------
 
-i <- 2
+i <- 1
 
 sp_sel <- bbpan[i]
 
@@ -61,6 +61,10 @@ sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tmax - tmin, b
 # Define visit model
 visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
+# Scale variables
+# visitvars <- visitvars %>%
+#     mutate(across(.col = -c(lon, lat, year, month, Pentad, obs, site, occasion, visit), .fns = ~scale(.x)))
+
 # Smooth for spatial effect on psi
 fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
                              reformulate(sitemod, response = "psi")),
@@ -70,7 +74,8 @@ fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
 saveRDS(fit, paste0("analysis/output/", sp_sel, "_occur_fit.rds"))
 
 
-# Explore model -----------------------------------------------------------
+
+# Predict occupancy -------------------------------------------------------
 
 fit <- readRDS(paste0("analysis/output/", sp_sel, "_occur_fit.rds"))
 
@@ -94,16 +99,49 @@ pred_data <- sitedata %>%
 
 pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 1000)
 
-pred_data %>%
+
+# Estimate realized occupancy ---------------------------------------------
+
+# Calculate probability of non-detections for each pentad visited
+p_nondet <- occuRdata$visit %>%
+    mutate(p = pred$p) %>%
+    group_by(Pentad, site, occasion) %>%
+    summarize(pp = prod(1-p),
+              obs = max(obs))
+
+# From probability of non-detection calculate the conditional occupancy probs
+# and plot
+pred_occu <- pred_data %>%
     as.data.frame() %>%
     left_join(gm, by = "Name") %>%
     sf::st_sf() %>%
     mutate(psi = pred$psi) %>%
+    left_join(p_nondet, by = c("Name" = "Pentad", "occasion")) %>%
+    mutate(real_occu = case_when(obs == 1 ~ 1,
+                                 is.na(obs) ~ psi,
+                                 obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
+    dplyr::select(Name, year, psi, real_occu)
+
+
+# Explore model -----------------------------------------------------------
+
+# Occupancy probabilities
+pred_occu %>%
     ggplot() +
     geom_sf(aes(fill = psi), size = 0.01) +
     scale_fill_viridis_c() +
     ggtitle(sp_name) +
     facet_wrap("year")
+
+# Realized occupancy
+pred_occu %>%
+    ggplot() +
+    geom_sf(aes(fill = real_occu), size = 0.01) +
+    scale_fill_viridis_c() +
+    ggtitle(sp_name) +
+    facet_wrap("year")
+
+# ggsave(filename = "analysis/out_nosync/occu_6_08_11.png")
 
 sitedata %>%
     ggplot() +
@@ -131,33 +169,6 @@ gm %>%
     ggplot() +
     geom_sf(aes(fill = factor(det)), size = 0.01) +
     scale_fill_viridis_d(option = "E") +
-    facet_wrap("year")
-
-
-# Estimate realized occupancy ---------------------------------------------
-
-# Calculate probability of non-detections for each pentad visited
-p_nondet <- occuRdata$visit %>%
-    mutate(p = pred$p) %>%
-    group_by(Pentad, site, occasion) %>%
-    summarize(pp = prod(1-p),
-              obs = max(obs))
-
-# From probability of non-detection calculate the conditional occupancy probs
-# and plot
-pred_data %>%
-    as.data.frame() %>%
-    left_join(gm, by = "Name") %>%
-    sf::st_sf() %>%
-    mutate(psi = pred$psi) %>%
-    left_join(p_nondet, by = c("Name" = "Pentad")) %>%
-    mutate(real_occu = case_when(obs == 1 ~ 1,
-                                 is.na(obs) ~ psi,
-                                 obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
-    ggplot() +
-    geom_sf(aes(fill = real_occu), size = 0.01) +
-    scale_fill_viridis_c() +
-    ggtitle(sp_name) +
     facet_wrap("year")
 
 
