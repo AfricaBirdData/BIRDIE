@@ -12,7 +12,7 @@ sites <- readRDS("analysis/data/pentads_sa.rds")
 
 sites <- prepOccSiteData(#region = "South Africa",
                          sites = sites,
-                         years = 2008:2011,
+                         years = 2016:2019,
                          clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
                          covts_dir = "analysis/downloads/",
                          file_fix = c("terraClim_", "_03_19"),
@@ -20,4 +20,4 @@ sites <- prepOccSiteData(#region = "South Africa",
 
 future::plan("sequential")
 
-saveRDS(sites, "analysis/data/site_dat_sa_wcovts.rds")
+saveRDS(sites, "analysis/data/site_dat_sa_wcovts_16_19.rds")

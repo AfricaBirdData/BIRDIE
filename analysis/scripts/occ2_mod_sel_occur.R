@@ -210,6 +210,9 @@ for(i in seq_along(spp)){
 saveRDS(aic_visit, file = "analysis/output/aic_visit.rds")
 saveRDS(aic_site, file = "analysis/output/aic_site.rds")
 
+aic_visit <- readRDS("analysis/output/aic_visit.rds")
+aic_site <- readRDS("analysis/output/aic_site.rds")
+
 # Calculate Akaike weights
 aic_visit <- aic_visit %>%
     mutate(species = gsub("sp_|_mod.*", "", mod),
@@ -245,3 +248,4 @@ aic_visit %>%
     ggplot() +
     geom_boxplot(aes(x = factor(mod), y = w)) +
     geom_jitter(aes(x = factor(mod), y = w), col = "red", alpha = 0.5)
+
