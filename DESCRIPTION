@@ -29,6 +29,7 @@ Imports:
     mgcv,
     raster,
     rgeos,
+    SABAP,
     sf,
     stocc,
     tidyr,
