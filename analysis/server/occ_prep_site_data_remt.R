@@ -4,9 +4,10 @@
 
 library(BIRDIE)
 
-birdie_dir <- "/home/birdie/analysis/"
-
 rm(list = ls())
+
+
+birdie_dir <- "/home/birdie/analysis/"
 
 future::plan("multisession", workers = 6)
 
