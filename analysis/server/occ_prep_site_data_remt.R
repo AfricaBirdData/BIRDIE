@@ -10,7 +10,7 @@ rm(list = ls())
 
 future::plan("multisession", workers = 6)
 
-sites <- readRDS("analysis/data/pentads_sa.rds")
+sites <- readRDS(paste0(birdie_dir, "analysis/data/pentads_sa.rds"))
 
 sites <- prepOccSiteData(#region = "South Africa",
                          sites = sites,
