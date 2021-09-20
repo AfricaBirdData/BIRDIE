@@ -23,4 +23,4 @@ sites <- prepOccSiteData(#region = "South Africa",
 
 future::plan("sequential")
 
-saveRDS(sites, paste0(birdie_dir, "data/site_dat_sa_wcovts_16_19.rds"))
+saveRDS(sites, paste0(birdie_dir, "data/site_dat_sa_wcovts_08_19.rds"))
