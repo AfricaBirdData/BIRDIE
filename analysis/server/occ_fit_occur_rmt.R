@@ -54,17 +54,7 @@ for(i in seq_along(bbpan)){
 
     future::plan("sequential")
 
-
     saveRDS(visitdata, paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
-
-
-    # Load occupancy data -----------------------------------------------------
-
-    # Load site data
-    sitedata <- readRDS(paste0(birdie_dir,"data/site_dat_sa_wcovts_", years_ch, ".rds"))
-
-    # Load visit data
-    visitdata <- readRDS(paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
 
 
     # Format to occuR ---------------------------------------------------------
