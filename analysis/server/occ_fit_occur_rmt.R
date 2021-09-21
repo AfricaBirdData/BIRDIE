@@ -13,11 +13,17 @@ bbpan <- BIRDIE::barberspan %>%
     pull(spp) %>%
     unique()
 
+# Select a range of time. Occupancy models will be fitted from first to second
+years <- c(2008, 2008 + 7)
+
+
 for(i in seq_along(bbpan)){
 
     # Select a species and a region -------------------------------------------
 
     sp_sel <- bbpan[i]
+
+    print(paste0("Working on species ", sp_sel, "(", i, " of ", length(bbpan), ")"))
 
     sp_name <- BIRDIE::barberspan %>%
         dplyr::filter(spp == sp_sel) %>%
@@ -69,8 +75,7 @@ for(i in seq_along(bbpan)){
 
     # Define site model
     sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tmax - tmin, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))")
-    # The original objective was 25 knots for the spatial effect (although I ran into memory issues)
+                 "t2(lon, lat, occasion, k = c(25, 5), bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
@@ -79,11 +84,14 @@ for(i in seq_along(bbpan)){
     # visitvars <- visitvars %>%
     #     mutate(across(.col = -c(lon, lat, year, month, Pentad, obs, site, occasion, visit), .fns = ~scale(.x)))
 
+    print("Fitting model. This will take a while...")
+
     # Smooth for spatial effect on psi
     fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
                                  reformulate(sitemod, response = "psi")),
                     visit_data = occuRdata$visit,
-                    site_data = occuRdata$site)
+                    site_data = occuRdata$site,
+                    print = FALSE)
 
     saveRDS(fit, paste0("/drv_birdie/birdie_FTP/", sp_sel, "/", sp_sel, "_occur_fit_08_16.rds"))
 
