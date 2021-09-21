@@ -36,7 +36,7 @@ for(i in seq_along(bbpan)){
     # Load occupancy site data -------------------------------------------------
 
     # Load site data
-    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_", years_ch, ".rds"))
+    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_08_19.rds"))
 
 
     # Prepare occupancy visit data --------------------------------------------
