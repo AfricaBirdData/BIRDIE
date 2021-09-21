@@ -14,8 +14,9 @@ bbpan <- BIRDIE::barberspan %>%
     unique()
 
 # Select a range of time. Occupancy models will be fitted from first to second
-years <- c(2008, 2008 + 7)
-
+ini_year <- 2008
+years <- c(ini_year, ini_year + 7)
+years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
 for(i in seq_along(bbpan)){
 
@@ -23,7 +24,7 @@ for(i in seq_along(bbpan)){
 
     sp_sel <- bbpan[i]
 
-    print(paste0("Working on species ", sp_sel, "(", i, " of ", length(bbpan), ")"))
+    print(paste0("Working on species ", sp_sel, " (", i, " of ", length(bbpan), ")"))
 
     sp_name <- BIRDIE::barberspan %>%
         dplyr::filter(spp == sp_sel) %>%
@@ -35,7 +36,7 @@ for(i in seq_along(bbpan)){
     # Load occupancy site data -------------------------------------------------
 
     # Load site data
-    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_08_19.rds"))
+    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_", years_ch, ".rds"))
 
 
     # Prepare occupancy visit data --------------------------------------------
@@ -45,7 +46,7 @@ for(i in seq_along(bbpan)){
     visitdata <- prepOccVisitData(region = "South Africa",
                                   sites = sitedata,
                                   species = sp_sel,
-                                  years = 2008:2016,
+                                  years = years[1]:years[2],
                                   clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
                                   covts_dir = paste0(birdie_dir, "downloads/"),
                                   file_fix = c("terraClim_", "_03_19"),
@@ -54,16 +55,16 @@ for(i in seq_along(bbpan)){
     future::plan("sequential")
 
 
-    saveRDS(visitdata, paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_08_16.rds"))
+    saveRDS(visitdata, paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
 
 
     # Load occupancy data -----------------------------------------------------
 
     # Load site data
-    sitedata <- readRDS(paste0(birdie_dir,"data/site_dat_sa_wcovts_08_19.rds"))
+    sitedata <- readRDS(paste0(birdie_dir,"data/site_dat_sa_wcovts_", years_ch, ".rds"))
 
     # Load visit data
-    visitdata <- readRDS(paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_08_16.rds"))
+    visitdata <- readRDS(paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
 
 
     # Format to occuR ---------------------------------------------------------
@@ -93,6 +94,6 @@ for(i in seq_along(bbpan)){
                     site_data = occuRdata$site,
                     print = FALSE)
 
-    saveRDS(fit, paste0("/drv_birdie/birdie_FTP/", sp_sel, "/", sp_sel, "_occur_fit_08_16.rds"))
+    saveRDS(fit, paste0("/drv_birdie/birdie_FTP/", sp_sel, "/", sp_sel, "_occur_fit_", years_ch, ".rds"))
 
 }
