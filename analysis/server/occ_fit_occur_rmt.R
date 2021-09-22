@@ -66,7 +66,7 @@ for(i in seq_along(bbpan)){
 
     # Define site model
     sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tmax - tmin, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(25, 5), bs = c('ts', 'cs'), d = c(2, 1))")
+                 "t2(lon, lat, occasion, bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
@@ -75,7 +75,7 @@ for(i in seq_along(bbpan)){
     # visitvars <- visitvars %>%
     #     mutate(across(.col = -c(lon, lat, year, month, Pentad, obs, site, occasion, visit), .fns = ~scale(.x)))
 
-    print("Fitting model. This will take a while...")
+    print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
     # Smooth for spatial effect on psi
     fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
