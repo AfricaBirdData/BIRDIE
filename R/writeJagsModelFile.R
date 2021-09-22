@@ -1,6 +1,8 @@
 #' Write a JAGS model to a temporary text file
 #'
-#' @return This function dumps the model below to a temporary file that calls to rjags can use. It is meant to be a default model that is installed with the package.
+#' @return This function dumps the model below to a temporary file that calls
+#' to rjags can use. It is meant to be a default model that is installed with
+#' the package.
 #' @export
 #'
 #' @examples

@@ -11,7 +11,7 @@ library(BIRDIE)
 counts <- barberspan
 
 # Select a species (ADU code)
-sp <- 83
+sp <- 6
 
 # Prepare data to fit an SSM
 ssmcounts <- BIRDIE::prepSsmData(counts, species = sp)
@@ -23,7 +23,7 @@ fit_dyn <- BIRDIE::fitCwacSsm(ssmcounts, mod_file = BIRDIE::writeJagsModelFile()
 
 # Plot
 pers_theme <- ggplot2::theme_bw()
-p <- BIRDIE::plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, dyn = TRUE,
+p <- BIRDIE::plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, linear = FALSE,
                         plot_options = list(pers_theme = pers_theme,
                                             colors = c("#71BD5E", "#B590C7")))
 
