@@ -7,7 +7,7 @@
 plotSsm2ss(
   fit,
   ssm_counts,
-  dyn = FALSE,
+  linear = TRUE,
   plot_options = list(colors = NULL, pers_theme = NULL)
 )
 }
@@ -17,7 +17,8 @@ plotSsm2ss(
 \item{ssm_counts}{A data frame with the count data use to fit the
 state-space model}
 
-\item{dyn}{Whether the fitted long-term trend is fixed or dynamic (NOT USED AT PRESENT).}
+\item{linear}{If TRUE (default) abundance estimates and data are
+transformed back to its orginal scale.}
 
 \item{plot_options}{A list with two elements: colors - the colours of the
 points that will appear in the plot (two values), and pers_theme  - A
@@ -35,5 +36,5 @@ Plot state series of a CWAC state-space model with two seasons
 counts <- barberspan
 ssmcounts <- prepSsmData(counts, species = NULL)
 fit <- fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
-plotSsm2ss(fit = fit, ssm_counts = ssmcounts, dyn = TRUE)
+plotSsm2ss(fit = fit, ssm_counts = ssmcounts)
 }

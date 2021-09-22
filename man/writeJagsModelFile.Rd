@@ -7,7 +7,9 @@
 writeJagsModelFile()
 }
 \value{
-This function dumps the model below to a temporary file that calls to rjags can use. It is meant to be a default model that is installed with the package.
+This function dumps the model below to a temporary file that calls
+to rjags can use. It is meant to be a default model that is installed with
+the package.
 }
 \description{
 Write a JAGS model to a temporary text file
