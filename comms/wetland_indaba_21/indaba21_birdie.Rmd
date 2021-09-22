@@ -1,0 +1,141 @@
+---
+title: "South African Biodiversity Data Pipeline for Wetlands and Waterbirds"
+author: "Francisco Cervantes et al."
+institute: "SEEC, SANBI"
+date: "`r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+background-image:url(kingfisher.png)
+background-size:contain
+background-position:right
+
+# Introduction
+
+- Wetlands are heavily impacted by human activities
+
+- They need effective and efficient monitoring
+
+- Data missing for many taxonomic groups
+
+- Birds are often used as indicators for other species
+
+- Even bird data is scattered and needs processing
+
+.footnote[
+Photo by <a href="https://unsplash.com/@lebalu?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Leon Pauleikhoff</a> on <a href="https://unsplash.com/s/photos/wetlands-and-south-africa?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText">Unsplash</a>
+]
+
+---
+
+background-image:url(birdie_str.jpg)
+background-size:80%
+
+# What is BIRDIE?
+
+
+---
+
+# What is BIRDIE for?
+
+Our objective is to support decision makers:
+
+- International agreements, such as RAMSAR, require:
+
+  - Wetlands with more than 1% of the population of a species
+  - Wetlands that host more than 20,000 birds regularly
+  
+  
+- National programmes, such as National Biodiversity Assessments:
+
+  - Species area of occupancy
+  - Population rate of change
+  
+---
+background-image:url(cwac_logo.png), url(SABAP2_logo.png), url(GoogleEarthEngine_Grey_108.png)
+background-position:top 100px right 30px, top 300px right 50px, bottom 100px right 30px
+background-size:25%, 15%, 35%
+
+# Data inputs
+
+- Coordinated Waterbird Counts
+  - Count data
+  - Species abundance
+  - State-space models
+
+--
+
+- Southern African Bird Atlas Project
+  - Detection/non-detection data
+  - Species distribution
+  - Occupancy models
+
+--
+
+- Ancillary data
+  - Environmental data
+  - Modelling
+  - Exploration
+
+---
+
+# Statistical routines
+
+- State-space models
+  - Abundance and population dynamics
+  - CWAC data
+
+- Occupancy models
+  - Distribution and diversity
+  - SABAP data
+  
+---
+background-image:url(ssm_diagram.png)
+background-size:80%
+
+# State-space models
+
+
+---
+background-image:url(ssm_barshep.png)
+background-size:80%
+
+# State-space models
+
+---
+background-image:url(spp_83.png)
+background-size:60%
+background-position:bottom 20px center
+
+# State-space models
+
+
+---
+background-image:url(guru2017.png)
+background-size:75%
+background-position:bottom 60px right 40px
+
+# Occupancy models
+
+
+---
+background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png)
+background-position:left, center, right
+background-size:35%, 35%, 35%
+
+# Occupancy models
+
+---
+
+# Conclusion
+
+---
+
+# Acknowledgements
+
