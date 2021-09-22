@@ -82,7 +82,7 @@ for(i in seq_along(bbpan)){
                                  reformulate(sitemod, response = "psi")),
                     visit_data = occuRdata$visit,
                     site_data = occuRdata$site,
-                    print = FALSE)
+                    print = TRUE)
 
     saveRDS(fit, paste0("/drv_birdie/birdie_FTP/", sp_sel, "/", sp_sel, "_occur_fit_", years_ch, ".rds"))
 
