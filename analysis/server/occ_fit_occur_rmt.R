@@ -75,7 +75,7 @@ i = 1
     # Scale variables
     occuRdata$visit <- occuRdata$visit %>%
         mutate(tdiff = tmax - tmin,
-               across(.col = prcp, tdiff, .fns = ~scale(.x)))
+               across(.col = c(prcp, tdiff), .fns = ~scale(.x)))
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
