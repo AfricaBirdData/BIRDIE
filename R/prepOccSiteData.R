@@ -41,7 +41,7 @@ prepOccSiteData <- function(region = NULL, sites = NULL, years, clim_covts,
 
         sf::sf_use_s2(FALSE) # s2 intersection takes very long
 
-        sites <- getRegionPentads(.country = region, .path = downld_path)
+        sites <- SABAP::getRegionPentads(.country = region, .path = downld_path)
 
         if(!is.null(savedir)){
 
