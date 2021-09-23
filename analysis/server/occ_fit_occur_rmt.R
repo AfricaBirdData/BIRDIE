@@ -73,7 +73,7 @@ i = 1
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
     # Scale variables
-    occuRdata$visit <- occuRdata$visit %>%
+    occuRdata$site <- occuRdata$site %>%
         mutate(tdiff = tmax - tmin,
                across(.col = c(prcp, tdiff), .fns = ~scale(.x)))
 
