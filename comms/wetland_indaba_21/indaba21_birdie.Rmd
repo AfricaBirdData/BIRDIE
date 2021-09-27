@@ -87,21 +87,21 @@ Our objective is to support decision makers, **for example**:
 
 --
 
-- International agreements, such as RAMSAR, require:
+- **International** agreements, such as RAMSAR, require:
 
   - Wetlands with more than 1% of the population of a species
   - Wetlands that host more than 20,000 birds regularly
   
 --
 
-- National programmes, such as National Biodiversity Assessments:
+- **National** programmes, such as National Biodiversity Assessments:
 
   - Species area of occupancy
   - Population rate of change
   
 --
 
-- Site-specific programmes
+- **Site-specific** programmes
 
 --
 
@@ -114,7 +114,7 @@ background-size:25%, 15%, 35%
 
 # Data inputs
 
-- Coordinated Waterbird Counts
+- **Coordinated Waterbird Counts**
 
   - Count data
   - Species abundance
@@ -123,7 +123,7 @@ background-size:25%, 15%, 35%
 
 --
 
-- Southern African Bird Atlas Project
+- **Southern African Bird Atlas Project**
   - Detection/non-detection data
   - Species distribution
   - Species richness
@@ -131,7 +131,7 @@ background-size:25%, 15%, 35%
 
 --
 
-- Ancillary data
+- **Ancillary data**
   - Environmental data
   - Modelling
   - Exploration
@@ -149,6 +149,9 @@ background-size:80%
 
 # State-space models for CWAC
 
+.footnote[
+Barshep et al. 2017. Global Ecology and Conservation, 12
+]
 ---
 background-image:url(spp_83.png)
 background-size:60%
@@ -163,6 +166,10 @@ background-position:bottom 90px right 90px
 
 # Occupancy models for SABAP
 
+.footnote[
+Guillera-Arroita, 2017. Ecography, 40
+]
+
 ---
 background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png)
 background-position:left, center, right
@@ -174,17 +181,17 @@ background-size:35%, 35%, 35%
 
 # Way forward
 
-- Definition of efficient indicators
+- Definition of efficient **indicators**
 
-- Effective communication of uncertainty
+- Effective communication of **uncertainty**
 
-- Expansion to other areas and taxons
+- Expansion to other **areas** and **taxons**
 
-- Integration with other biodiversity portals
+- Integration with other **biodiversity portals**
 
-- Integration with other monitoring programmes
+- Integration with other **monitoring programmes**
 
-- **Continuous engagement with stakeholders**
+- Continuous engagement with **users**
 
 ---
 
