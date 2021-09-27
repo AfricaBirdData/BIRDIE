@@ -67,7 +67,7 @@ for(i in seq_along(bbpan)){
 
     # Define site model
     sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(18, 5) bs = c('ts', 'cs'), d = c(2, 1))")
+                 "t2(lon, lat, occasion, k = c(18, 5), bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
