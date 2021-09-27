@@ -2,6 +2,7 @@
 
 library(occuR)
 library(dplyr)
+library(tidyr)
 library(BIRDIE)
 
 rm(list = ls())
@@ -18,8 +19,7 @@ ini_year <- 2008
 years <- c(ini_year, ini_year + 5)
 years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
-# for(i in seq_along(bbpan)){
-i = 1
+for(i in seq_along(bbpan)){
 
     # Select a species and a region -------------------------------------------
 
@@ -67,7 +67,7 @@ i = 1
 
     # Define site model
     sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
-                 "t2(lon, lat, occasion, bs = c('ts', 'cs'), d = c(2, 1))")
+                 "t2(lon, lat, occasion, k = c(18, 5) bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
@@ -86,6 +86,54 @@ i = 1
                     site_data = occuRdata$site,
                     print = TRUE)
 
-    saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/", sp_sel, "_occur_fit_", years_ch, ".rds"))
+    saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
 
-# }
+    # Predict occupancy -------------------------------------------------------
+
+    # Prepare data to predict psi and p
+    gm <- sitedata %>%
+        dplyr::select(Name)
+
+    pred_data <- sitedata %>%
+        sf::st_drop_geometry()  %>%
+        group_by(Name) %>%
+        mutate(site = cur_group_id()) %>%
+        ungroup() %>%
+        pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
+        tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
+        pivot_wider(names_from = covt, values_from = value) %>%
+        mutate(year = as.numeric(year)) %>%
+        group_by(year) %>%
+        mutate(occasion = cur_group_id()) %>%
+        ungroup() %>%
+        data.table::as.data.table()
+
+    # Predict
+    pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 0)
+
+
+    # Estimate realized occupancy ---------------------------------------------
+
+    # Calculate probability of non-detections for each pentad visited
+    p_nondet <- occuRdata$visit %>%
+        mutate(p = pred$p) %>%
+        group_by(Pentad, site, occasion) %>%
+        summarize(pp = prod(1-p),
+                  obs = max(obs))
+
+    # From probability of non-detection calculate the conditional occupancy probs
+    # and plot
+    pred_occu <- pred_data %>%
+        as.data.frame() %>%
+        left_join(gm, by = "Name") %>%
+        sf::st_sf() %>%
+        mutate(psi = pred$psi) %>%
+        left_join(p_nondet, by = c("Name" = "Pentad", "occasion")) %>%
+        mutate(real_occu = case_when(obs == 1 ~ 1,
+                                     is.na(obs) ~ psi,
+                                     obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
+        dplyr::select(Name, year, psi, pp, real_occu)
+
+    saveRDS(pred_occu, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", years_ch, "_", sp_sel, ".rds"))
+
+}
