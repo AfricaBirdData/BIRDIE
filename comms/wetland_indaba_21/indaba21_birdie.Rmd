@@ -1,15 +1,54 @@
 ---
-title: "South African Biodiversity Data Pipeline for Wetlands and Waterbirds"
+title: "South Africa's Biodiversity Data Pipeline for Wetlands and Waterbirds"
 author: "Francisco Cervantes et al."
-institute: "SEEC, SANBI"
-date: "`r Sys.Date()`"
+institute: "National Wetlands Indaba"
+date: "21-10-2021"
 output:
   xaringan::moon_reader:
+    css: xaringan-themer_tuned.css
     lib_dir: libs
     nature:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+
+---
+
+background-image:url(logos.png)
+background-size:80%
+background-position:bottom 70% right 10%
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#1c5253",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+      
+# Core Team
+
+Carol Poole (SANBI)  
+Nancy Job (SANBI)  
+Andrew Skowno (SANBI)  
+Sediqa Khatieb (SANBI)  
+Brenda Daly (SANBI)  
+Doug Harebottle (Sol Plaatje University)  
+Michael Brooks (FIAO UCT)  
+Res Altwegg (SEEC UCT)  
+Vernon Visser (SEEC UCT)  
+Francisco Cervantes (SEEC UCT / SANBI)  
+Francis Strobbe (Seascape Belgium)  
+Yvan Stojanov (RBINS)  
+...
+
+.footnote[
+Title image: Flamingoes on Kamfers Dam wetland, Kimberley by Doug Harebottle
+]
+
 ---
 
 background-image:url(kingfisher.png)
@@ -44,18 +83,29 @@ background-size:80%
 
 # What is BIRDIE for?
 
-Our objective is to support decision makers:
+Our objective is to support decision makers, **for example**:
+
+--
 
 - International agreements, such as RAMSAR, require:
 
   - Wetlands with more than 1% of the population of a species
   - Wetlands that host more than 20,000 birds regularly
   
-  
+--
+
 - National programmes, such as National Biodiversity Assessments:
 
   - Species area of occupancy
   - Population rate of change
+  
+--
+
+- Site-specific programmes
+
+--
+
+- **You** tell us!
   
 ---
 background-image:url(cwac_logo.png), url(SABAP2_logo.png), url(GoogleEarthEngine_Grey_108.png)
@@ -65,8 +115,10 @@ background-size:25%, 15%, 35%
 # Data inputs
 
 - Coordinated Waterbird Counts
+
   - Count data
   - Species abundance
+  - Population dynamics
   - State-space models
 
 --
@@ -74,6 +126,7 @@ background-size:25%, 15%, 35%
 - Southern African Bird Atlas Project
   - Detection/non-detection data
   - Species distribution
+  - Species richness
   - Occupancy models
 
 --
@@ -84,58 +137,60 @@ background-size:25%, 15%, 35%
   - Exploration
 
 ---
-
-# Statistical routines
-
-- State-space models
-  - Abundance and population dynamics
-  - CWAC data
-
-- Occupancy models
-  - Distribution and diversity
-  - SABAP data
-  
----
 background-image:url(ssm_diagram.png)
 background-size:80%
 
-# State-space models
+# State-space models for CWAC
 
 
 ---
 background-image:url(ssm_barshep.png)
 background-size:80%
 
-# State-space models
+# State-space models for CWAC
 
 ---
 background-image:url(spp_83.png)
 background-size:60%
 background-position:bottom 20px center
 
-# State-space models
-
+# State-space models for CWAC
 
 ---
 background-image:url(guru2017.png)
-background-size:75%
-background-position:bottom 60px right 40px
+background-size:65%
+background-position:bottom 90px right 90px
 
-# Occupancy models
-
+# Occupancy models for SABAP
 
 ---
 background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png)
 background-position:left, center, right
 background-size:35%, 35%, 35%
 
-# Occupancy models
+# Occupancy models for SABAP
 
 ---
 
-# Conclusion
+# Way forward
+
+- Definition of efficient indicators
+
+- Effective communication of uncertainty
+
+- Expansion to other areas and taxons
+
+- Integration with other biodiversity portals
+
+- Integration with other monitoring programmes
+
+- **Continuous engagement with stakeholders**
 
 ---
 
-# Acknowledgements
+background-image:url(logos.png), url(birdie_str.jpg)
+background-size:80%, 60%
+background-position:bottom 40% right 10%, center left 8%
+
+# Thank you!
 
