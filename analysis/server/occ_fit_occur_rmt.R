@@ -3,6 +3,7 @@
 library(occuR)
 library(dplyr)
 library(tidyr)
+library(ggplot2)
 library(BIRDIE)
 
 rm(list = ls())
@@ -88,7 +89,12 @@ for(i in seq_along(bbpan)){
 
     saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
 
+
     # Predict occupancy -------------------------------------------------------
+
+    # Extract scaling factors
+    sc <- lapply(occuRdata$site, attributes)
+    sc <- sc[!sapply(sc, is.null)]
 
     # Prepare data to predict psi and p
     gm <- sitedata %>%
@@ -102,14 +108,19 @@ for(i in seq_along(bbpan)){
         pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
         tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
         pivot_wider(names_from = covt, values_from = value) %>%
-        mutate(year = as.numeric(year)) %>%
+        mutate(year = as.numeric(year),
+               tdiff = tmax - tmin) %>%
+        dplyr::filter(year >= years[1], year <= years[2]) %>%
+        mutate(prcp = scale(prcp,
+                            center = sc$prcp$`scaled:center`,
+                            scale = sc$prcp$`scaled:scale`),
+               tdiff = scale(tdiff,
+                             center = sc$tdiff$`scaled:center`,
+                             scale = sc$tdiff$`scaled:scale`)) %>%
         group_by(year) %>%
         mutate(occasion = cur_group_id()) %>%
         ungroup() %>%
         data.table::as.data.table()
-
-    # Predict
-    pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 0)
 
 
     # Estimate realized occupancy ---------------------------------------------
@@ -135,5 +146,37 @@ for(i in seq_along(bbpan)){
         dplyr::select(Name, year, psi, pp, real_occu)
 
     saveRDS(pred_occu, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", years_ch, "_", sp_sel, ".rds"))
+
+
+    # Plot model -----------------------------------------------------------
+
+    # Occupancy probabilities
+    psi <- pred_occu %>%
+        ggplot() +
+        geom_sf(aes(fill = psi), size = 0.01) +
+        scale_fill_viridis_c(limits = c(0, 1)) +
+        ggtitle(sp_name) +
+        facet_wrap("year")
+
+    # Detection probabilities
+    p <- pred_occu %>%
+        mutate(pp = if_else(is.na(pp), 1, pp)) %>%
+        ggplot() +
+        geom_sf(aes(fill = 1 - pp), size = 0.01) +
+        scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
+        ggtitle(sp_name) +
+        facet_wrap("year")
+
+    # Realized occupancy
+    occu <- pred_occu %>%
+        ggplot() +
+        geom_sf(aes(fill = real_occu), size = 0.01) +
+        scale_fill_viridis_c(limits = c(0, 1)) +
+        ggtitle(sp_name) +
+        facet_wrap("year")
+
+    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_psi_", years_ch, "_", sp_sel, ".png"), psi)
+    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_p_", years_ch, "_", sp_sel, ".png"), p)
+    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_occu_", years_ch, "_", sp_sel, ".png"), occu)
 
 }
