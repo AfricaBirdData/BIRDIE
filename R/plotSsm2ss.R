@@ -64,7 +64,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
         ggplot2::scale_colour_manual(values = plot_options$colors) +
         ggplot2::coord_cartesian(ylim = ylims) +
-        ggplot2::facet_wrap("season", nrow = 2,
+        ggplot2::facet_wrap("season", ncol = 2,
                             labeller = ggplot2::labeller(season = c("1" = "Summer", "2" = "Winter"))) +
         ggplot2::xlab("Year") + ggplot2::ylab(abund_label) +
         plot_options$pers_theme
@@ -134,7 +134,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
     pfile <- tempfile()
     grDevices::png(pfile)
     p <- gridExtra::grid.arrange(stt_plot, trd_plot, prop_plot,
-                                 nrow = 3, heights = c(2/4, 1/4, 1/4),
+                                 layout_matrix = matrix(c(1,2,1,3), nrow = 2),
                                  top = plottitle)
     grDevices::dev.off()
     unlink(pfile)
