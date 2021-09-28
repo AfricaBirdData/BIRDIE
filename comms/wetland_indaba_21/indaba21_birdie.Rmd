@@ -153,9 +153,9 @@ background-size:80%
 Barshep et al. 2017. Global Ecology and Conservation, 12
 ]
 ---
-background-image:url(spp_83.png)
-background-size:60%
-background-position:bottom 20px center
+background-image:url(ssm_6_log_side.png)
+background-size:70%
+background-position:bottom 30% center
 
 # State-space models for CWAC
 
@@ -172,8 +172,8 @@ Guillera-Arroita, 2017. Ecography, 40
 
 ---
 background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png)
-background-position:left, center, right
-background-size:35%, 35%, 35%
+background-position:left 40px center, center center, right 40px center
+background-size:30%, 30%, 30%
 
 # Occupancy models for SABAP
 
@@ -189,7 +189,7 @@ background-size:35%, 35%, 35%
 
 - Integration with other **biodiversity portals**
 
-- Integration with other **monitoring programmes**
+- Incorporate other **monitoring programmes**
 
 - Continuous engagement with **users**
 
