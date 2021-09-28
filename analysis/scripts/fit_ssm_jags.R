@@ -27,7 +27,8 @@ p <- BIRDIE::plotSsm2ss(fit = fit_dyn, ssm_counts = ssmcounts, linear = FALSE,
                         plot_options = list(pers_theme = pers_theme,
                                             colors = c("#71BD5E", "#B590C7")))
 
-plot(p$plot)
+grid::grid.newpage()
+grid::grid.draw(p$plot)
 
 
 # Run SSM for all species -------------------------------------------------
