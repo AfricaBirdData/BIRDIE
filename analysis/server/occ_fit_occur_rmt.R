@@ -122,6 +122,9 @@ for(i in seq_along(bbpan)){
         ungroup() %>%
         data.table::as.data.table()
 
+    # Predict
+    pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 0)
+
 
     # Estimate realized occupancy ---------------------------------------------
 
