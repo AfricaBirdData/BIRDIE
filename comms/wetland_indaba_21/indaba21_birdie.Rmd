@@ -11,12 +11,13 @@ output:
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
+      ratio: "16:9"
 
 ---
 
 background-image:url(logos.png)
-background-size:80%
-background-position:bottom 70% right 10%
+background-size:50%
+background-position:top 30% right 10%
 
 ```{r xaringan-themer, include=FALSE, warning=FALSE}
 library(xaringanthemer)
@@ -74,7 +75,8 @@ Photo by <a href="https://unsplash.com/@lebalu?utm_source=unsplash&utm_medium=re
 ---
 
 background-image:url(birdie_str.jpg)
-background-size:80%
+background-size:70%
+background-position: bottom 30% left 40%
 
 # What is BIRDIE?
 
@@ -109,7 +111,7 @@ Our objective is to support decision makers, **for example**:
   
 ---
 background-image:url(cwac_logo.png), url(SABAP2_logo.png), url(GoogleEarthEngine_Grey_108.png)
-background-position:top 100px right 30px, top 300px right 50px, bottom 100px right 30px
+background-position:top 80px right 30%, top 290px right 30%, bottom 70px right 30%
 background-size:25%, 15%, 35%
 
 # Data inputs
@@ -138,31 +140,30 @@ background-size:25%, 15%, 35%
 
 ---
 background-image:url(ssm_diagram.png)
-background-size:80%
-
-# State-space models for CWAC
-
-
----
-background-image:url(ssm_barshep.png)
-background-size:80%
+background-size:35%
+background-position:center left 10%
 
 # State-space models for CWAC
 
 .footnote[
 Barshep et al. 2017. Global Ecology and Conservation, 12
 ]
+
 ---
-background-image:url(ssm_6_log_side.png)
-background-size:70%
-background-position:bottom 30% center
+background-image:url(ssm_diagram.png), url(ssm_6_log_side.png)
+background-size:35%, 45%
+background-position:center left 10%, bottom 50% right 10%
 
 # State-space models for CWAC
 
+.footnote[
+Barshep et al. 2017. Global Ecology and Conservation, 12
+]
+
 ---
 background-image:url(guru2017.png)
-background-size:65%
-background-position:bottom 90px right 90px
+background-position:left 40px center
+background-size:50%
 
 # Occupancy models for SABAP
 
@@ -171,11 +172,15 @@ Guillera-Arroita, 2017. Ecography, 40
 ]
 
 ---
-background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png)
-background-position:left 40px center, center center, right 40px center
-background-size:30%, 30%, 30%
+background-image:url(occu_p_6.png), url(occu_psi_6.png), url(occu_real_6.png), url(guru2017.png)
+background-position:right 35% bottom 73%,right 35% bottom 27%, right 5% center, left 40px center
+background-size:22%, 22%, 22%, 50%
 
 # Occupancy models for SABAP
+
+.footnote[
+Guillera-Arroita, 2017. Ecography, 40
+]
 
 ---
 
@@ -195,9 +200,9 @@ background-size:30%, 30%, 30%
 
 ---
 
-background-image:url(logos.png), url(birdie_str.jpg)
+background-image:url(logos2.png), url(birdie_str.jpg)
 background-size:80%, 60%
-background-position:bottom 40% right 10%, center left 8%
+background-position:bottom 18% right 10%, top 45% left 30%
 
 # Thank you!
 
