@@ -167,7 +167,7 @@ for(i in seq_along(bbpan)){
             year_sel <- substring(as.character(t), 3, 4)
             pred_occu %>%
                 sf::st_drop_geometry() %>%
-                dplyr::filter(year = t) %>%
+                dplyr::filter(year == t) %>%
                 write.csv(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
                           row.names = FALSE)
         }
