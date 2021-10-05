@@ -166,8 +166,10 @@ for(i in seq_along(bbpan)){
         if(t < 2010 | (years[2] - t) < 2){
             year_sel <- substring(as.character(t), 3, 4)
             pred_occu %>%
+                sf::st_drop_geometry() %>%
                 dplyr::filter(year = t) %>%
-                saveRDS(pred_occu, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".rds"))
+                write.csv(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
+                          row.names = FALSE)
         }
     }
 
