@@ -17,7 +17,7 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-years <- c(ini_year, ini_year + 3)
+years <- c(ini_year, ini_year + 2)
 years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
 for(i in seq_along(bbpan)){
@@ -68,7 +68,7 @@ for(i in seq_along(bbpan)){
 
     # Define site model
     sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(18, 3), bs = c('ts', 'cs'), d = c(2, 1))")
+                 "t2(lon, lat, occasion, k = c(20, 3), bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
     visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
@@ -167,7 +167,7 @@ for(i in seq_along(bbpan)){
             year_sel <- substring(as.character(t), 3, 4)
             pred_occu %>%
                 sf::st_drop_geometry() %>%
-                dplyr::filter(year = t) %>%
+                dplyr::filter(year == t) %>%
                 write.csv(paste0("analysis/output/occur_pred_", year_sel, "_", sp_sel, ".csv"),
                           row.names = FALSE)
         }

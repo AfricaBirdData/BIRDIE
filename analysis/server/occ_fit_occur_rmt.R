@@ -17,7 +17,7 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-years <- c(ini_year, ini_year + 5)
+years <- c(ini_year, ini_year + 4)
 years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
 for(i in seq_along(bbpan)){
@@ -163,7 +163,7 @@ for(i in seq_along(bbpan)){
         # save data if year < 2010 or otherwise if the year is in the middle
         # of the series or higher (middle should give the most accurate temporal
         # estimate)
-        if(t < 2010 | (years[2] - t) < 2){
+        if(t < 2010 | (years[2] - t) < 3){
             year_sel <- substring(as.character(t), 3, 4)
             pred_occu %>%
                 sf::st_drop_geometry() %>%
@@ -180,7 +180,7 @@ for(i in seq_along(bbpan)){
         # save data if year < 2010 or otherwise if the year is in the middle
         # of the series or higher (middle should give the most accurate temporal
         # estimate)
-        if(t < 2010 | (years[2] - t) < 2){
+        if(t < 2010 | (years[2] - t) < 3){
             year_sel <- substring(as.character(t), 3, 4)
 
             # Occupancy probabilities
