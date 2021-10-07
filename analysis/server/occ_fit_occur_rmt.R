@@ -80,140 +80,146 @@ for(i in seq_along(bbpan)){
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
-    # Smooth for spatial effect on psi
-    fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
-                                 reformulate(sitemod, response = "psi")),
-                    visit_data = occuRdata$visit,
-                    site_data = occuRdata$site,
-                    print = TRUE)
+    tryCatch({
 
-    saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
+        # Smooth for spatial effect on psi
+        fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
+                                     reformulate(sitemod, response = "psi")),
+                        visit_data = occuRdata$visit,
+                        site_data = occuRdata$site,
+                        print = FALSE)
 
-
-    # Predict occupancy -------------------------------------------------------
-
-    # Extract scaling factors
-    sc <- lapply(occuRdata$site, attributes)
-    sc <- sc[!sapply(sc, is.null)]
-
-    # Prepare data to predict psi and p
-    gm <- sitedata %>%
-        dplyr::select(Name)
-
-    pred_data <- sitedata %>%
-        sf::st_drop_geometry()  %>%
-        group_by(Name) %>%
-        mutate(site = cur_group_id()) %>%
-        ungroup() %>%
-        pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
-        tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-        pivot_wider(names_from = covt, values_from = value) %>%
-        mutate(year = as.numeric(year),
-               tdiff = tmax - tmin) %>%
-        dplyr::filter(year >= years[1], year <= years[2]) %>%
-        mutate(prcp = scale(prcp,
-                            center = sc$prcp$`scaled:center`,
-                            scale = sc$prcp$`scaled:scale`),
-               tdiff = scale(tdiff,
-                             center = sc$tdiff$`scaled:center`,
-                             scale = sc$tdiff$`scaled:scale`)) %>%
-        group_by(year) %>%
-        mutate(occasion = cur_group_id()) %>%
-        ungroup() %>%
-        data.table::as.data.table()
-
-    # Predict
-    pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 1000)
+        saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
 
 
-    # Estimate realized occupancy ---------------------------------------------
+        # Predict occupancy -------------------------------------------------------
 
-    # Calculate probability of non-detections for each pentad visited
-    p_nondet <- occuRdata$visit %>%
-        dplyr::select(Pentad, site, occasion, obs) %>%
-        mutate(ub = apply(pred$pboot, 2, quantile, 0.975),
-               lb = apply(pred$pboot, 2, quantile, 0.025),
-               med = apply(pred$pboot, 2, quantile, 0.5),
-               est = pred$p) %>%
-        pivot_longer(cols = -c(Pentad, site, occasion, obs),
-                     names_to = "lim", values_to = "p") %>%
-        group_by(Pentad, site, occasion, lim) %>%
-        summarize(pp = prod(1-p),
-                  obs = max(obs))
+        # Extract scaling factors
+        sc <- lapply(occuRdata$site, attributes)
+        sc <- sc[!sapply(sc, is.null)]
 
-    # From probability of non-detection calculate the conditional occupancy probs
-    # and plot
-    pred_occu <- pred_data %>%
-        as.data.frame() %>%
-        left_join(gm, by = "Name") %>%
-        sf::st_sf() %>%
-        mutate(ub = apply(pred$psiboot, 2, quantile, 0.975),
-               lb = apply(pred$psiboot, 2, quantile, 0.025),
-               med = apply(pred$psiboot, 2, quantile, 0.5),
-               est = pred$psi[,1]) %>%
-        pivot_longer(cols = c("ub", "lb", "med", "est"),
-                     names_to = "lim", values_to = "psi") %>%
-        left_join(p_nondet, by = c("Name" = "Pentad", "occasion", "lim")) %>%
-        mutate(real_occu = case_when(obs == 1 ~ 1,
-                                     is.na(obs) ~ psi,
-                                     obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
-        dplyr::select(Name, year, psi, pp, real_occu, lim)
+        # Prepare data to predict psi and p
+        gm <- sitedata %>%
+            dplyr::select(Name)
 
-    for(t in seq(years[1], years[2], 1)){
-        # save data if year < 2010 or otherwise if the year is in the middle
-        # of the series or higher (middle should give the most accurate temporal
-        # estimate)
-        if(t < 2010 | (years[2] - t) < 3){
-            year_sel <- substring(as.character(t), 3, 4)
-            pred_occu %>%
-                sf::st_drop_geometry() %>%
-                dplyr::filter(year == t) %>%
-                write.csv(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
-                          row.names = FALSE)
-        }
-    }
+        pred_data <- sitedata %>%
+            sf::st_drop_geometry()  %>%
+            group_by(Name) %>%
+            mutate(site = cur_group_id()) %>%
+            ungroup() %>%
+            pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
+            tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
+            pivot_wider(names_from = covt, values_from = value) %>%
+            mutate(year = as.numeric(year),
+                   tdiff = tmax - tmin) %>%
+            dplyr::filter(year >= years[1], year <= years[2]) %>%
+            mutate(prcp = scale(prcp,
+                                center = sc$prcp$`scaled:center`,
+                                scale = sc$prcp$`scaled:scale`),
+                   tdiff = scale(tdiff,
+                                 center = sc$tdiff$`scaled:center`,
+                                 scale = sc$tdiff$`scaled:scale`)) %>%
+            group_by(year) %>%
+            mutate(occasion = cur_group_id()) %>%
+            ungroup() %>%
+            data.table::as.data.table()
+
+        # Predict
+        tryCatch({
+
+            pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 1000)
 
 
-    # Plot model -----------------------------------------------------------
+            # Estimate realized occupancy ---------------------------------------------
 
-    for(t in seq(years[1], years[2], 1)){
-        # save data if year < 2010 or otherwise if the year is in the middle
-        # of the series or higher (middle should give the most accurate temporal
-        # estimate)
-        if(t < 2010 | (years[2] - t) < 3){
-            year_sel <- substring(as.character(t), 3, 4)
+            # Calculate probability of non-detections for each pentad visited
+            p_nondet <- occuRdata$visit %>%
+                dplyr::select(Pentad, site, occasion, obs) %>%
+                mutate(ub = apply(pred$pboot, 2, quantile, 0.975),
+                       lb = apply(pred$pboot, 2, quantile, 0.025),
+                       med = apply(pred$pboot, 2, quantile, 0.5),
+                       est = pred$p) %>%
+                pivot_longer(cols = -c(Pentad, site, occasion, obs),
+                             names_to = "lim", values_to = "p") %>%
+                group_by(Pentad, site, occasion, lim) %>%
+                summarize(pp = prod(1-p),
+                          obs = max(obs))
 
-            # Occupancy probabilities
-            psi <- pred_occu %>%
-                dplyr::filter(year == t) %>%
-                ggplot() +
-                geom_sf(aes(fill = psi), size = 0.01) +
-                scale_fill_viridis_c(limits = c(0, 1)) +
-                ggtitle(sp_name) +
-                facet_wrap("lim")
+            # From probability of non-detection calculate the conditional occupancy probs
+            # and plot
+            pred_occu <- pred_data %>%
+                as.data.frame() %>%
+                left_join(gm, by = "Name") %>%
+                sf::st_sf() %>%
+                mutate(ub = apply(pred$psiboot, 2, quantile, 0.975),
+                       lb = apply(pred$psiboot, 2, quantile, 0.025),
+                       med = apply(pred$psiboot, 2, quantile, 0.5),
+                       est = pred$psi[,1]) %>%
+                pivot_longer(cols = c("ub", "lb", "med", "est"),
+                             names_to = "lim", values_to = "psi") %>%
+                left_join(p_nondet, by = c("Name" = "Pentad", "occasion", "lim")) %>%
+                mutate(real_occu = case_when(obs == 1 ~ 1,
+                                             is.na(obs) ~ psi,
+                                             obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
+                dplyr::select(Name, year, psi, pp, real_occu, lim)
 
-            # Detection probabilities
-            p <- pred_occu %>%
-                dplyr::filter(year == t) %>%
-                mutate(pp = if_else(is.na(pp), 1, pp)) %>%
-                ggplot() +
-                geom_sf(aes(fill = 1 - pp), size = 0.01) +
-                scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
-                ggtitle(sp_name) +
-                facet_wrap("lim")
+            for(t in seq(years[1], years[2], 1)){
+                # save data if year < 2010 or otherwise if the year is in the middle
+                # of the series or higher (middle should give the most accurate temporal
+                # estimate)
+                if(t < 2010 | (years[2] - t) < 3){
+                    year_sel <- substring(as.character(t), 3, 4)
+                    pred_occu %>%
+                        sf::st_drop_geometry() %>%
+                        dplyr::filter(year == t) %>%
+                        write.csv(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
+                                  row.names = FALSE)
+                }
+            }
 
-            # Realized occupancy
-            occu <- pred_occu %>%
-                dplyr::filter(year == t) %>%
-                ggplot() +
-                geom_sf(aes(fill = real_occu), size = 0.01) +
-                scale_fill_viridis_c(limits = c(0, 1)) +
-                ggtitle(sp_name) +
-                facet_wrap("lim")
 
-            ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
-            ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_p_", year_sel, "_", sp_sel, ".png"), p)
-            ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
-        }
-    }
+            # Plot model -----------------------------------------------------------
+
+            for(t in seq(years[1], years[2], 1)){
+                # save data if year < 2010 or otherwise if the year is in the middle
+                # of the series or higher (middle should give the most accurate temporal
+                # estimate)
+                if(t < 2010 | (years[2] - t) < 3){
+                    year_sel <- substring(as.character(t), 3, 4)
+
+                    # Occupancy probabilities
+                    psi <- pred_occu %>%
+                        dplyr::filter(year == t) %>%
+                        ggplot() +
+                        geom_sf(aes(fill = psi), size = 0.01) +
+                        scale_fill_viridis_c(limits = c(0, 1)) +
+                        ggtitle(sp_name) +
+                        facet_wrap("lim")
+
+                    # Detection probabilities
+                    p <- pred_occu %>%
+                        dplyr::filter(year == t) %>%
+                        mutate(pp = if_else(is.na(pp), 1, pp)) %>%
+                        ggplot() +
+                        geom_sf(aes(fill = 1 - pp), size = 0.01) +
+                        scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
+                        ggtitle(sp_name) +
+                        facet_wrap("lim")
+
+                    # Realized occupancy
+                    occu <- pred_occu %>%
+                        dplyr::filter(year == t) %>%
+                        ggplot() +
+                        geom_sf(aes(fill = real_occu), size = 0.01) +
+                        scale_fill_viridis_c(limits = c(0, 1)) +
+                        ggtitle(sp_name) +
+                        facet_wrap("lim")
+
+                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
+                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_p_", year_sel, "_", sp_sel, ".png"), p)
+                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
+                }
+            }
+        }, error = function(e) {sink(paste0("/drv_birdie/birdie_ftp/",sp_sel,"/failed_pred_", sp_sel,".txt"))}) # TryCatch predict
+    }, error = function(e) {sink(paste0("/drv_birdie/birdie_ftp/",sp_sel,"/failed_fit_", sp_sel,".txt"))}) # TryCatch fit
 }
