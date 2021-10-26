@@ -3,15 +3,15 @@
 model {
 
   # Priors
-  mu_t[1] ~ dunif(log(1), log(1500)) # prior for initial population size
-  beta[1] ~ dnorm(log(1), log(2)) # prior for initial long-term growth rate
-  lambda[1] ~ dnorm(0, 0.001)
+  mu_t[1] ~ dnorm(0, 1/10)       # prior for initial population size
+  beta[1] ~ dnorm(3, 1/10)       # prior for initial growth rate
+  lambda[1] ~ dnorm(0, 1/10)
 
-  tau.zeta ~ dunif(log(1), 1/log(3))
-  tau.w ~ dunif(log(1), 1/log(10))
-  tau.eps ~ dunif(log(1), 1/log(3))
-  tau.alpha ~ dunif(log(1), 1/log(10))
-  tau.e ~ dunif(log(1), 1/log(10))
+  tau.zeta ~ dt(0, 1/10, 1) T(0,)    # dt with 1 degree of freedom to make a Cauchy prior
+  tau.w ~ dt(0, 1/10, 1) T(0,)
+  tau.eps ~ dt(0, 1/10, 1) T(0,)
+  tau.alpha ~ dt(0, 1/20, 1) T(0,)
+  tau.e ~ dt(0, 1/20, 1) T(0,)
 
   sig.zeta = 1/tau.zeta
   sig.w = 1/tau.w
