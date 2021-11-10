@@ -112,6 +112,9 @@ prepOccSiteData <- function(region = NULL, sites = NULL, years, clim_covts,
 
         water <- raster::crop(water, sites)
 
+        # Reclassify 255 to NA
+        water <- raster::reclassify(water, rcl = matrix(c(255, NA), ncol = 2))
+
         # Extract values
         sites_water <- BIRDIE::exactExtractParll(water, sites,
                                                  ncores = future::nbrOfWorkers(),
