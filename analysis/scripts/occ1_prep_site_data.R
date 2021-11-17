@@ -1,13 +1,11 @@
 
 # In this script we prepare SITE data for fitting a spatial occupancy model
-
 # We will use Google Earth Engine to annotate the pentads with covariates
 
 library(rgee)
 library(SABAP)
 library(dplyr)
 library(sf)
-# library(BIRDIE)
 
 # Initialize Earth Engine
 ee_check()
