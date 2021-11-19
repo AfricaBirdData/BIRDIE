@@ -60,7 +60,7 @@ out <- Reduce("cbind", pentad_vars)
 out <- out %>%
     dplyr::select(!contains("."))
 
-saveRDS(out, "analysis/data/site_dat_gee_08_19.rds")
+saveRDS(out, "analysis/data/site_dat_sa_gee_08_19.rds")
 
 
 # Annotate with yearly surface water occurrence --------------------------------
@@ -82,12 +82,12 @@ out <- out %>%
 
 plot(out['waterClass2011'], lwd = 0.01)
 
-readRDS("analysis/data/site_dat_gee_08_19.rds") %>%
+readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
     left_join(out %>%
                   st_drop_geometry() %>%
                   dplyr::select(-id),
               by = "Name") %>%
-    saveRDS("analysis/data/site_dat_gee_08_19.rds")
+    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
 
 # Annotate with overall surface water occurrence --------------------------
@@ -101,12 +101,12 @@ out <- addVarEEimage(ee_pentads = ee_pentads,
 out <- out %>%
     rename(water_occur = occurrence)
 
-readRDS("analysis/data/site_dat_gee_08_19.rds") %>%
+readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
     left_join(out %>%
                   st_drop_geometry() %>%
                   dplyr::select(-id),
               by = "Name") %>%
-    saveRDS("analysis/data/site_dat_gee_08_19.rds")
+    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
 
 # Annotate with yearly NDVI -----------------------------------------------
@@ -129,9 +129,57 @@ out <- out %>%
 
 plot(out['NDVI2011'], lwd = 0.01)
 
-readRDS("analysis/data/site_dat_gee_08_19.rds") %>%
+readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
     left_join(out %>%
                   st_drop_geometry() %>%
                   dplyr::select(-id),
               by = "Name") %>%
-    saveRDS("analysis/data/site_dat_gee_08_19.rds")
+    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+
+
+# Re-name and re-scale ----------------------------------------------------
+
+# Load data
+sitedata <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+
+# Fix covariate names
+sitedata <- sitedata %>%
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename_with(.fn =  ~gsub("pr", "prcp_", .x),
+                .cols = starts_with("pr")) %>%
+    rename_with(.fn =  ~gsub("tmmn", "tmmn_", .x),
+                .cols = starts_with("tmmn")) %>%
+    rename_with(.fn =  ~gsub("tmmx", "tmmx_", .x),
+                .cols = starts_with("tmmx")) %>%
+    rename_with(.fn =  ~gsub("waterClass", "watocc_", .x),
+                .cols = starts_with("waterClass")) %>%
+    rename_with(.fn =  ~gsub("NDVI", "ndvi_", .x),
+                .cols = starts_with("NDVI")) %>%
+    rename_with(.fn =  ~gsub("water_occur", "watocc_ever", .x),
+                .cols = starts_with("water_occur")) %>%
+    mutate(across(.cols = starts_with("tmmn"),
+                  .fns = ~.x/10),
+           across(.cols = starts_with("tmmx"),
+                  .fns = ~.x/10),
+           across(.cols = starts_with("ndvi"),
+                  .fns = ~.x/10000))
+
+saveRDS(sitedata, "analysis/data/site_dat_sa_gee_08_19.rds")
+
+
+# Add centroids -----------------------------------------------------------
+
+# Load data
+sitedata <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+
+# Add centroids
+cc <- st_centroid(sitedata) %>%
+    st_coordinates() %>%
+    as.data.frame()
+
+sitedata <- sitedata %>%
+    mutate(lon = cc$X,
+           lat = cc$Y)
+
+saveRDS(sitedata, "analysis/data/site_dat_sa_gee_08_19.rds")

@@ -21,21 +21,21 @@ prepDataOccuR <- function(site_data, visit_data){
 
     sitedata <- site_data %>%
         sf::st_drop_geometry()  %>%
-        tidyr::pivot_longer(cols = -c(Name, lon, lat, id, water)) %>%
+        dplyr::group_by(Name) %>%
+        dplyr::mutate(site = dplyr::cur_group_id()) %>%
+        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever)) %>%
         tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
         tidyr::pivot_wider(names_from = covt, values_from = value) %>%
         dplyr::mutate(year = as.numeric(year)) %>%
         dplyr::left_join(visits, by = c("Name" = "Pentad", "year" = "year")) %>%
         dplyr::filter(keep == 1) %>%
         dplyr::select(-keep) %>%
-        dplyr::rename(site = id) %>%
         dplyr::group_by(year) %>%
         dplyr::mutate(occasion = cur_group_id()) %>%
         dplyr::ungroup() %>%
         data.table::as.data.table()
 
     visitdata <- visit_data %>%
-        dplyr::filter(year %in% unique(sitedata$year)) %>%
         dplyr::left_join(sitedata %>%
                              dplyr::select(Name, site) %>%
                              distinct(),
@@ -47,8 +47,12 @@ prepDataOccuR <- function(site_data, visit_data){
         dplyr::group_by(site, occasion) %>%
         dplyr::mutate(visit = row_number()) %>%
         dplyr::ungroup() %>%
-        dplyr::select(-c(id, CardNo, StartDate, EndDate, month_p)) %>%
+        dplyr::select(-c(CardNo, Date)) %>%
         data.table::as.data.table()
+
+    if(any(is.na(visitdata$site))){
+        warning("Sites differ between site data and visit data!")
+    }
 
     return(list(site = sitedata, visit = visitdata))
 

@@ -16,7 +16,7 @@ ee_Initialize(drive = TRUE)
 
 rm(list = ls())
 
-years <- 2009:2019
+years <- 2008:2019
 
 for(i in seq_along(years)){
 
@@ -40,11 +40,11 @@ for(i in seq_along(years)){
         st_sf() %>%
         filter(!st_is_empty(.)) %>%     # Remove rows without geometry
         mutate(Date = as.character(StartDate)) %>%   # GEE doesn't like dates
-        dplyr::select(CardNo, Date, Pentad, TotalHours)
+        dplyr::select(CardNo, StartDate, Date, Pentad, TotalHours)
 
     # Upload to GEE
     ee_visit <- visit %>%
-        dplyr::select(-TotalHours) %>%
+        dplyr::select(-c(StartDate, TotalHours)) %>%
         sf_as_ee(via = "getInfo")
 
     # Annotate with GEE TerraClimate
@@ -55,6 +55,7 @@ for(i in seq_along(years)){
                                       bands = c("NDVI"))
 
     visit <- visit %>%
+        st_drop_geometry() %>%
         left_join(visit_new %>%
                       st_drop_geometry() %>%
                       dplyr::select(CardNo, val) %>%
@@ -62,12 +63,25 @@ for(i in seq_along(years)){
                   by = c("CardNo"))
 
     # Update
-    if(file.exists(paste0("analysis/data/visit_dat_gee_08_19.rds"))){
-        visit_old <- readRDS(paste0("analysis/data/visit_dat_gee_08_19.rds"))
+    if(file.exists("analysis/data/visit_dat_sa_gee_08_19.rds")){
+        visit_old <- readRDS("analysis/data/visit_dat_sa_gee_08_19.rds")
         visit <- rbind(visit_old, visit)
     }
 
     # Save
-    saveRDS(visit, paste0("analysis/data/visit_dat_gee_08_19.rds"))
+    saveRDS(visit, "analysis/data/visit_dat_sa_gee_08_19.rds")
 
 }
+
+
+# Prepare variables for fitting -------------------------------------------
+
+visit <- readRDS("analysis/data/visit_dat_sa_gee_08_19.rds")
+
+visit <- visit %>%
+    mutate(Date = lubridate::date(Date),
+           year = lubridate::year(Date),
+           month = lubridate::month(Date),
+           ndvi = ndvi/1e4)
+
+saveRDS(visit, "analysis/data/visit_dat_sa_gee_08_19.rds")

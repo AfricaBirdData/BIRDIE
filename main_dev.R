@@ -47,8 +47,9 @@ use_package("grDevices")
 use_package("mgcv")
 use_package("stocc")
 use_package("furrr")
+use_package("future")
 use_package("exactextractr")
-
+use_package("data.table")
 
 # Function fitCwacSsm2ss --------------------------------------------------
 

@@ -17,7 +17,7 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-years <- c(ini_year, ini_year + 2)
+years <- c(ini_year, ini_year + 4)
 years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
 for(i in seq_along(bbpan)){
@@ -34,40 +34,42 @@ for(i in seq_along(bbpan)){
         pull(name) %>%
         unique()
 
+    # Download species detection
+    print("Downloading from SABAP")
+    sp_detect <- SABAP::getSabapData(.spp_code = sp_sel,
+                                     .region_type = "country",
+                                     .region = "South Africa",
+                                     .years = years[1]:years[2])
 
-    # Load occupancy site data -------------------------------------------------
 
-    # Load site data
-    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_08_19.rds"))
+    # Load occupancy data -----------------------------------------------------
 
+    # Load site data and subset years
+    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_gee_08_19.rds")) %>%
+        dplyr::select(Name, lon, lat, watocc_ever, ends_with(match = as.character(years[1]:years[2])))
 
-    # Prepare occupancy visit data --------------------------------------------
-
-    future::plan("multisession", workers = 6)
-
-    visitdata <- prepOccVisitData(region = "South Africa",
-                                  sites = sitedata,
-                                  species = sp_sel,
-                                  years = years[1]:years[2],
-                                  clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
-                                  covts_dir = paste0(birdie_dir, "downloads/"),
-                                  file_fix = c("terraClim_", "_03_19"),
-                                  savedir = paste0(birdie_dir, "data/pentads_sa.rds"))
-
-    future::plan("sequential")
-
-    saveRDS(visitdata, paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
+    # Load visit data, subset years and add detections
+    visitdata <- readRDS(paste0(birdie_dir, "data/visit_dat_sa_gee_08_19.rds")) %>%
+        filter(year %in% (years[1]:years[2])) %>%
+        left_join(sp_detect %>%
+                      dplyr::select(CardNo, obs = Spp) %>%
+                      mutate(obs = if_else(obs == "-", 0, 1)),
+                  by = "CardNo")
 
 
     # Format to occuR ---------------------------------------------------------
 
     occuRdata <- prepDataOccuR(sitedata, visitdata)
 
+    # Remove data from missing pentads? (THIS SHOULDN'T HAPPEN WHEN PENTADS ARE DOWNLOADED FROM THE API)
+    occuRdata$visit <- occuRdata$visit %>%
+        dplyr::filter(!is.na(site))
+
 
     # Fit occupancy model -----------------------------------------------------
 
     # Define site model
-    sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
+    sitemod <- c("1", "s(watocc, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
                  "t2(lon, lat, occasion, k = c(20, 3), bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define visit model
@@ -75,7 +77,7 @@ for(i in seq_along(bbpan)){
 
     # Scale variables
     occuRdata$site <- occuRdata$site %>%
-        mutate(tdiff = tmax - tmin,
+        mutate(tdiff = tmmx - tmmn,
                across(.col = c(prcp, tdiff), .fns = ~scale(.x)))
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
