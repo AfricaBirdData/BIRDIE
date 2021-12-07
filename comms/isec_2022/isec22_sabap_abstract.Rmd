@@ -1,0 +1,19 @@
+---
+title: "SABAP: An R package to access African Bird Atlas data"
+author: "Francisco Cervantes, Michael Brooks and Res Altwegg"
+date: "`r format(Sys.Date(), '%d %B %Y')`"
+subtitle: 'International Statistical Ecology Conference 2022'
+output: pdf_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Abstract
+
+The Southern African Bird Atlas Project (SABAP1 and SABAP2) is one of the longest lasting and most important biodiversity projects in Africa. It collects almost two million records of bird observations from citizen scientist per year. With the addition of Kenya to the covered countries, the project is reaching full African dimension, which has motivated the creation of the African Bird Atlas. MICHAEL PLEASE REVIEW ALL THIS AND ADD ANYTHING YOU CONSIDER.
+
+To facilitate access to its broad database we have created SABAP, an R package that connects to the Atlas API (should we say anything about the API?) and downloads data straight to R. These data integrates directly into workflows using trending R formats such as `tibble` or the spatial `sf`. In addition, the package offers the possibility to annotate Atlas observations with Google Earth Engine environmental data, facilitating the flexibility and reproducibility of the analyses.
