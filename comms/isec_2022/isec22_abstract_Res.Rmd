@@ -1,6 +1,6 @@
 ---
 title: "Delivering policy-relevant information: a Data Pipeline for Waterbirds in South Africa"
-author: "Francisco Cervantes, Francis Strobbe and Res Altwegg"
+author: "Francisco Cervantes, Francis Strobbe, Michael Brooks and Res Altwegg"
 date: "`r format(Sys.Date(), '%d %B %Y')`"
 subtitle: 'International Statistical Ecology Conference 2022'
 output: pdf_document
