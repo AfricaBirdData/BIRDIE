@@ -37,7 +37,6 @@ use_package("jagsUI")
 use_package("ggplot2")
 use_package("gridExtra")
 use_package("CWAC")
-use_package("SABAP")
 use_package("sf")
 use_package("lwgeom")
 use_package("raster")
@@ -50,6 +49,7 @@ use_package("furrr")
 use_package("future")
 use_package("exactextractr")
 use_package("data.table")
+use_package("ABAP")
 
 # Function fitCwacSsm2ss --------------------------------------------------
 
@@ -472,6 +472,53 @@ use_testthat()
 use_test()
 
 test()
+
+
+# Function plotOccuVars --------------------------------------------------
+
+# Add function
+use_r("plotOccuVars")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
+
+# Function plotOccuVarEffect --------------------------------------------------
+
+# Add function
+use_r("plotOccuVarEffect")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
 
 # Install -----------------------------------------------------------------
 
