@@ -7,11 +7,9 @@
 prepDataOccuR(site_data, visit_data)
 }
 \arguments{
-\item{site_data}{A dataframe with occupancy site data produced by
-\link{prepOccSiteData}.}
+\item{site_data}{A dataframe with occupancy site data.}
 
-\item{visit_data}{A dataframe with occupancy visit data produced by
-\link{prepOccVisitData}.}
+\item{visit_data}{A dataframe with occupancy visit data.}
 }
 \value{
 A list containing two data frames: one with site data and one with
