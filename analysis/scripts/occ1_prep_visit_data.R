@@ -6,7 +6,7 @@
 # column. Therefore, covariates will be the same for any species.
 
 library(rgee)
-library(SABAP)
+library(ABAP)
 library(dplyr)
 library(sf)
 
@@ -18,16 +18,19 @@ rm(list = ls())
 
 years <- 2008:2019
 
+pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa")
+
 for(i in seq_along(years)){
+#for(i in 7:12){
 
     # Download SABAP data for any species -------------------------------------
 
     year <- years[i]
 
-    visit <- SABAP::getSabapData(.spp_code = 6,
-                                 .region_type = "country",
-                                 .region = "South Africa",
-                                 .years = year)
+    visit <- ABAP::getAbapData(.spp_code = 6,
+                               .region_type = "country",
+                               .region = "South Africa",
+                               .years = year)
 
 
     # Annotate data with NDVI values ------------------------------------------
@@ -36,7 +39,8 @@ for(i in seq_along(years)){
 
     # Make spatial object and select relevant columns
     visit <- visit %>%
-        left_join(SABAP::pentads_sabap , by = c("Pentad" = "Name")) %>%
+        left_join(pentads_sa,
+                  by = c("Pentad" = "Name")) %>%
         st_sf() %>%
         filter(!st_is_empty(.)) %>%     # Remove rows without geometry
         mutate(Date = as.character(StartDate)) %>%   # GEE doesn't like dates

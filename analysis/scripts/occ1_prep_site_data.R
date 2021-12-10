@@ -3,7 +3,7 @@
 # We will use Google Earth Engine to annotate the pentads with covariates
 
 library(rgee)
-library(SABAP)
+library(ABAP)
 library(dplyr)
 library(sf)
 
@@ -16,16 +16,19 @@ rm(list = ls())
 
 # Load pentads to GEE -----------------------------------------------------
 
-# Load SABAP pentads
-pentads <- readRDS("analysis/data/pentads_sa.rds")
+# Load ABAP pentads
+pentads_sa <- getRegionPentads(.region_type = "country", .region = "South Africa")
 
-# Load to EE (if not done already)
-assetId <- sprintf("%s/%s", ee_get_assethome(), 'pentads')
-# pentads %>%
-#     sf_as_ee(assetId = assetId,
-#              via = "getInfo_to_asset")
+# Set a name for the asset
+eeid <- sprintf("%s/%s", ee_get_assethome(), 'pentads')
 
-ee_pentads <- ee$FeatureCollection(assetId)
+# Upload to EE (if not done already)
+# uploadPentadsToEE(pentads = dplyr::select(pentads_sa, Name),
+#                   asset_id = eeid,
+#                   load = FALSE)
+
+# Load pentads from GEE
+ee_pentads <- ee$FeatureCollection(eeid)
 
 
 # Annotate with TerraClimate ----------------------------------------------
@@ -41,7 +44,8 @@ f <- function(band){
                                                band = band,
                                                group_type = "year",
                                                groups = 2008:2019,
-                                               reducer = "mean")
+                                               reducer = "mean",
+                                               unmask = FALSE)
 
     # Extract values from all bands of the image
     out <- addVarEEimage(ee_pentads, stackCollection, "mean")
@@ -57,36 +61,63 @@ pentad_vars <- purrr::map(bands, ~f(.x))
 
 out <- Reduce("cbind", pentad_vars)
 
-out <- out %>%
-    dplyr::select(!contains("."))
+# Fix covariates
+sitedata <- sitedata %>%
+    dplyr::select(!contains(".")) %>%
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename_with(.fn =  ~gsub("pr", "prcp_", .x),
+                .cols = starts_with("pr")) %>%
+    rename_with(.fn =  ~gsub("tmmn", "tmmn_", .x),
+                .cols = starts_with("tmmn")) %>%
+    rename_with(.fn =  ~gsub("tmmx", "tmmx_", .x),
+                .cols = starts_with("tmmx")) %>%
+    mutate(across(.cols = starts_with("tmmn"),
+                  .fns = ~.x/10),
+           across(.cols = starts_with("tmmx"),
+                  .fns = ~.x/10)) %>%
+    st_drop_geometry()
 
 saveRDS(out, "analysis/data/site_dat_sa_gee_08_19.rds")
 
 
 # Annotate with yearly surface water occurrence --------------------------------
 
-# Find mean water presence for each pixel and year
+# Number of pixels with water each year
 band <- "waterClass"
 stackCollection <- EEcollectionToMultiband(collection = "JRC/GSW1_3/YearlyHistory",
                                            dates = c("2008-01-01", "2020-01-01"),
                                            band = band,
                                            group_type = "year",
                                            groups = 2008:2019,
-                                           unmask = TRUE)
+                                           unmask = FALSE)
 
-# Find mean (mean) water presence for each pentad and year
-out <- addVarEEimage(ee_pentads, stackCollection, "mean")
+out <- addVarEEimage(ee_pentads, stackCollection, "count")
 
+# Fix covariates
 out <- out %>%
-    rename_with(~gsub("X", band, .x), .cols = starts_with("X"))
-
-plot(out['waterClass2011'], lwd = 0.01)
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename_with(~gsub("X", "watext_", .x), .cols = starts_with("X")) %>%
+    st_drop_geometry()
 
 readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
-    left_join(out %>%
-                  st_drop_geometry() %>%
-                  dplyr::select(-id),
-              by = "Name") %>%
+    left_join(out, by = "Name") %>%
+    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+
+# Recurrence of pixels with water each year
+out <- addVarEEimage(ee_pentads, stackCollection, "mean")
+
+# Fix covariates
+out <- out %>%
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename_with(~gsub("X", "watrec_", .x), .cols = starts_with("X"))
+mutate(across(.fns = ~tidyr::replace_na(.x, 0))) %>%
+    st_drop_geometry()
+
+readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+    left_join(out, by = "Name") %>%
     saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
 
@@ -98,14 +129,17 @@ out <- addVarEEimage(ee_pentads = ee_pentads,
                      bands = "occurrence",
                      unmask = TRUE)
 
+# Fix covariates
 out <- out %>%
-    rename(water_occur = occurrence)
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename(water_occur = occurrence) %>%
+    rename_with(.fn =  ~gsub("water_occur", "watocc_ever", .x),
+                .cols = starts_with("water_occur")) %>%
+    st_drop_geometry()
 
 readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
-    left_join(out %>%
-                  st_drop_geometry() %>%
-                  dplyr::select(-id),
-              by = "Name") %>%
+    left_join(out, by = "Name") %>%
     saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
 
@@ -124,54 +158,28 @@ stackCollection <- EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
 # Find mean (mean) water presence for each pentad and year
 out <- addVarEEimage(ee_pentads, stackCollection, "mean")
 
+# Fix covariates
 out <- out %>%
-    rename_with(~gsub("X", band, .x), .cols = starts_with("X"))
-
-plot(out['NDVI2011'], lwd = 0.01)
+    dplyr::select(Name, everything()) %>%
+    dplyr::select(-id) %>%
+    rename_with(~gsub("X", "ndvi_", .x), .cols = starts_with("X")) %>%
+    mutate(across(.cols = starts_with("ndvi"),
+                  .fns = ~.x/10000)) %>%
+    st_drop_geometry()
 
 readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
-    left_join(out %>%
-                  st_drop_geometry() %>%
-                  dplyr::select(-id),
-              by = "Name") %>%
+    left_join(out, by = "Name") %>%
     saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
 
-# Re-name and re-scale ----------------------------------------------------
+# Add geometries -----------------------------------------------------------
 
 # Load data
 sitedata <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
 
-# Fix covariate names
+# Add geometries
 sitedata <- sitedata %>%
-    dplyr::select(Name, everything()) %>%
-    dplyr::select(-id) %>%
-    rename_with(.fn =  ~gsub("pr", "prcp_", .x),
-                .cols = starts_with("pr")) %>%
-    rename_with(.fn =  ~gsub("tmmn", "tmmn_", .x),
-                .cols = starts_with("tmmn")) %>%
-    rename_with(.fn =  ~gsub("tmmx", "tmmx_", .x),
-                .cols = starts_with("tmmx")) %>%
-    rename_with(.fn =  ~gsub("waterClass", "watocc_", .x),
-                .cols = starts_with("waterClass")) %>%
-    rename_with(.fn =  ~gsub("NDVI", "ndvi_", .x),
-                .cols = starts_with("NDVI")) %>%
-    rename_with(.fn =  ~gsub("water_occur", "watocc_ever", .x),
-                .cols = starts_with("water_occur")) %>%
-    mutate(across(.cols = starts_with("tmmn"),
-                  .fns = ~.x/10),
-           across(.cols = starts_with("tmmx"),
-                  .fns = ~.x/10),
-           across(.cols = starts_with("ndvi"),
-                  .fns = ~.x/10000))
-
-saveRDS(sitedata, "analysis/data/site_dat_sa_gee_08_19.rds")
-
-
-# Add centroids -----------------------------------------------------------
-
-# Load data
-sitedata <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    left_join(dplyr::select(pentads_sa, Name))
 
 # Add centroids
 cc <- st_centroid(sitedata) %>%
@@ -183,3 +191,29 @@ sitedata <- sitedata %>%
            lat = cc$Y)
 
 saveRDS(sitedata, "analysis/data/site_dat_sa_gee_08_19.rds")
+
+
+# Annotate with distance to coast -----------------------------------------
+
+library(rnaturalearth)
+
+pp <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+
+# Create bounding box
+sabox <- st_bbox(pp) + c(-1, -1, 3, 1)
+
+# Download coastline for the World and crop
+coast <- ne_coastline(scale = 10, returnclass = "sf") %>%
+    st_crop(sabox)
+
+# Check that makes sense
+plot(st_geometry(coast[1,]))
+plot(st_geometry(pp), add = TRUE)
+
+# Find distances in kilometers
+pp$dist_coast <- as.numeric(st_distance(pp, coast[1,]))/1000 # in kilometers
+
+plot(pp["dist_coast"])
+
+# Save
+saveRDS(pp, "analysis/data/site_dat_sa_gee_08_19.rds")
