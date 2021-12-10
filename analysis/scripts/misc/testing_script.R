@@ -90,3 +90,14 @@ sites = pa_dat$sites
 covt = "prcp"
 covts_dir = "analysis/out_nosync/"
 file_fix = c("terraClim_", "_03_19_nw")
+
+.yr=visits$yearmonth[1]
+.visits=visits$data[[1]]
+.sites=sites
+.covt_r=covt_r
+.covt=covt
+
+.yr=years[1]
+.sites=sites
+.covt_r=covt_r
+.covt=covt
