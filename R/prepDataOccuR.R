@@ -39,6 +39,12 @@ prepDataOccuR <- function(site_data, visit_data){
         warning("There might be covariates that don't change over time other than watocc_ever and dist_coast.")
     }
 
+    # Keep only sites and occasions in visits
+    site_data <- site_data %>%
+        dplyr::left_join(visits, by = c("Name" = "Pentad", "year")) %>%
+        dplyr::filter(keep == 1) %>%
+        dplyr::select(-keep)
+
     # Transfer site and occasion indicators from site data
     visit_data <- visit_data %>%
         dplyr::left_join(site_data %>%
