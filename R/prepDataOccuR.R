@@ -2,13 +2,16 @@
 #'
 #' @param site_data A dataframe with occupancy site data.
 #' @param visit_data A dataframe with occupancy visit data.
+#' @param scaling Either NULL, in which case no scaling is performed or a list
+#' of two named vectors: "site" and "visit" indicating the variables to scale
+#' in the site and visit dataframes.
 #'
 #' @return A list containing two data frames: one with site data and one with
 #' visit data ready to use with the occuR package
 #' @export
 #'
 #' @examples
-prepDataOccuR <- function(site_data, visit_data){
+prepDataOccuR <- function(site_data, visit_data, scaling = NULL){
 
     # Visited sites
     visits <- visit_data %>%
@@ -27,7 +30,7 @@ prepDataOccuR <- function(site_data, visit_data){
 
     # Separate covariates and years
     site_data <- site_data %>%
-        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>%
+        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>% # Note that these are hard-coded
         tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
         tidyr::pivot_wider(names_from = covt, values_from = value) %>%
         dplyr::mutate(year = as.numeric(year)) %>%
@@ -67,7 +70,31 @@ prepDataOccuR <- function(site_data, visit_data){
         warning("Sites differ between site data and visit data!")
     }
 
-    return(list(site = data.table::as.data.table(site_data),
-                visit = data.table::as.data.table(visit_data)))
+    # Make data.tables
+    site_data <- data.table::as.data.table(site_data)
+    visit_data <- data.table::as.data.table(visit_data)
+    # Scale?
+    if(!is.null(scaling)){
+
+        if(!is.null(scaling$visit)){
+            visit_data <- visit_data %>%
+                dplyr::mutate(dplyr::across(.col = dplyr::all_of(scaling$visit), .fns = ~scale(.x)))
+            attr(visit_data, "scaling") <- TRUE
+        } else {
+            attr(visit_data, "scaling") <- FALSE
+        }
+
+        if(!is.null(scaling$site)){
+            site_data <- site_data %>%
+                dplyr::mutate(dplyr::across(.col = dplyr::all_of(scaling$site), .fns = ~scale(.x)))
+            attr(site_data, "scaling") <- TRUE
+        } else {
+            attr(site_data, "scaling") <- FALSE
+        }
+
+    }
+
+    return(list(site = site_data,
+                visit = visit_data))
 
 }

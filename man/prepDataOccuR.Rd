@@ -4,12 +4,16 @@
 \alias{prepDataOccuR}
 \title{Prepare data for fitting a model with occuR}
 \usage{
-prepDataOccuR(site_data, visit_data)
+prepDataOccuR(site_data, visit_data, scaling = NULL)
 }
 \arguments{
 \item{site_data}{A dataframe with occupancy site data.}
 
 \item{visit_data}{A dataframe with occupancy visit data.}
+
+\item{scaling}{Either NULL, in which case no scaling is performed or a list
+of two named vectors: "site" and "visit" indicating the variables to scale
+in the site and visit dataframes.}
 }
 \value{
 A list containing two data frames: one with site data and one with
