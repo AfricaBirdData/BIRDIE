@@ -17,10 +17,40 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-years <- c(ini_year, ini_year + 4)
+years <- c(ini_year, ini_year + 2) # this will be 4 in the server
 years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
 
+# Load site data
+sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_gee_08_19.rds")) %>%
+    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(years[1]:years[2])))
+
+# I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
+sitedata <- sitedata %>%
+    tidyr::drop_na()
+
+
+# Define models -----------------------------------------------------------
+
+# Detection
+visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
+
+# Occupancy
+
+# To detect a coastal species
+help_coast_mod <- c("1", "dist_coast")
+
+# For inland species
+land_mod <- c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
+              "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))") # in the server there will be c(20, 4) knots)
+
+# For coastal species
+coast_mod <- c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec",
+               "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))") # in the server there will be c(20, 4) knots)
+
+
 for(i in seq_along(bbpan)){
+
+    # i = 92 this is a coastal species
 
     # Select a species and a region -------------------------------------------
 
@@ -36,17 +66,13 @@ for(i in seq_along(bbpan)){
 
     # Download species detection
     print("Downloading from SABAP")
-    sp_detect <- SABAP::getSabapData(.spp_code = sp_sel,
-                                     .region_type = "country",
-                                     .region = "South Africa",
-                                     .years = years[1]:years[2])
+    sp_detect <- ABAP::getAbapData(.spp_code = sp_sel,
+                                   .region_type = "country",
+                                   .region = "South Africa",
+                                   .years = years[1]:years[2])
 
 
     # Load occupancy data -----------------------------------------------------
-
-    # Load site data and subset years
-    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_gee_08_19.rds")) %>%
-        dplyr::select(Name, lon, lat, watocc_ever, ends_with(match = as.character(years[1]:years[2])))
 
     # Load visit data, subset years and add detections
     visitdata <- readRDS(paste0(birdie_dir, "data/visit_dat_sa_gee_08_19.rds")) %>%
@@ -65,31 +91,40 @@ for(i in seq_along(bbpan)){
     occuRdata$visit <- occuRdata$visit %>%
         dplyr::filter(!is.na(site))
 
-
-    # Fit occupancy model -----------------------------------------------------
-
-    # Define site model
-    sitemod <- c("1", "s(watocc, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(20, 3), bs = c('ts', 'cs'), d = c(2, 1))")
-
-    # Define visit model
-    visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
+    occuRdata$site <- occuRdata$site %>%
+        dplyr::filter(site %in% unique(occuRdata$visit$site))
 
     # Scale variables
     occuRdata$site <- occuRdata$site %>%
         mutate(tdiff = tmmx - tmmn,
-               across(.col = c(prcp, tdiff), .fns = ~scale(.x)))
+               across(.col = -c(Name, lon, lat, site, year, occasion), .fns = ~scale(.x)))
+
+    # Determine if the species is coastal
+    m1 <- fit_occu(forms = list(reformulate(visit_mod, response = "p"),
+                                reformulate(help_coast_mod, response = "psi")),
+                   visit_data = occuRdata$visit,
+                   site_data = occuRdata$site,
+                   print = FALSE)
+
+    if(m1$fit$par[2] < -2){
+        site_mod <- coast_mod
+    } else {
+        site_mod <- land_mod
+    }
+
+
+    # Fit occupancy model -----------------------------------------------------
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
     # Smooth for spatial effect on psi
-    fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
-                                 reformulate(sitemod, response = "psi")),
+    fit <- fit_occu(forms = list(reformulate(visit_mod, response = "p"),
+                                 reformulate(site_mod, response = "psi")),
                     visit_data = occuRdata$visit,
                     site_data = occuRdata$site,
                     print = TRUE)
 
-    saveRDS(fit, paste0("analysis/output/occur_fit_", years_ch, "_", sp_sel, ".rds"))
+    saveRDS(fit, paste0("analysis/out_nosync/occur_fit_", years_ch, "_", sp_sel, ".rds"))
 
 
     # Predict occupancy -------------------------------------------------------
@@ -102,23 +137,27 @@ for(i in seq_along(bbpan)){
     gm <- sitedata %>%
         dplyr::select(Name)
 
+    # Separate variables into columns and add necessary covariates
     pred_data <- sitedata %>%
         sf::st_drop_geometry()  %>%
-        group_by(Name) %>%
-        mutate(site = cur_group_id()) %>%
-        ungroup() %>%
-        pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
+        dplyr::group_by(Name) %>%
+        dplyr::mutate(site = dplyr::cur_group_id()) %>%
+        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>%
         tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-        pivot_wider(names_from = covt, values_from = value) %>%
-        mutate(year = as.numeric(year),
-               tdiff = tmax - tmin) %>%
-        dplyr::filter(year >= years[1], year <= years[2]) %>%
-        mutate(prcp = scale(prcp,
-                            center = sc$prcp$`scaled:center`,
-                            scale = sc$prcp$`scaled:scale`),
-               tdiff = scale(tdiff,
-                             center = sc$tdiff$`scaled:center`,
-                             scale = sc$tdiff$`scaled:scale`)) %>%
+        tidyr::pivot_wider(names_from = covt, values_from = value) %>%
+        dplyr::mutate(year = as.integer(year),
+                      tdiff = tmmx - tmmn) %>%
+        dplyr::filter(year >= years[1], year <= years[2])
+
+    # Scale variables
+    for(i in seq_along(sc)){
+        pred_data[, names(sc)[i]] <- scale(x = pred_data[, names(sc)[i]],
+                                           center = sc[[i]]$`scaled:center`,
+                                           scale = sc[[i]]$`scaled:scale`)
+    }
+
+    # Define occasion
+    pred_data <- pred_data %>%
         group_by(year) %>%
         mutate(occasion = cur_group_id()) %>%
         ungroup() %>%
@@ -170,7 +209,7 @@ for(i in seq_along(bbpan)){
             pred_occu %>%
                 sf::st_drop_geometry() %>%
                 dplyr::filter(year == t) %>%
-                write.csv(paste0("analysis/output/occur_pred_", year_sel, "_", sp_sel, ".csv"),
+                write.csv(paste0("analysis/out_nosync/occur_pred_", year_sel, "_", sp_sel, ".csv"),
                           row.names = FALSE)
         }
     }
@@ -213,9 +252,9 @@ for(i in seq_along(bbpan)){
                 ggtitle(sp_name) +
                 facet_wrap("lim")
 
-            ggsave(paste0("analysis/output/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
-            ggsave(paste0("analysis/output/occur_p_", year_sel, "_", sp_sel, ".png"), p)
-            ggsave(paste0("analysis/output/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
+            ggsave(paste0("analysis/out_nosync/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
+            ggsave(paste0("analysis/out_nosync/occur_p_", year_sel, "_", sp_sel, ".png"), p)
+            ggsave(paste0("analysis/out_nosync/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
         }
     }
 }
