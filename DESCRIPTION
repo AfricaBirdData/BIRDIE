@@ -19,7 +19,6 @@ Imports:
     CWAC,
     data.table,
     dplyr,
-    exactextractr,
     furrr,
     future,
     ggplot2,
@@ -30,10 +29,8 @@ Imports:
     lwgeom,
     magrittr,
     mgcv,
-    raster,
     rgeos,
     sf,
-    stocc,
     tidyr,
     utils
 Depends: 
