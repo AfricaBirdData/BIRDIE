@@ -217,3 +217,23 @@ plot(pp["dist_coast"])
 
 # Save
 saveRDS(pp, "analysis/data/site_dat_sa_gee_08_19.rds")
+
+
+
+
+# Annotate with elevation -------------------------------------------------
+
+out <- addVarEEimage(ee_pentads = ee_pentads,
+                     image = "MERIT/DEM/v1_0_3",
+                     reducer = "mean",
+                     bands = "dem",
+                     unmask = FALSE)
+
+# Fix covariates
+out <- out %>%
+    dplyr::select(Name, elev = dem) %>%
+    st_drop_geometry()
+
+readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+    left_join(out, by = "Name") %>%
+    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")

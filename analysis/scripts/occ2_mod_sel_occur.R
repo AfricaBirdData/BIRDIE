@@ -21,7 +21,7 @@ set.seed(NULL)
 # Load site data and subset year
 year_sel <- 2010
 sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_gee_08_19.rds")) %>%
-    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(year_sel)))
+    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, elev, ends_with(match = as.character(year_sel)))
 
 # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 sitedata <- sitedata %>%
@@ -51,8 +51,9 @@ land_mods <- list(mod1 = "1",
                   # mod8 = c("1", "dist_coast", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                   # mod9 = c("1", "s(prcp, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),  # this one beats 8
                   # mod10 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 9
-                  mod11 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 10
-                  mod12 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"))
+                  # mod11 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 10
+                  mod12 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 11
+                  mod13 = c("1", "dist_coast", "elev", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')")) # this doesn't converge
 
 coast_mods <- list(mod1 = "1",
                    mod2 = c("1", "dist_coast"),
@@ -63,9 +64,10 @@ coast_mods <- list(mod1 = "1",
                    # mod7 = c("1", "watext", "watrec"),               # This one beats 3,4,5,6
                    # mod8 = c("1", "dist_coast", "watext", "watrec"), # this one beats 9
                    # mod9 = c("1", "prcp", "watext", "watrec"),
-                   mod10 = c("1", "dist_coast", "prcp", "watext", "watrec"), #this one beats 8
-                   mod11 = c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec"),   # this one beats 10
-                   mod12 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
+                   # mod10 = c("1", "dist_coast", "prcp", "watext", "watrec"), #this one beats 8
+                   mod11 = c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec"),   # this one beats 10 and 12
+                   mod12 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"),
+                   mod13 = c("1", "dist_coast", "elev", "ndvi", "watext", "watrec"))
 
 # Create output lists
 aic_site <- vector("list", length = length(spp))
@@ -101,7 +103,13 @@ for(i in seq_along(spp)){
 
     # Format to occuR ---------------------------------------------------------
 
-    occuRdata <- prepDataOccuR(sitedata, visitdata)
+    occuRdata <- prepDataOccuR(site_data = sitedata %>%
+                                   sf::st_drop_geometry() %>%
+                                   gatherYearFromVars(vars = names(.)[-c(1:6)], sep = "_") %>%
+                                   mutate(tdiff = tmmx - tmmn),
+                               visit_data = visitdata,
+                               scaling = list(visit = NULL,
+                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", "elev")))
 
     # Remove data from missing pentads? (THIS SHOULDN'T HAPPEN WHEN PENTADS ARE DOWNLOADED FROM THE API)
     occuRdata$visit <- occuRdata$visit %>%
@@ -109,11 +117,6 @@ for(i in seq_along(spp)){
 
     occuRdata$site <- occuRdata$site %>%
         filter(site %in% unique(occuRdata$visit$site))
-
-    # Scale variables
-    occuRdata$site <- occuRdata$site %>%
-        mutate(tdiff = tmmx - tmmn,
-               across(.col = -c(Name, lon, lat, site, year, occasion), .fns = ~scale(.x)))
 
     m1 <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
                                 reformulate(coast_covts, response = "psi")),
@@ -156,17 +159,17 @@ for(i in seq_along(spp)){
                                                          mod_id = paste0("sp_", sp_sel, "_", .y)),
                                             .options = furrr::furrr_options(packages = "occuR"))
 
-    # # Test single models
-    # fits <- vector("list", length = length(mods))
-    # for(m in seq_along(fits)){
-    #     fits[[m]] <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
-    #                                        reformulate(mods[[m]], response = "psi")),
-    #                           # reformulate(site_covts_lin[[m]], response = "psi")),
-    #                           visit_data = occuRdata$visit,
-    #                           site_data = occuRdata$site)
-    #
-    #     print(dof.occuR(fits[[m]]))
-    # }
+    # Test single models
+    fits <- vector("list", length = length(mods))
+    for(m in seq_along(fits)){
+        fits[[m]] <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
+                                           reformulate(mods[[m]], response = "psi")),
+                              # reformulate(site_covts_lin[[m]], response = "psi")),
+                              visit_data = occuRdata$visit,
+                              site_data = occuRdata$site)
+
+        print(dof.occuR(fits[[m]]))
+    }
 
     # # Plot effects?
     # plotOccuVars(occuRdata, "dist_coast")
