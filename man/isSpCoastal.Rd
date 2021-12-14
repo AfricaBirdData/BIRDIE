@@ -4,7 +4,7 @@
 \alias{isSpCoastal}
 \title{Is species coastal}
 \usage{
-isSpCoastal(sp_sel, out_dir, visit_mod)
+isSpCoastal(sp_sel, out_dir, visit_mod, force = FALSE)
 }
 \arguments{
 \item{sp_sel}{The SAFRING code of the species being assessed.}
@@ -22,7 +22,7 @@ has been done for this species already and skip if it has. See details.}
 It returns TRUE if the species is coastal and it will create a file
 in \code{out_dir} to indicate that the check has already been done for this
 species. In the future, the function will check if this file exits before
-and avoid fitting the model if it does, unless force == TRUE
+and avoid fitting the model if it does, unless force == TRUE.
 }
 \description{
 This function is used to determine whether a species is coastal.

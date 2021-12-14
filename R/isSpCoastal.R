@@ -16,19 +16,19 @@
 #' @return It returns TRUE if the species is coastal and it will create a file
 #' in `out_dir` to indicate that the check has already been done for this
 #' species. In the future, the function will check if this file exits before
-#' and avoid fitting the model if it does, unless force == TRUE
+#' and avoid fitting the model if it does, unless force == TRUE.
 #' @export
 #'
 #' @examples
 #' \dontrun{
 #' isSpCoastal(235, outdir, reformulate(c("1", "log(TotalHours+1)"), response = "p"))
 #' }
-isSpCoastal <- function(sp_sel, out_dir, visit_mod){
+isSpCoastal <- function(sp_sel, out_dir, visit_mod, force = FALSE){
 
     coast_idx <- grep("^coast", list.files(paste0(out_dir, sp_sel)))
     coast_file <- list.files(paste0(out_dir, sp_sel))[coast_idx]
 
-    if(length(coast_idx) == 0){
+    if(length(coast_idx) == 0 || force){
 
         # Fit a simple model with distance to coast as a covariate
         print("Checking if species is coastal...")
