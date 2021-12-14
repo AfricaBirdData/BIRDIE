@@ -25,7 +25,7 @@ years <- year_range[1]:year_range[2]
 
 # Load site data
 sitedata <- readRDS(paste0(data_dir, "site_dat_sa_gee_08_19.rds")) %>%
-    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(years)))
+    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(year_sel)))
 
 # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 sitedata <- sitedata %>%
@@ -85,9 +85,13 @@ for(i in seq_along(bbpan)){
 
     # Format to occuR ---------------------------------------------------------
 
-    occuRdata <- prepDataOccuR(sitedata, visitdata,
-                               scaling <- list(visit = NULL,
-                                               site = c("dist_coast", "prcp", "ndvi", "watext", "watrec")))
+    occuRdata <- prepDataOccuR(site_data = sitedata %>%
+                                   sf::st_drop_geometry() %>%
+                                   gatherYearFromVars(vars = names(.)[-c(1:6)], sep = "_") %>%
+                                   mutate(tdiff = tmmx - tmmn),
+                               visit_data = visitdata,
+                               scaling = list(visit = NULL,
+                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
 
     # Remove data from missing pentads? (THIS SHOULDN'T HAPPEN WHEN PENTADS ARE DOWNLOADED FROM THE API)
     occuRdata$visit <- occuRdata$visit %>%
@@ -95,10 +99,6 @@ for(i in seq_along(bbpan)){
 
     occuRdata$site <- occuRdata$site %>%
         dplyr::filter(site %in% unique(occuRdata$visit$site))
-
-    # Make new variables
-    occuRdata$site <- occuRdata$site %>%
-        mutate(tdiff = scale(tmmx - tmmn))
 
 
     # Fit occupancy model -----------------------------------------------------

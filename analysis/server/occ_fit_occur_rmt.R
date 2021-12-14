@@ -8,7 +8,9 @@ library(BIRDIE)
 
 rm(list = ls())
 
-birdie_dir <- "/home/birdie/analysis/"
+# Define data and output directories
+data_dir <- "analysis/data/"
+out_dir <- "/drv_birdie/birdie_ftp/"
 
 # For now, we want to select species present at Barberspan
 bbpan <- BIRDIE::barberspan %>%
@@ -17,10 +19,38 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-years <- c(ini_year, ini_year + 4)
-years_ch <- paste(substring(as.character(years), 3, 4), collapse = "_")
+year_range <- c(ini_year, ini_year + 4)
+years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
+years <- year_range[1]:year_range[2]
+
+# Load site data
+sitedata <- readRDS(paste0(data_dir, "site_dat_sa_gee_08_19.rds")) %>%
+    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(year_sel)))
+
+# I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
+sitedata <- sitedata %>%
+    tidyr::drop_na()
+
+
+# Define models -----------------------------------------------------------
+
+# Detection
+visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
+
+# Occupancy
+
+# For inland species
+land_mod <- c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
+              "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))")
+
+# For coastal species
+coast_mod <- c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec",
+               "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))")
+
 
 for(i in seq_along(bbpan)){
+
+    # i = 92 this is a coastal species
 
     # Select a species and a region -------------------------------------------
 
@@ -34,192 +64,138 @@ for(i in seq_along(bbpan)){
         pull(name) %>%
         unique()
 
+    # Download species detection
+    print("Downloading from SABAP")
+    sp_detect <- ABAP::getAbapData(.spp_code = sp_sel,
+                                   .region_type = "country",
+                                   .region = "South Africa",
+                                   .years = years)
 
-    # Load occupancy site data -------------------------------------------------
 
-    # Load site data
-    sitedata <- readRDS(paste0(birdie_dir, "data/site_dat_sa_wcovts_08_19.rds"))
+    # Load occupancy data -----------------------------------------------------
 
-
-    # Prepare occupancy visit data --------------------------------------------
-
-    future::plan("multisession", workers = 6)
-
-    visitdata <- prepOccVisitData(region = "South Africa",
-                                  sites = sitedata,
-                                  species = sp_sel,
-                                  years = years[1]:years[2],
-                                  clim_covts = c("prcp", "tmax", "tmin", "aet", "pet"),
-                                  covts_dir = paste0(birdie_dir, "downloads/"),
-                                  file_fix = c("terraClim_", "_03_19"),
-                                  savedir = paste0(birdie_dir, "data/pentads_sa.rds"))
-
-    future::plan("sequential")
-
-    saveRDS(visitdata, paste0(birdie_dir, "data/visit_dat_", sp_sel, "_wcovts_", years_ch, ".rds"))
+    # Load visit data, subset years and add detections
+    visitdata <- readRDS(paste0(data_dir, "visit_dat_sa_gee_08_19.rds")) %>%
+        filter(year %in% years) %>%
+        left_join(sp_detect %>%
+                      dplyr::select(CardNo, obs = Spp) %>%
+                      mutate(obs = if_else(obs == "-", 0, 1)),
+                  by = "CardNo")
 
 
     # Format to occuR ---------------------------------------------------------
 
-    occuRdata <- prepDataOccuR(sitedata, visitdata)
+    occuRdata <- prepDataOccuR(site_data = sitedata %>%
+                                   sf::st_drop_geometry() %>%
+                                   gatherYearFromVars(vars = names(.)[-c(1:6)], sep = "_") %>%
+                                   mutate(tdiff = tmmx - tmmn),
+                               visit_data = visitdata,
+                               scaling = list(visit = NULL,
+                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+
+    # Remove data from missing pentads? (THIS SHOULDN'T HAPPEN WHEN PENTADS ARE DOWNLOADED FROM THE API)
+    occuRdata$visit <- occuRdata$visit %>%
+        dplyr::filter(!is.na(site))
+
+    occuRdata$site <- occuRdata$site %>%
+        dplyr::filter(site %in% unique(occuRdata$visit$site))
 
 
     # Fit occupancy model -----------------------------------------------------
 
-    # Define site model
-    sitemod <- c("1", "s(water, bs = 'cs')", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')",
-                 "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))")
+    # Determine if the species is coastal
+    coast <- isSpCoastal(sp_sel, out_dir, reformulate(visit_mod, response = "p"))
 
-    # Define visit model
-    visitmod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
-
-    # Scale variables
-    occuRdata$site <- occuRdata$site %>%
-        mutate(tdiff = tmax - tmin,
-               across(.col = c(prcp, tdiff), .fns = ~scale(.x)))
+    if(coast){
+        site_mod <- coast_mod
+    } else {
+        site_mod <- land_mod
+    }
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
+    # Smooth for spatial effect on psi
     tryCatch({
-
-        # Smooth for spatial effect on psi
-        fit <- fit_occu(forms = list(reformulate(visitmod, response = "p"),
-                                     reformulate(sitemod, response = "psi")),
+        fit <- fit_occu(forms = list(reformulate(visit_mod, response = "p"),
+                                     reformulate(site_mod, response = "psi")),
                         visit_data = occuRdata$visit,
                         site_data = occuRdata$site,
-                        print = FALSE)
+                        print = TRUE)
 
-        saveRDS(fit, paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
-
-
-        # Predict occupancy -------------------------------------------------------
-
-        # Extract scaling factors
-        sc <- lapply(occuRdata$site, attributes)
-        sc <- sc[!sapply(sc, is.null)]
-
-        # Prepare data to predict psi and p
-        gm <- sitedata %>%
-            dplyr::select(Name)
-
-        pred_data <- sitedata %>%
-            sf::st_drop_geometry()  %>%
-            group_by(Name) %>%
-            mutate(site = cur_group_id()) %>%
-            ungroup() %>%
-            pivot_longer(cols = -c(id, Name, site, lon, lat, water)) %>%
-            tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-            pivot_wider(names_from = covt, values_from = value) %>%
-            mutate(year = as.numeric(year),
-                   tdiff = tmax - tmin) %>%
-            dplyr::filter(year >= years[1], year <= years[2]) %>%
-            mutate(prcp = scale(prcp,
-                                center = sc$prcp$`scaled:center`,
-                                scale = sc$prcp$`scaled:scale`),
-                   tdiff = scale(tdiff,
-                                 center = sc$tdiff$`scaled:center`,
-                                 scale = sc$tdiff$`scaled:scale`)) %>%
-            group_by(year) %>%
-            mutate(occasion = cur_group_id()) %>%
-            ungroup() %>%
-            data.table::as.data.table()
-
-        # Predict
-        tryCatch({
-
-            pred <- predict(fit, occuRdata$visit,  pred_data, nboot = 1000)
+        saveRDS(fit, paste0(out_dir, sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
+    }, error = function(e){
+        sink(paste0(out_dir, sp_sel, "/failed_fit_", sp_sel,".txt"))
+        print(e)
+        sink()}) # TryCatch fit
 
 
-            # Estimate realized occupancy ---------------------------------------------
-
-            # Calculate probability of non-detections for each pentad visited
-            p_nondet <- occuRdata$visit %>%
-                dplyr::select(Pentad, site, occasion, obs) %>%
-                mutate(ub = apply(pred$pboot, 2, quantile, 0.975),
-                       lb = apply(pred$pboot, 2, quantile, 0.025),
-                       med = apply(pred$pboot, 2, quantile, 0.5),
-                       est = pred$p) %>%
-                pivot_longer(cols = -c(Pentad, site, occasion, obs),
-                             names_to = "lim", values_to = "p") %>%
-                group_by(Pentad, site, occasion, lim) %>%
-                summarize(pp = prod(1-p),
-                          obs = max(obs))
-
-            # From probability of non-detection calculate the conditional occupancy probs
-            # and plot
-            pred_occu <- pred_data %>%
-                as.data.frame() %>%
-                left_join(gm, by = "Name") %>%
-                sf::st_sf() %>%
-                mutate(ub = apply(pred$psiboot, 2, quantile, 0.975),
-                       lb = apply(pred$psiboot, 2, quantile, 0.025),
-                       med = apply(pred$psiboot, 2, quantile, 0.5),
-                       est = pred$psi[,1]) %>%
-                pivot_longer(cols = c("ub", "lb", "med", "est"),
-                             names_to = "lim", values_to = "psi") %>%
-                left_join(p_nondet, by = c("Name" = "Pentad", "occasion", "lim")) %>%
-                mutate(real_occu = case_when(obs == 1 ~ 1,
-                                             is.na(obs) ~ psi,
-                                             obs == 0 ~ psi*pp / (1 - psi + psi*pp))) %>%
-                dplyr::select(Name, year, psi, pp, real_occu, lim)
-
-            for(t in seq(years[1], years[2], 1)){
-                # save data if year < 2010 or otherwise if the year is in the middle
-                # of the series or higher (middle should give the most accurate temporal
-                # estimate)
-                if(t < 2010 | (years[2] - t) < 3){
-                    year_sel <- substring(as.character(t), 3, 4)
-                    pred_occu %>%
-                        sf::st_drop_geometry() %>%
-                        dplyr::filter(year == t) %>%
-                        write.csv(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
-                                  row.names = FALSE)
-                }
+    # Predict occupancy -------------------------------------------------------
+    tryCatch({
+        pred_occu <- predictOccuR(fit, occuRdata, sitedata,
+                                  years = years,
+                                  scaling = TRUE)
+        # Save predictions
+        for(t in years){
+            # save data if year < 2010 or otherwise if the year is in the middle
+            # of the series or higher (middle should give the most accurate temporal
+            # estimate)
+            if(t < 2010 | (year_range[2] - t) < 2){
+                year_sel <- substring(as.character(t), 3, 4)
+                pred_occu %>%
+                    sf::st_drop_geometry() %>%
+                    dplyr::filter(year == t) %>%
+                    write.csv(paste0(out_dir, sp_sel, "/occur_pred_", year_sel, "_", sp_sel, ".csv"),
+                              row.names = FALSE)
             }
+        }
 
 
-            # Plot model -----------------------------------------------------------
+        # Plot model -----------------------------------------------------------
 
-            for(t in seq(years[1], years[2], 1)){
-                # save data if year < 2010 or otherwise if the year is in the middle
-                # of the series or higher (middle should give the most accurate temporal
-                # estimate)
-                if(t < 2010 | (years[2] - t) < 3){
-                    year_sel <- substring(as.character(t), 3, 4)
+        for(t in years){
+            # save data if year < 2010 or otherwise if the year is in the middle
+            # of the series or higher (middle should give the most accurate temporal
+            # estimate)
+            if(t < 2010 | (year_range[2] - t) < 2){
+                year_sel <- substring(as.character(t), 3, 4)
 
-                    # Occupancy probabilities
-                    psi <- pred_occu %>%
-                        dplyr::filter(year == t) %>%
-                        ggplot() +
-                        geom_sf(aes(fill = psi), size = 0.01) +
-                        scale_fill_viridis_c(limits = c(0, 1)) +
-                        ggtitle(sp_name) +
-                        facet_wrap("lim")
+                # Occupancy probabilities
+                psi <- pred_occu %>%
+                    dplyr::filter(year == t) %>%
+                    ggplot() +
+                    geom_sf(aes(fill = psi), size = 0.01) +
+                    scale_fill_viridis_c(limits = c(0, 1)) +
+                    ggtitle(sp_name) +
+                    facet_wrap("lim")
 
-                    # Detection probabilities
-                    p <- pred_occu %>%
-                        dplyr::filter(year == t) %>%
-                        mutate(pp = if_else(is.na(pp), 1, pp)) %>%
-                        ggplot() +
-                        geom_sf(aes(fill = 1 - pp), size = 0.01) +
-                        scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
-                        ggtitle(sp_name) +
-                        facet_wrap("lim")
+                # Detection probabilities
+                p <- pred_occu %>%
+                    dplyr::filter(year == t) %>%
+                    mutate(p = if_else(is.na(p), 0, p)) %>%
+                    ggplot() +
+                    geom_sf(aes(fill = p), size = 0.01) +
+                    scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
+                    ggtitle(sp_name) +
+                    facet_wrap("lim")
 
-                    # Realized occupancy
-                    occu <- pred_occu %>%
-                        dplyr::filter(year == t) %>%
-                        ggplot() +
-                        geom_sf(aes(fill = real_occu), size = 0.01) +
-                        scale_fill_viridis_c(limits = c(0, 1)) +
-                        ggtitle(sp_name) +
-                        facet_wrap("lim")
+                # Realized occupancy
+                occu <- pred_occu %>%
+                    dplyr::filter(year == t) %>%
+                    ggplot() +
+                    geom_sf(aes(fill = real_occu), size = 0.01) +
+                    scale_fill_viridis_c(limits = c(0, 1)) +
+                    ggtitle(sp_name) +
+                    facet_wrap("lim")
 
-                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
-                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_p_", year_sel, "_", sp_sel, ".png"), p)
-                    ggsave(paste0("/drv_birdie/birdie_ftp/", sp_sel, "/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
-                }
+                ggsave(paste0(out_dir, sp_sel, "/occur_psi_", year_sel, "_", sp_sel, ".png"), psi)
+                ggsave(paste0(out_dir, sp_sel, "/occur_p_", year_sel, "_", sp_sel, ".png"), p)
+                ggsave(paste0(out_dir, sp_sel, "/occur_occu_", year_sel, "_", sp_sel, ".png"), occu)
             }
-        }, error = function(e) {sink(paste0("/drv_birdie/birdie_ftp/",sp_sel,"/failed_pred_", sp_sel,".txt"))}) # TryCatch predict
-    }, error = function(e) {sink(paste0("/drv_birdie/birdie_ftp/",sp_sel,"/failed_fit_", sp_sel,".txt"))}) # TryCatch fit
+        }
+    }, error = function(e){
+        sink(paste0(out_dir, sp_sel, "/failed_pred_", sp_sel,".txt"))
+        print(e)
+        sink()}) # TryCatch predict
+
+
 }

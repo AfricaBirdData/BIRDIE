@@ -22,18 +22,10 @@ prepDataOccuR <- function(site_data, visit_data, scaling = NULL){
 
     # Keep those sites that appear in visits data and drop geometry
     site_data <- site_data %>%
-        sf::st_drop_geometry() %>%
         dplyr::filter(Name %in% sites) %>%
         dplyr::group_by(Name) %>%
         dplyr::mutate(site = dplyr::cur_group_id()) %>%
-        dplyr::ungroup()
-
-    # Separate covariates and years
-    site_data <- site_data %>%
-        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>% # Note that these are hard-coded
-        tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-        tidyr::pivot_wider(names_from = covt, values_from = value) %>%
-        dplyr::mutate(year = as.numeric(year)) %>%
+        dplyr::ungroup() %>%
         dplyr::group_by(year) %>%
         dplyr::mutate(occasion = cur_group_id()) %>%
         dplyr::ungroup()
