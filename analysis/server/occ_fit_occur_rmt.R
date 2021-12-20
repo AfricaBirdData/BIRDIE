@@ -5,11 +5,12 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(BIRDIE)
+library(sf)
 
 rm(list = ls())
 
 # Define data and output directories
-data_dir <- "analysis/data/"
+data_dir <- "/home/birdie/analysis/data/"
 out_dir <- "/drv_birdie/birdie_ftp/"
 
 # For now, we want to select species present at Barberspan
@@ -19,13 +20,13 @@ bbpan <- BIRDIE::barberspan %>%
 
 # Select a range of time. Occupancy models will be fitted from first to second
 ini_year <- 2008
-year_range <- c(ini_year, ini_year + 4)
+year_range <- c(ini_year, ini_year + 4) # this will be 4 in the server
 years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
 years <- year_range[1]:year_range[2]
 
 # Load site data
 sitedata <- readRDS(paste0(data_dir, "site_dat_sa_gee_08_19.rds")) %>%
-    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(year_sel)))
+    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(years)))
 
 # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 sitedata <- sitedata %>%
@@ -39,18 +40,17 @@ visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
 # Occupancy
 
-# For inland species
-land_mod <- c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
-              "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))")
+# For species (in the server there will be c(20, 4) knots),
+site_mods <- list(mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
+                           "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))"),
+                  mod2 = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec",
+                           "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))"),
+                  mod3 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
+                  mod4 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
-# For coastal species
-coast_mod <- c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec",
-               "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))")
 
-
-for(i in seq_along(bbpan)){
-
-    # i = 92 this is a coastal species
+# for(i in seq_along(bbpan)){
+for(i in c(1, 92)){  # i = 92 this is a coastal species
 
     # Select a species and a region -------------------------------------------
 
@@ -87,7 +87,7 @@ for(i in seq_along(bbpan)){
 
     occuRdata <- prepDataOccuR(site_data = sitedata %>%
                                    sf::st_drop_geometry() %>%
-                                   gatherYearFromVars(vars = names(.)[-c(1:6)], sep = "_") %>%
+                                   gatherYearFromVars(vars = names(.)[-c(1:5)], sep = "_") %>% # check that 1:5 are the variables that don't change over time
                                    mutate(tdiff = tmmx - tmmn),
                                visit_data = visitdata,
                                scaling = list(visit = NULL,
@@ -103,30 +103,39 @@ for(i in seq_along(bbpan)){
 
     # Fit occupancy model -----------------------------------------------------
 
-    # Determine if the species is coastal
-    coast <- isSpCoastal(sp_sel, out_dir, reformulate(visit_mod, response = "p"))
-
-    if(coast){
-        site_mod <- coast_mod
-    } else {
-        site_mod <- land_mod
-    }
+    # # Determine if the species is coastal
+    # coast <- isSpCoastal(sp_sel, out_dir, reformulate(visit_mod, response = "p"))
+    #
+    # if(coast){
+    #     site_mod <- coast_mod
+    # } else {
+    #     site_mod <- land_mod
+    # }
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
-    # Smooth for spatial effect on psi
-    tryCatch({
-        fit <- fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                     reformulate(site_mod, response = "psi")),
-                        visit_data = occuRdata$visit,
-                        site_data = occuRdata$site,
-                        print = TRUE)
+    # Fit models sequentially if they don't work
+    success <- FALSE
+    m <- 0
+    while(!success && m <= length(site_mods)){
+        m <- m + 1
+        site_mod <- site_mods[[m]]
+        print(paste("Trying model", m))
+        tryCatch({
+            fit <- fit_occu(forms = list(reformulate(visit_mod, response = "p"),
+                                         reformulate(site_mod, response = "psi")),
+                            visit_data = occuRdata$visit,
+                            site_data = occuRdata$site,
+                            print = TRUE)
 
-        saveRDS(fit, paste0(out_dir, sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
-    }, error = function(e){
-        sink(paste0(out_dir, sp_sel, "/failed_fit_", sp_sel,".txt"))
-        print(e)
-        sink()}) # TryCatch fit
+            success <- TRUE
+            saveRDS(fit, paste0(out_dir, sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
+        }, error = function(e){
+            success <- FALSE
+            sink(paste0(out_dir, sp_sel, "/failed_fit_", m, "_", sp_sel,".txt"))
+            print(e)
+            sink()}) # TryCatch fit
+    }
 
 
     # Predict occupancy -------------------------------------------------------
