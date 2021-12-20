@@ -48,6 +48,8 @@ site_mods <- list(mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'c
                   mod3 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                   mod4 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
+# This will be used for memory cleaning
+keep <- ls()
 
 # for(i in seq_along(bbpan)){
 for(i in 1:2){
@@ -207,5 +209,7 @@ for(i in 1:2){
         print(e)
         sink()}) # TryCatch predict
 
+    rm(list = setdiff(ls(), keep))
+    gc()
 
 }
