@@ -51,8 +51,8 @@ site_mods <- list(mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'c
 # This will be used for memory cleaning
 keep <- ls()
 
-# for(i in seq_along(bbpan)){
-for(i in c(1, 92)){  # i = 92 this is a coastal species
+for(i in seq_along(bbpan)){
+# for(i in c(1, 92)){  # i = 92 this is a coastal species
 
     # Select a species and a region -------------------------------------------
 
@@ -150,7 +150,7 @@ for(i in c(1, 92)){  # i = 92 this is a coastal species
             # save data if year < 2010 or otherwise if the year is in the middle
             # of the series or higher (middle should give the most accurate temporal
             # estimate)
-            if(t < 2010 | (year_range[2] - t) < 2){
+            if(t < 2010 | (year_range[2] - t) < 3){
                 year_sel <- substring(as.character(t), 3, 4)
                 pred_occu %>%
                     sf::st_drop_geometry() %>%
