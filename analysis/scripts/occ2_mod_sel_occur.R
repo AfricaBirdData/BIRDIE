@@ -42,7 +42,7 @@ visit_covts <- list(mod1 = "1",
 coast_covts <- c("1", "dist_coast")
 
 land_mods <- list(mod1 = "1",
-                  mod2 = c("1", "s(dist_coast, bs = 'cs')"),    # This one beats 3,4,5,6
+                  # mod2 = c("1", "s(dist_coast, bs = 'cs')"),    # This one beats 3,4,5,6
                   # mod3 = c("1", "s(watocc_ever, bs = 'cs')"),
                   # mod4 = c("1", "s(watext, bs = 'cs')"),
                   # mod5 = c("1", "s(watrec, bs = 'cs')"),
@@ -52,12 +52,14 @@ land_mods <- list(mod1 = "1",
                   # mod9 = c("1", "s(prcp, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),  # this one beats 8
                   # mod10 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 9
                   # mod11 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 10
-                  mod12 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 11
-                  mod13 = c("1", "dist_coast", "elev", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')")) # this doesn't converge
+                  # mod12 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this one beats 11
+                  # mod13 = c("1", "dist_coast", "elev", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"), # this doesn't converge
+                  mod14 = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", "t2(lon, lat, bs = 'ts')"), # better than 12
+                  mod15 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')", "t2(lon, lat, bs = 'ts')")) # this doesn't converge
 
 coast_mods <- list(mod1 = "1",
                    mod2 = c("1", "dist_coast"),
-                   # mod3 = c("1", "watocc_ever"),
+                   mod3 = c("1", "watocc_ever")#,
                    # mod4 = c("1", "watext"),
                    # mod5 = c("1", "watrec"),
                    # mod6 = c("1", "watrec * watext"),
@@ -65,9 +67,11 @@ coast_mods <- list(mod1 = "1",
                    # mod8 = c("1", "dist_coast", "watext", "watrec"), # this one beats 9
                    # mod9 = c("1", "prcp", "watext", "watrec"),
                    # mod10 = c("1", "dist_coast", "prcp", "watext", "watrec"), #this one beats 8
-                   mod11 = c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec"),   # this one beats 10 and 12
-                   mod12 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"),
-                   mod13 = c("1", "dist_coast", "elev", "ndvi", "watext", "watrec"))
+                   # mod11 = c("1", "dist_coast", "prcp", "tdiff", "watext", "watrec"),   # this one beats 10 and 12
+                   # mod12 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"),
+                   # mod13 = c("1", "dist_coast", "elev", "ndvi", "watext", "watrec"),
+                   # mod14 = c("dist_coast", "prcp", "tdiff", "watext", "watrec", "t2(lon, lat, bs = 'ts')") # as good as 13
+                   )
 
 # Create output lists
 aic_site <- vector("list", length = length(spp))
@@ -134,7 +138,7 @@ for(i in seq_along(spp)){
 
     # Select visit model -----------------------------------------------------
 
-    future::plan("multisession", workers = 6)
+    future::plan("multisession", workers = min(6, length(mods)))
 
     aic_visit[[i]] <- furrr::future_map2_dfr(visit_covts, names(visit_covts),
                                              ~selOccuRmod(forms = list(reformulate(.x, response = "p"),
@@ -160,16 +164,16 @@ for(i in seq_along(spp)){
                                             .options = furrr::furrr_options(packages = "occuR"))
 
     # Test single models
-    fits <- vector("list", length = length(mods))
-    for(m in seq_along(fits)){
-        fits[[m]] <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
-                                           reformulate(mods[[m]], response = "psi")),
-                              # reformulate(site_covts_lin[[m]], response = "psi")),
-                              visit_data = occuRdata$visit,
-                              site_data = occuRdata$site)
-
-        print(dof.occuR(fits[[m]]))
-    }
+    # fits <- vector("list", length = length(mods))
+    # for(m in seq_along(fits)){
+    #     fits[[m]] <- fit_occu(forms = list(reformulate(visit_covts[[1]], response = "p"),
+    #                                        reformulate(mods[[m]], response = "psi")),
+    #                           # reformulate(site_covts_lin[[m]], response = "psi")),
+    #                           visit_data = occuRdata$visit,
+    #                           site_data = occuRdata$site)
+    #
+    #     print(dof.occuR(fits[[m]]))
+    # }
 
     # # Plot effects?
     # plotOccuVars(occuRdata, "dist_coast")
