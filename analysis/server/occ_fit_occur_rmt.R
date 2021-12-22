@@ -167,7 +167,7 @@ for(i in seq_along(bbpan)){
             # save data if year < 2010 or otherwise if the year is in the middle
             # of the series or higher (middle should give the most accurate temporal
             # estimate)
-            if(t < 2010 | (year_range[2] - t) < 2){
+            if(t < 2010 | (year_range[2] - t) < 3){
                 year_sel <- substring(as.character(t), 3, 4)
 
                 # Occupancy probabilities
