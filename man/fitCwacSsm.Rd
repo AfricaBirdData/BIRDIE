@@ -25,8 +25,11 @@ A JAGS fit object
 Fit a state-space model to CWAC counts
 }
 \examples{
+\dontrun{
 counts <- barberspan
 ssmcounts <- prepSsmData(counts, species = NULL)
-fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta",
- "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+fitCwacSsm(ssmcounts, mod_file = "mymodel.jags",
+param = c("beta", "lambda", "sig.zeta",
+"sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+}
 }

@@ -16,10 +16,14 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' counts <- barberspan
 #' ssmcounts <- prepSsmData(counts, species = NULL)
-#' fit <- fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+#' fit <- fitCwacSsm(ssmcounts, mod_file = "mymodel.jags",
+#' param = c("beta", "lambda", "sig.zeta",
+#' "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
 #' plotSsm2ss(fit = fit, ssm_counts = ssmcounts)
+#' }
 plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
                        plot_options = list(colors = NULL, pers_theme = NULL)){
 

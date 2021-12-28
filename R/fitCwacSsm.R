@@ -12,18 +12,14 @@
 #' @export
 #'
 #' @examples
+#' \dontrun{
 #' counts <- barberspan
 #' ssmcounts <- prepSsmData(counts, species = NULL)
-#' fitCwacSsm(ssmcounts, param = c("beta", "lambda", "sig.zeta",
-#'  "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+#' fitCwacSsm(ssmcounts, mod_file = "mymodel.jags",
+#' param = c("beta", "lambda", "sig.zeta",
+#' "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t", "mu_wt"))
+#' }
 fitCwacSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
-
-    if(is.null(mod_file)){
-        modpath <- BIRDIE::writeJagsModelFile()
-        warning("mod_file not provided, running writeJagsModelFile, see ?writeJagsModelFile")
-    } else {
-        modpath <- mod_file
-    }
 
     # Prepare data (note the addition of 0.1 to avoid infinite values)
     data <- list(winter = log(counts[counts$season_id == 2, "count", drop = TRUE] + 0.1),
@@ -42,15 +38,10 @@ fitCwacSsm <- function(counts, mod_file = NULL, param, jags_control = NULL){
 
     # Start Gibbs sampling
     fit <- jagsUI::jags(data = data, inits = inits,
-                    parameters.to.save = param, model.file = modpath,
+                    parameters.to.save = param, model.file = mod_file,
                     n.chains = nc, n.adapt = na, n.iter = ni, n.burnin = nb, n.thin = nt,
                     modules = c('glm','lecuyer', 'dic'), factories = NULL, parallel = prll, n.cores = ncores,
                     DIC = TRUE, verbose = TRUE)
-
-    # Remove temporary model file
-    if(is.null(mod_file)){
-        unlink(modpath)
-    }
 
     return(fit)
 
