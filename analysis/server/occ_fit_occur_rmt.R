@@ -41,8 +41,8 @@ visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 # Occupancy
 
 # For species (in the server there will be c(20, 4) knots),
-site_mods <- list(mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
-                           "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))"),
+site_mods <- list(#mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
+                  #         "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))"),
                   mod2 = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec",
                            "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))"),
                   mod3 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
@@ -128,7 +128,7 @@ for(i in seq_along(bbpan)){
                                          reformulate(site_mod, response = "psi")),
                             visit_data = occuRdata$visit,
                             site_data = occuRdata$site,
-                            print = TRUE)
+                            print = FALSE)
 
             success <- TRUE
             saveRDS(fit, paste0(out_dir, sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
