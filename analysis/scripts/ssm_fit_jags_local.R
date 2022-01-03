@@ -15,14 +15,14 @@ plot_outdir <- "analysis/out_nosync/"
 counts <- barberspan
 
 # Identify site
-site_id <- unique(counts$Loc_Code)
+site_id <- unique(counts$LocationCode)
 
 if(length(site_id) != 1){
     stop("Either location code is missing or there are multiple sites.")
 }
 
 # Get species list
-spp <- unique(counts$spp)
+spp <- unique(counts$SppRef)
 
 
 # Fit models and save results ---------------------------------------------
@@ -32,7 +32,7 @@ for(i in seq_along(spp)){
     sp <- spp[i]
 
     # Prepare data to fit an SSM
-    ssmcounts <- BIRDIE::prepSsmData(counts, species = sp)
+    ssmcounts <- BIRDIE::prepSsmData(counts, spp_sel = sp)
 
     # Fit 2-season dynamic trend model
     fit_dyn <- BIRDIE::fitCwacSsm(ssmcounts, mod_file = mod_file,
