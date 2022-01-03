@@ -31,6 +31,8 @@ for(i in seq_along(spp)){
 
     sp <- spp[i]
 
+    print(paste0("Working on species ", sp, " (", i, " of ", length(spp), ")"))
+
     # Prepare data to fit an SSM
     ssmcounts <- BIRDIE::prepSsmData(counts, spp_sel = sp)
 

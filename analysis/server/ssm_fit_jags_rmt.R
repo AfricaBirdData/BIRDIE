@@ -5,7 +5,7 @@ rm(list = ls())
 
 # Script settings ---------------------------------------------------------
 
-mod_file <- "/drv_birdie/birdie_ftp/Working/git/BIRDIE/analysis/models/cwac_ssm_2ss_dyn.jags"
+mod_file <- "/drv_birdie/Working/git/BIRDIE/analysis/models/cwac_ssm_2ss_dyn.jags"
 data_outdir <- "/drv_birdie/birdie_ftp/"
 plot_outdir <- "/drv_birdie/birdie_ftp/"
 
@@ -30,6 +30,8 @@ spp <- unique(counts$SppRef)
 for(i in seq_along(spp)){
 
     sp <- spp[i]
+
+    print(paste0("Working on species ", sp, " (", i, " of ", length(spp), ")"))
 
     # Prepare data to fit an SSM
     ssmcounts <- BIRDIE::prepSsmData(counts, spp_sel = sp)
