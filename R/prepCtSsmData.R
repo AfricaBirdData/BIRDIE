@@ -17,8 +17,8 @@ prepCtSsmData <- function(counts, species = NULL){
 
     # Prepare species output name
     if(length(species) == 1){
-        sp_name <- paste(unique(counts[counts$spp == species, "taxon.Common_species"]),
-                         unique(counts[counts$spp == species, "taxon.Common_group"]))
+        sp_name <- paste(unique(counts[counts$spp == species, "Common_species"]),
+                         unique(counts[counts$spp == species, "Common_group"]))
     } else {
         sp_name <- "multi"
     }
