@@ -1,0 +1,65 @@
+# This model considers two potentially unobserved states: summer and winter
+
+model {
+
+  # Priors
+  stt_s[1] ~ dnorm(0, 1/10)       # prior for initial population size
+  beta[1] ~ dnorm(3, 1/10)       # prior for initial growth rate
+  lambda[1] ~ dnorm(0, 1/10)
+
+  tau.zeta ~ dt(0, 1/10, 1) T(0,)    # dt with 1 degree of freedom to make a Cauchy prior
+  tau.w ~ dt(0, 1/10, 1) T(0,)
+  tau.eps ~ dt(0, 1/10, 1) T(0,)
+  tau.alpha ~ dt(0, 1/20, 1) T(0,)
+  tau.e ~ dt(0, 1/20, 1) T(0,)
+
+  sig.zeta = 1/tau.zeta
+  sig.w = 1/tau.w
+  sig.eps = 1/tau.eps
+  sig.alpha = 1/tau.alpha
+  sig.e = 1/tau.e
+
+  for(k in 1:K){
+    B[k] ~ dnorm(0, 1)          # Prior for season covariate coefficients
+  }
+
+  # likelihood
+
+  # State updates
+  stt_w[1] = stt_s[1] + lambda[1]
+
+  for (y in 1:(nyears-1)){
+
+    # Beta update
+    w[y] ~ dnorm(0, tau.w)
+    zeta[y] ~ dnorm(0, tau.zeta)
+    beta[y+1] = beta[y] + zeta[y]
+
+    # Lambda update
+    eps[y] ~ dnorm(0, tau.eps)
+    lambda[y+1] = lambda[y] + eps[y] # winter to summer ratio
+
+    # State update
+    stt_s[y+1] = stt_s[y] + beta[y] + w[y]
+    stt_w[y+1] = stt_s[y+1] + lambda[y+1]
+
+  }
+
+  # model for summer/winter
+  for(i in 1:N){
+    summer[i] ~ dbern(p[i])
+    logit(p[i]) = inprod(B, X[i,])
+    winter[i] = 1 - summer[i]
+ }
+
+  for(i in 1:N){
+
+    # State process
+    mu_t[i] = stt_s[year[i]]*summer[i] + stt_w[year[i]]*winter[i]
+
+    # observation process
+    obs[i] ~ dnorm(mu_t[i], tau.alpha*summer[i] + tau.e*winter[i])
+
+  }
+
+}

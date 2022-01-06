@@ -32,13 +32,14 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
     }
 
     # Create a data frame with the posterior state
-    post_stt <- data.frame(mu_est = c(fit$mean$mu_t, fit$mean$mu_wt),
-                           mu_lb = c(fit$q2.5$mu_t, fit$q2.5$mu_wt),
-                           mu_ub = c(fit$q97.5$mu_t, fit$q97.5$mu_wt),
-                           year = rep(unique(ssm_counts$year), 2),
-                           season = rep(unique(ssm_counts$season_id), each = nrow(ssm_counts)/2),
-                           count = c(log(ssm_counts[ssm_counts$season_id==1, "count", drop = T] + 0.1),
-                                     log(ssm_counts[ssm_counts$season_id==2, "count", drop = T] + 0.1)))
+    post_stt <- data.frame(mu_est = fit$mean$mu_t,
+                           mu_lb = fit$q2.5$mu_t,
+                           mu_ub = fit$q97.5$mu_t,
+                           year = ssmcounts$year,
+                           season = ssmcounts$Season,
+                           count = log(ssmcounts$count + 0.1)) %>%
+        dplyr::filter(season != "O") %>%
+        dplyr::mutate(season = ifelse(season == "S", 1, 2))
 
     if(linear){
         post_stt <- post_stt %>%
@@ -47,7 +48,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         abund_label <- "Abundance"
 
         # Cut axis when values are larger than 10 times the max count
-        ylims <- c(0, max(post_stt$count, na.rm = T) * 10)
+        # ylims <- c(0, max(post_stt$count, na.rm = T) * 10)
 
     } else {
 
@@ -67,7 +68,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         ggplot2::geom_point(aes(x = year, y = count, col = factor(season)), show.legend = FALSE) +
         ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
         ggplot2::scale_colour_manual(values = plot_options$colors) +
-        ggplot2::coord_cartesian(ylim = ylims) +
+        # ggplot2::coord_cartesian(ylim = ylims) +
         ggplot2::facet_wrap("season", ncol = 2,
                             labeller = ggplot2::labeller(season = c("1" = "Summer", "2" = "Winter"))) +
         ggplot2::xlab("Year") + ggplot2::ylab(abund_label) +

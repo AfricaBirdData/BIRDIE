@@ -1,7 +1,11 @@
 #' Prepare CWAC data to fit a state-space model
 #'
 #' @param counts A data frame with raw CWAC count data
-#' @param spp_sel An optional vector of species codes. Only records for these species are prepared for fitting an SSM, others are discarded.
+#' @param spp_sel An optional vector of species codes. Only records for these
+#' species are prepared for fitting an SSM, others are discarded.
+#' @param keep A vector of variables to keep after the processing. Useful, if
+#' there are covariates of interest. If NULL, only year, season, start date,
+#' count and species name are returned.
 #'
 #' @return A tibble with clean and prepared data for fitting an SSM (e.g. filled with missing years)
 #' @export
@@ -11,76 +15,81 @@
 #' prepSsmData(counts)
 #' prepSsmData(counts, spp_sel = 212)
 #' prepSsmData(counts, spp_sel = c(212, 50))
-prepSsmData <- function(counts, spp_sel = NULL){
+prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
 
-    # Prepare variable names
+    keep <- Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec)
+
+
+    # Save dataframe to save all the original variables
+    counts_orig <- counts
+
+    # Prepare variables and sort data by date
     counts <- counts %>%
-        dplyr::rename(spp = SppRef) %>%
-        dplyr::rename_with(.fn = ~tolower(.x))
+        dplyr::mutate(year = lubridate::year(StartDate)) %>%
+        dplyr::arrange(StartDate)
 
     # Prepare species output name
     if(length(spp_sel) == 1){
-        sp_name <- paste(unique(counts[counts$spp == spp_sel, "common_species"]),
-                         unique(counts[counts$spp == spp_sel, "common_group"]))
+        sp_name <- counts %>%
+            dplyr::filter(!is.na(Common_species),
+                          SppRef == spp_sel) %>%
+            dplyr::distinct(sp_name = paste(Common_species, Common_group)) %>%
+            dplyr::pull(sp_name)
     } else {
         sp_name <- "multi"
     }
 
-    # Prepare season info -----------------------------------------------------
 
-    # Some records are classified as "O" (other). We are only interested in summer and winter
-    # so we filter out "O"
-    counts <- counts %>%
-        dplyr::filter(season != "O")
+    # Check one card per day -------------------------------------------------
 
-    # We also create a numeric season variable for season
-    counts <- counts %>%
-        dplyr::mutate(season_id = ifelse(season == "W", 2, 1),
-                      # and a year variable
-                      year = lubridate::year(startdate))
-
-    # Are there more than one card per season and year?
-    # It doesn't seem to, but we should be careful about this
-    if(1 < counts %>%
-       dplyr::group_by(year, season_id) %>%
-       dplyr::summarize(n = dplyr::n_distinct(card)) %>%
-       dplyr::pull(n) %>%
-       max()){
-        warning("More than one card per year. Data is not appropiate for SSM")
+    if((counts %>%
+        filter(!is.na(Card)) %>%
+        count(Card, StartDate) %>%
+        count(Card) %>%
+        pull(n) %>% max() > 1)){
+        stop("Some cards are repeated in different days!")
+    } else if((counts %>%
+               filter(!is.na(Card)) %>%
+               count(Card, StartDate) %>%
+               count(StartDate) %>%
+               pull(n) %>% max() > 1)){
+        stop("Some dates have more than one card!")
     }
-
-    # Calculate seasonal counts
-
-    # Sum all counts per card
-    counts_all_spp <- counts %>%
-        dplyr::group_by(card, year, season_id) %>%
-        dplyr::summarize(count = sum(count)) %>%
-        dplyr::ungroup() %>%
-        tidyr::complete(year = min(year):max(year), season_id) # Fill in missing years
-
 
     # Filter species ----------------------------------------------------------
 
     if(!is.null(spp_sel)){
-        counts_sp <- counts %>%
-            dplyr::filter(spp %in% spp_sel) %>%
-            dplyr::group_by(card, year, season_id) %>%
-            dplyr::summarize(count = sum(count)) %>%
+
+        counts <- counts %>%
+            dplyr::mutate(count = dplyr::case_when(SppRef %in% spp_sel ~ Count,
+                                                   is.na(SppRef) ~ NA_integer_,
+                                                   TRUE ~ 0L))
+
+        counts_sum <- counts %>%
+            dplyr::group_by(year, Season, StartDate) %>%
+            dplyr::summarize(count = sum(count, na.rm = F)) %>%
             dplyr::ungroup()
 
-        counts <- counts_all_spp %>%
-            dplyr::left_join(counts_sp[,c("card", "count")],
-                             by = c("card")) %>%
-            dplyr::mutate(count.y = ifelse(is.na(count.y) & !is.na(count.x), 0, count.y)) %>%
-            dplyr::rename(count = count.y) %>%
-            dplyr::select(-count.x)
-
     } else {
-        counts <- counts_all_spp
+
+        counts_sum <- counts %>%
+            dplyr::group_by(year, Season, StartDate) %>%
+            dplyr::summarize(count = sum(Count, na.rm = F)) %>%
+            dplyr::ungroup()
+
     }
 
     # Add a column with species name
-    counts$spp <- sp_name
+    counts_sum$spp <- sp_name
 
-    return(counts)
+    # Put back original variables
+    if(!is.null(keep)){
+        counts_sum <- counts_sum %>%
+            dplyr::left_join(counts_orig %>%
+                                 dplyr::select(Season, StartDate, dplyr::all_of(keep)) %>%
+                                 dplyr::distinct(),
+                             by = c("Season", "StartDate"))
+    }
+
+    return(counts_sum)
 }
