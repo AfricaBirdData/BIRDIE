@@ -149,10 +149,10 @@ for(i in seq_along(spp)){
                       winter.prop.ci.upper)
 
     # Export sample
-    datadir <- paste0(data_outdir, sp, "/ssm_dat_", site_id, "_", sp, "new.csv")
+    datadir <- paste0(data_outdir, sp, "/ssm_dat_", site_id, "_", sp, ".csv")
     utils::write.csv(out_df, datadir, row.names = FALSE)
 
-    plotdir <- paste0(plot_outdir, sp, "/ssm_plot_", site_id, "_", sp, "new.png")
+    plotdir <- paste0(plot_outdir, sp, "/ssm_plot_", site_id, "_", sp, ".png")
     ggplot2::ggsave(plotdir, plot = p$plot, width = 6.4, height = 5.2)
 
 }
