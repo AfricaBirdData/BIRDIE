@@ -89,7 +89,7 @@ for(i in seq_along(spp)){
     # Fit 2-season dynamic trend model
     fit_dyn <- jagsUI::jags(data = data,
                             parameters.to.save = param,
-                            model.file = "analysis/models/cwac_ssm_lat_season.jags",
+                            model.file = mod_file,
                             n.chains = 3, n.iter = 10000, n.burnin = 5000,
                             modules = c('glm','lecuyer', 'dic'), parallel = TRUE,
                             n.cores = 3, DIC = TRUE, verbose = TRUE)
