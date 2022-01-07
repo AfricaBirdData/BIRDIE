@@ -15,7 +15,7 @@ out_dir <- "/drv_birdie/birdie_ftp/"
 
 # For now, we want to select species present at Barberspan
 bbpan <- BIRDIE::barberspan %>%
-    pull(spp) %>%
+    pull(SppRef) %>%
     unique()
 
 # Select a range of time. Occupancy models will be fitted from first to second
@@ -61,8 +61,8 @@ for(i in seq_along(bbpan)){
     print(paste0("Working on species ", sp_sel, " (", i, " of ", length(bbpan), ")"))
 
     sp_name <- BIRDIE::barberspan %>%
-        dplyr::filter(spp == sp_sel) %>%
-        mutate(name = paste(taxon.Common_species, taxon.Common_group)) %>%
+        dplyr::filter(SppRef == sp_sel) %>%
+        mutate(name = paste(Common_species, Common_group)) %>%
         pull(name) %>%
         unique()
 

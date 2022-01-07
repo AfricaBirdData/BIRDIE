@@ -15,7 +15,7 @@ out_dir <- "analysis/out_nosync/"
 
 # For now, we want to select species present at Barberspan
 bbpan <- BIRDIE::barberspan %>%
-    pull(spp) %>%
+    pull(SppRef) %>%
     unique()
 
 # Select a range of time. Occupancy models will be fitted from first to second
@@ -41,8 +41,8 @@ visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 # Occupancy
 
 # For species (in the server there will be c(20, 4) knots),
-site_mods <- list(mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
-                           "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))"),
+site_mods <- list(#mod1 = c("dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')",
+                  #         "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))"),
                   mod2 = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec",
                            "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))"),
                   mod3 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
@@ -63,8 +63,8 @@ for(i in 1:2){
     print(paste0("Working on species ", sp_sel, " (", i, " of ", length(bbpan), ")"))
 
     sp_name <- BIRDIE::barberspan %>%
-        dplyr::filter(spp == sp_sel) %>%
-        mutate(name = paste(taxon.Common_species, taxon.Common_group)) %>%
+        dplyr::filter(SppRef == sp_sel) %>%
+        mutate(name = paste(Common_species, Common_group)) %>%
         pull(name) %>%
         unique()
 
