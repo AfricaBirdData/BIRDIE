@@ -42,7 +42,10 @@ if(length(site_id) != 1){
 }
 
 # Get species list
-spp <- unique(counts$SppRef)
+spp <- counts %>%
+    filter(!is.na(SppRef)) %>%
+    pull(SppRef) %>%
+    unique()
 
 
 # Fit models and save results ---------------------------------------------
