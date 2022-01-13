@@ -47,7 +47,7 @@ summarizePredOccuR <- function(pred_p, pred_psi, pred_data, visit_data,
                                                        is.na(obs) ~ psi,
                                                        obs == 0 ~ psi*q / (1 - psi + psi*q)),
                           p = 1 - q) %>%
-            dplyr::select(Name, site, occasion, psi, p, real_occu)
+            dplyr::select(Name, year, site, occasion, psi, p, real_occu)
 
     } else if(is.matrix(pred_p) & is.matrix(pred_psi)){
 
@@ -67,7 +67,7 @@ summarizePredOccuR <- function(pred_p, pred_psi, pred_data, visit_data,
                           lb = apply(pred_p, 2, quantile, quants[1]),
                           med = apply(pred_p, 2, quantile, quants[2]),
                           est = apply(pred_p, 2, mean)) %>%
-            tidyr::pivot_longer(cols = -c(site, occasion, obs),
+            tidyr::pivot_longer(cols = c("ub", "lb", "med", "est"),
                                 names_to = "lim", values_to = "p") %>%
             dplyr::group_by(site, occasion, lim) %>%
             dplyr::summarize(q = prod(1-p),
@@ -88,7 +88,7 @@ summarizePredOccuR <- function(pred_p, pred_psi, pred_data, visit_data,
                                                        is.na(obs) ~ psi,
                                                        obs == 0 ~ psi*q / (1 - psi + psi*q)),
                           p = 1 - q) %>%
-            dplyr::select(Name, site, occasion, psi, p, real_occu, lim)
+            dplyr::select(Name, year, site, occasion, psi, p, real_occu, lim)
     } else {
         stop("pred_p and pred_psi must be either both vectors or both matrices")
     }
