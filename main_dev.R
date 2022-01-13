@@ -519,6 +519,28 @@ use_test()
 
 test()
 
+# Function calcRealzOccuR --------------------------------------------------
+
+# Add function
+use_r("calcRealzOccuR")
+
+# test locally
+load_all()
+
+# Add documentation
+# Add ROxygen skeleton manually
+document()
+
+check()
+
+# Add tests
+
+use_testthat()
+
+use_test()
+
+test()
+
 
 # Install -----------------------------------------------------------------
 

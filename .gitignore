@@ -20,3 +20,6 @@ comms/**/*.toc
 comms/**/*.aux
 comms/**/*.log
 comms/**/*.synctex.gz
+
+# Ignore beta functions
+beta/*
