@@ -17,9 +17,6 @@
 #' prepSsmData(counts, spp_sel = c(212, 50))
 prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
 
-    keep <- Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec)
-
-
     # Save dataframe to save all the original variables
     counts_orig <- counts
 
@@ -43,16 +40,16 @@ prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
     # Check one card per day -------------------------------------------------
 
     if((counts %>%
-        filter(!is.na(Card)) %>%
-        count(Card, StartDate) %>%
-        count(Card) %>%
-        pull(n) %>% max() > 1)){
+        dplyr::filter(!is.na(Card)) %>%
+        dplyr::count(Card, StartDate) %>%
+        dplyr::count(Card) %>%
+        dplyr::pull(n) %>% max() > 1)){
         stop("Some cards are repeated in different days!")
     } else if((counts %>%
-               filter(!is.na(Card)) %>%
-               count(Card, StartDate) %>%
-               count(StartDate) %>%
-               pull(n) %>% max() > 1)){
+               dplyr::filter(!is.na(Card)) %>%
+               dplyr::count(Card, StartDate) %>%
+               dplyr::count(StartDate) %>%
+               dplyr::pull(n) %>% max() > 1)){
         stop("Some dates have more than one card!")
     }
 
