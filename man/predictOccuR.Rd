@@ -4,15 +4,7 @@
 \alias{predictOccuR}
 \title{Predict occupancy from occuR model}
 \usage{
-predictOccuR(
-  fit,
-  occuRdata,
-  pred_sites,
-  years,
-  scaling = FALSE,
-  quants = c(0.025, 0.5, 0.975),
-  boots = 1000
-)
+predictOccuR(fit, occuRdata, pred_sites, years, scaling = FALSE, boots = 1000)
 }
 \arguments{
 \item{fit}{A occuR model fit. See \link[occuR]{fit_occu}}
@@ -28,18 +20,10 @@ for.}
 before predicting. Scaling factors will be extracted from the attributes of
 occuRdata. See \link{scale}.}
 
-\item{quants}{A vector of three quantiles of occupancy predictions to be
-computed. Passed as c("lower", "med", "upper").}
-
 \item{boots}{Number of bootstrap samples to calculate quantiles.}
 }
 \value{
-A tibble with estimates and quantiles for each pentad in pred_sites:
-\itemize{
-\item psi: occupancy probability,
-\item p: detection probability,
-\item occu: realized occupancy (occupancy conditional on data).
-}
+A list with predictions for detection and occupancy probabilities.
 }
 \description{
 Predict occupancy from occuR model

@@ -1,33 +1,29 @@
-#' Predict occupancy from occuR model
+#' Prepare site data to predict from occuR occupancy model
 #'
-#' @param fit A occuR model fit. See \link[occuR]{fit_occu}
 #' @param occuRdata A list produced by \link{prepDataOccuR}
-#' @param pred_sites A spatial `sf` object with the sites to predict occupancy
-#' for.
+#' @param pred_sites A dataframe with the sites to predict occupancy for.
 #' @param years A vector with years to predict for.
 #' @param scaling Logical; whether it is necessary to scale the variables
 #' before predicting. Scaling factors will be extracted from the attributes of
 #' occuRdata. See \link{scale}.
-#' @param boots Number of bootstrap samples to calculate quantiles.
 #'
-#' @return A list with predictions for detection and occupancy probabilities.
+#' @return A dataframe with site information to predict from an occuR model.
+#' Sites and occasions are formatted according to occuRdata.
 #' @export
 #'
 #' @examples
-predictOccuR <- function(fit, occuRdata, pred_sites, years, scaling = FALSE,
-                         boots = 1000){
+prepPredictDataOccuR <- function(occuRdata, pred_sites, years, scaling = FALSE){
 
     # Add site info if not present
     pred_sites <- pred_sites %>%
         dplyr::left_join(occuRdata$site %>%
                              dplyr::select(Name, site) %>%
                              dplyr::distinct(),
-                         by = "Name") %>%
-        dplyr::select(-Name)
+                         by = "Name")
 
     # Separate variables into columns and add necessary covariates
     pred_data <- pred_sites %>%
-        tidyr::pivot_longer(cols = -c(lon, lat, site, watocc_ever, dist_coast)) %>% # Note that these are hard-coded
+        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>% # Note that these are hard-coded
         tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
         tidyr::pivot_wider(names_from = covt, values_from = value) %>%
         dplyr::mutate(year = as.integer(year),
@@ -55,8 +51,5 @@ predictOccuR <- function(fit, occuRdata, pred_sites, years, scaling = FALSE,
                          by = "year") %>%
         data.table::as.data.table()
 
-    # Predict
-    pred <- predict(fit, occuRdata$visit,  pred_data, nboot = boots)
-
-    return(pred)
+    return(pred_data)
 }
