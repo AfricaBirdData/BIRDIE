@@ -27,6 +27,11 @@ if(server){
     # and spatio-temporal effect
     sptemp <- "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(20, 4) in the server and c(15, 3) locally
 
+    # Define species to fit models to
+    species <- BIRDIE::barberspan %>% # For now, we want to select species present at Barberspan
+        pull(SppRef) %>%
+        unique()
+
 
 } else {
 
@@ -41,16 +46,15 @@ if(server){
     # and spatio-temporal effect
     sptemp <- "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(20, 4) in the server and c(15, 3) locally
 
+    # Define species to fit models to
+    species <- c(4, 6, 41, 235, 240)
+
 }
+
 
 # Define a range of years to fit occupancy model
 years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
 years <- year_range[1]:year_range[2]
-
-# Define species to fit models to
-species <- BIRDIE::barberspan %>% # For now, we want to select species present at Barberspan
-    pull(SppRef) %>%
-    unique()
 
 
 # Load site data ----------------------------------------------------------
@@ -146,7 +150,7 @@ for(i in seq_along(species)){
                                          reformulate(site_mod, response = "psi")),
                             visit_data = occuRdata$visit,
                             site_data = occuRdata$site,
-                            print = FALSE)
+                            print = TRUE)
 
             success <- TRUE
             saveRDS(fit, paste0(out_dir, sp_sel, "/occur_fit_", years_ch, "_", sp_sel, ".rds"))
