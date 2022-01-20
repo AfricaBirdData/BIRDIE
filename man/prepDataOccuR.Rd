@@ -4,21 +4,38 @@
 \alias{prepDataOccuR}
 \title{Prepare data for fitting a model with occuR}
 \usage{
-prepDataOccuR(site_data, visit_data, scaling = NULL)
+prepDataOccuR(
+  spp_code = NULL,
+  years = NULL,
+  site_data,
+  visit_data,
+  download = FALSE
+)
 }
 \arguments{
+\item{spp_code}{SAFRING_No of the species of interest as extracted from ABAP.
+Ignored if download set to FALSE.}
+
+\item{years}{A numeric vector with elements corresponding to the years we
+want data for. Ignored if download set to FALSE.}
+
 \item{site_data}{A dataframe with occupancy site data.}
 
 \item{visit_data}{A dataframe with occupancy visit data.}
 
-\item{scaling}{Either NULL, in which case no scaling is performed or a list
-of two named vectors: "site" and "visit" indicating the variables to scale
-in the site and visit dataframes.}
+\item{download}{Indicates whether ABAP data must be downloaded for the species
+and years indicated by 'spp_code' and 'years'. If TRUE, data will be downloaded
+from ABAP once per session and cached in a temp file. After this the cached
+file will be used, unless download is set to "force", in which case data will
+be downloaded regardless of the cached file. If FALSE data will not be
+downloaded or retrieved from cache.}
 }
 \value{
 A list containing two data frames: one with site data and one with
 visit data ready to use with the occuR package
 }
 \description{
-Prepare data for fitting a model with occuR
+This function takes generic occupancy visit and site data
+without species observations, adds detection data for a species in a given
+year and formats the output to match occuR standards.
 }
