@@ -29,6 +29,7 @@ Imports:
     lwgeom,
     magrittr,
     mgcv,
+    occuR,
     rgeos,
     sf,
     tidyr,
