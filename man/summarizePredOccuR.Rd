@@ -24,6 +24,14 @@ occuR model predictions.}
 \item{quants}{Quantiles to summarize predictions when bootstrap predictions
 are supplied in pred_p and pred_psi. Passed as c("lower", "med", "upper").}
 }
+\value{
+A tibble with estimates and/or quantiles for each pentad in site_data:
+\itemize{
+\item psi: occupancy probability,
+\item p: detection probability,
+\item occu: realized occupancy (occupancy conditional on data).
+}
+}
 \description{
 occuR produces estimates of detection probability for each
 visit and occupancy probabilities for each site. This functions takes these

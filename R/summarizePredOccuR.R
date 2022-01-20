@@ -18,7 +18,7 @@
 #' @param quants Quantiles to summarize predictions when bootstrap predictions
 #' are supplied in pred_p and pred_psi. Passed as c("lower", "med", "upper").
 #'
-#' @returnA tibble with estimates and/or quantiles for each pentad in site_data:
+#' @return A tibble with estimates and/or quantiles for each pentad in site_data:
 #' - psi: occupancy probability,
 #' - p: detection probability,
 #' - occu: realized occupancy (occupancy conditional on data).
