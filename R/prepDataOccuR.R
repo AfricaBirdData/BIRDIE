@@ -35,8 +35,7 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
         if(!is.null(spp_code) & !is.null(years)){
 
             # Cache file name
-            cachefile <- tempfile(pattern = paste(c("abap", spp_code, years), collapse = "_"),
-                                  fileext = ".rds")
+            cachefile <- file.path(tempdir(), paste(c(spp_code, years, ".rds"), collapse = "_"))
 
             if(file.exists(cachefile) & download != "force"){
                 print("Using cached file")
