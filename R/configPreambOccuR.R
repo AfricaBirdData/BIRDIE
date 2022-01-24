@@ -20,8 +20,8 @@ configPreambOccuR <- function(year, server){
     if(server){
 
         # Define data and output directories
-        data_dir <- "/home/birdie/analysis/data/"
-        fit_dir <- "/drv_birdie/birdie_ftp/"
+        data_dir <- "/home/birdie/analysis/data"
+        fit_dir <- "/drv_birdie/birdie_ftp"
 
         # Define years to fit
         dyear <- 4  # this will be 4 in the server and 2 locally
