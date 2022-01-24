@@ -12,7 +12,7 @@ rm(list = ls())
 
 # Script parameters -------------------------------------------------------
 
-year_sel <- 2008
+year_sel <- 2010
 
 config <- configPreambOccuR(year = year_sel, server = TRUE)
 
