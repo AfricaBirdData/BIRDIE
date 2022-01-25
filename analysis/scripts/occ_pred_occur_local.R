@@ -90,15 +90,17 @@ for(i in seq_along(config$species)){
             if(t > config$dyear/2){
 
                 # select year
-                year_sel <- substring(as.character(config$years[t]), 3, 4)
+                yy <- substring(as.character(config$years[t]), 3, 4)
 
-                # Subset predictions
+                # Subset predictions and add species
                 pred_sel <- summ_occu %>%
-                    dplyr::filter(year == config$years[t])
+                    dplyr::filter(year == config$years[t]) %>%
+                    dplyr::mutate(species = sp_sel) %>%
+                    dplyr::select(species, everything())
 
                 # Save predictions
                 pred_sel %>%
-                    write.csv(file.path(config$fit_dir, sp_sel, paste0("occur_pred_", year_sel, "_", sp_sel, ".csv")),
+                    write.csv(file.path(config$fit_dir, sp_sel, paste0("occur_pred_", yy, "_", sp_sel, ".csv")),
                               row.names = FALSE)
 
                 ## PLOTS
@@ -133,9 +135,9 @@ for(i in seq_along(config$species)){
                     ggtitle(paste(sp_name, config$years[t])) +
                     facet_wrap("lim")
 
-                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_psi_", year_sel, "_", sp_sel, ".png")), psi)
-                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_p_", year_sel, "_", sp_sel, ".png")), p)
-                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_occu_", year_sel, "_", sp_sel, ".png")), occu)
+                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_psi_", yy, "_", sp_sel, ".png")), psi)
+                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_p_", yy, "_", sp_sel, ".png")), p)
+                ggsave(file.path(config$fit_dir, sp_sel, paste0("occur_occu_", yy, "_", sp_sel, ".png")), occu)
 
             }
         }
