@@ -11,7 +11,7 @@ rm(list = ls())
 
 # Script parameters -------------------------------------------------------
 
-year_sel <- 2008
+year_sel <- 2009
 
 config <- configPreambOccuR(year = year_sel, server = FALSE)
 
@@ -33,7 +33,7 @@ visitdata <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds")) %
 visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
 # Occupancy
-site_mods <- list(mod1 = c("-1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", config$sp_temp),
+site_mods <- list(mod1 = c("-1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", config$sptemp),
                   mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                   mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
