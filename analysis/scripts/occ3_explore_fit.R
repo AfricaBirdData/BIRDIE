@@ -150,7 +150,10 @@ gm %>%
 
 pred_data <- pred_data %>%
     mutate(prcp = 0,
-           water = 0,
+           watext = 0,
+           watrec = 0,
+           dist_coast = 0,
+           ndvi = 0,
            tmax = 0,
            tmin = 0) %>%
     data.table::as.data.table()
