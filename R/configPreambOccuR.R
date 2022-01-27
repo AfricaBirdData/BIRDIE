@@ -50,11 +50,11 @@ configPreambOccuR <- function(year, server){
     }
 
     # Define a range of years covered by the occupancy model
-    year_range <- c(year_sel - dyear/2, year_sel + dyear/2)
+    year_range <- c(year - dyear/2, year + dyear/2)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, fit_dir=fit_dir, dyear=dyear, sptemp=sptemp,
-         species=species, year_range=year_range, years_ch=years_ch, years=years)
+    list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, sptemp=sptemp,
+         year=year, dyear=dyear, year_range=year_range, years_ch=years_ch, years=years)
 
 }
