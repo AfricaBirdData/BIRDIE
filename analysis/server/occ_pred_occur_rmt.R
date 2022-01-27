@@ -87,7 +87,7 @@ for(i in seq_along(config$species)){
             # save data and plots if the year is in the middle of the series or
             # higher (middle should give the most accurate temporal estimate)
 
-            if(t > config$dyear/2){
+            if((t > config$dyear/2) | (config$year < (2009 + config$dyear/2))){
 
                 # select year
                 yy <- substring(as.character(config$years[t]), 3, 4)
