@@ -20,7 +20,7 @@ config <- configPreambOccuR(year = year_sel, server = FALSE)
 
 # Load data and subset years
 sitedata <- readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
-    dplyr::select(Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(config$years))) %>%
+    dplyr::select(Pentad = Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(config$years))) %>%
     tidyr::drop_na()   # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 
 visitdata <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds")) %>%
@@ -58,7 +58,16 @@ for(i in seq_along(config$species)){
                                        years = config$years,
                                        site_data = sitedata,
                                        visit_data = visitdata,
-                                       download = TRUE)
+                                       download = TRUE,
+                                       save = FALSE,
+                                       overwrite = NULL,
+                                       config = config)
+
+    occuRdata <- scaleOccuRVars(occuRdata$site, occuRdata$visit,
+                                scale_vars = list(visit = NULL,
+                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+
+    occuRdata <- lapply(occuRdata, as.data.table)
 
 
     # Fit occupancy model -----------------------------------------------------

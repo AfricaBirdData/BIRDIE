@@ -9,7 +9,10 @@ prepDataOccuR(
   years = NULL,
   site_data,
   visit_data,
-  download = FALSE
+  download = FALSE,
+  save = TRUE,
+  overwrite = NULL,
+  config
 )
 }
 \arguments{
@@ -29,6 +32,16 @@ from ABAP once per session and cached in a temp file. After this the cached
 file will be used, unless download is set to "force", in which case data will
 be downloaded regardless of the cached file. If FALSE data will not be
 downloaded or retrieved from cache.}
+
+\item{save}{If TRUE data is saved to disc, but see 'overwrite'.}
+
+\item{overwrite}{A character vector with the data that should be overwriten in
+case it is already present on disc. It can be any combination of
+c("site", "visit", "det"), with site referring to site data, visit to visit data
+and det to detection data. Site and visit data are typically common for
+multiple species and we might not want to save it all the time.}
+
+\item{config}{A list of configuration parameters see \link{configPreambOccuR}}
 }
 \value{
 A list containing two data frames: one with site data and one with

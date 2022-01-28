@@ -15,6 +15,13 @@
 #' file will be used, unless download is set to "force", in which case data will
 #' be downloaded regardless of the cached file. If FALSE data will not be
 #' downloaded or retrieved from cache.
+#' @param save If TRUE data is saved to disc, but see 'overwrite'.
+#' @param overwrite A character vector with the data that should be overwriten in
+#' case it is already present on disc. It can be any combination of
+#' c("site", "visit", "det"), with site referring to site data, visit to visit data
+#' and det to detection data. Site and visit data are typically common for
+#' multiple species and we might not want to save it all the time.
+#' @param config A list of configuration parameters see \link{configPreambOccuR}
 #'
 #' @return A list containing two data frames: one with site data and one with
 #' visit data ready to use with the occuR package
@@ -23,7 +30,8 @@
 #' @examples
 prepDataOccuR <- function(spp_code = NULL, years = NULL,
                           site_data, visit_data,
-                          download = FALSE){
+                          download = FALSE, save = TRUE,
+                          overwrite = NULL, config){
 
     if(isFALSE(download)){
         if(!is.null(spp_code) | !is.null(years)){
@@ -69,7 +77,9 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
     # Long format for site variables and years
     site_data <- site_data %>%
         sf::st_drop_geometry() %>%
-        BIRDIE::gatherYearFromVars(vars = names(.)[-c(1:5)], sep = "_") %>% #  # HARD CODED. Check that 1:5 are the variables that don't change over time
+        BIRDIE::gatherYearFromVars(vars = setdiff(names(.),
+                                                  c("Pentad", "lon", "lat", "site", "watocc_ever", "dist_coast")),
+                                   sep = "_") %>% #  # HARD CODED. Check that these are the variables that don't change over time
         dplyr::mutate(tdiff = tmmx - tmmn)
 
     # Visited sites
@@ -81,8 +91,8 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
 
     # Keep those sites that appear in visits data and drop geometry
     site_data <- site_data %>%
-        dplyr::filter(Name %in% sites) %>%
-        dplyr::group_by(Name) %>%
+        dplyr::filter(Pentad %in% sites) %>%
+        dplyr::group_by(Pentad) %>%
         dplyr::mutate(site = dplyr::cur_group_id()) %>%
         dplyr::ungroup() %>%
         dplyr::group_by(year) %>%
@@ -95,16 +105,16 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
 
     # Keep only sites and occasions in visits
     site_data <- site_data %>%
-        dplyr::left_join(visits, by = c("Name" = "Pentad", "year")) %>%
+        dplyr::left_join(visits, by = c("Pentad", "year")) %>%
         dplyr::filter(keep == 1) %>%
         dplyr::select(-keep)
 
     # Transfer site and occasion indicators from site data
     visit_data <- visit_data %>%
         dplyr::left_join(site_data %>%
-                             dplyr::select(Name, site) %>%
+                             dplyr::select(Pentad, site) %>%
                              dplyr::distinct(),
-                         by = c("Pentad" = "Name")) %>%
+                         by = "Pentad") %>%
         dplyr::left_join(site_data %>%
                              dplyr::select(year, occasion) %>%
                              dplyr::distinct(),
@@ -121,42 +131,46 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
         warning("Sites differ between site data and visit data!")
     }
 
-    # Make data.tables
-    site_data <- data.table::as.data.table(site_data)
-    visit_data <- data.table::as.data.table(visit_data)
-
-
-    # Scaling -----------------------------------------------------------------
-
-    scaling <- list(visit = NULL,
-                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")) # HARD CODED
-
-    if(!is.null(scaling)){
-
-        if(!is.null(scaling$visit)){
-            visit_data <- visit_data %>%
-                dplyr::mutate(dplyr::across(.col = dplyr::all_of(scaling$visit), .fns = ~scale(.x)))
-            attr(visit_data, "scaling") <- TRUE
-        } else {
-            attr(visit_data, "scaling") <- FALSE
-        }
-
-        if(!is.null(scaling$site)){
-            site_data <- site_data %>%
-                dplyr::mutate(dplyr::across(.col = dplyr::all_of(scaling$site), .fns = ~scale(.x)))
-            attr(site_data, "scaling") <- TRUE
-        } else {
-            attr(site_data, "scaling") <- FALSE
-        }
-
-    }
-
     # Remove data from missing pentads? (THIS SHOULDN'T HAPPEN WHEN PENTADS ARE DOWNLOADED FROM THE API)
     visit_data <- visit_data %>%
         dplyr::filter(!is.na(site))
 
     site_data <- site_data %>%
         dplyr::filter(site %in% unique(visit_data$site))
+
+
+    # Save to disc ------------------------------------------------------------
+
+    if(save){
+
+        visitfile <- file.path(config$fit_dir, paste0("occur_visit_dat_sa_", config$years_ch, ".csv"))
+        sitefile <- file.path(config$fit_dir, paste0("occur_site_dat_sa_", config$years_ch, ".csv"))
+        detfile <- file.path(config$fit_dir, spp_code, paste0("occur_det_dat_sa_", config$years_ch, ".csv"))
+
+        if((!file.exists(visitfile)) | (file.exists(visitfile) & ("visit" %in% overwrite))){
+            visit_data %>%
+                dplyr::select(-obs) %>%
+            write.csv(visitfile, row.names = FALSE)
+        } else {
+            warning("Visit file not saved because 'visit' not in overwrite")
+        }
+
+        if((!file.exists(sitefile)) | (file.exists(sitefile) & ("site" %in% overwrite))){
+            site_data %>%
+                write.csv(sitefile, row.names = FALSE)
+        } else {
+            warning("Site file not saved because 'site' not in overwrite")
+        }
+
+        if((!file.exists(detfile)) | (file.exists(detfile) & ("det" %in% overwrite))){
+            visit_data %>%
+                dplyr::select(Pentad, year, visit, obs) %>%
+                write.csv(detfile, row.names = FALSE)
+        } else {
+            warning("Detection file not saved because 'det' not in overwrite")
+        }
+
+    }
 
     return(list(site = site_data,
                 visit = visit_data))
