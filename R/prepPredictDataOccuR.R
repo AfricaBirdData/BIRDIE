@@ -17,17 +17,16 @@ prepPredictDataOccuR <- function(occuRdata, pred_sites, years, scaling = FALSE){
     # Add site info if not present
     pred_sites <- pred_sites %>%
         dplyr::left_join(occuRdata$site %>%
-                             dplyr::select(Name, site) %>%
+                             dplyr::select(Pentad, site) %>%
                              dplyr::distinct(),
-                         by = "Name")
+                         by = "Pentad")
 
     # Separate variables into columns and add necessary covariates
     pred_data <- pred_sites %>%
-        tidyr::pivot_longer(cols = -c(Name, lon, lat, site, watocc_ever, dist_coast)) %>% # Note that these are hard-coded
-        tidyr::separate(name, into = c("covt", "year"), sep = "_") %>%
-        tidyr::pivot_wider(names_from = covt, values_from = value) %>%
-        dplyr::mutate(year = as.integer(year),
-                      tdiff = tmmx - tmmn) %>%
+        BIRDIE::gatherYearFromVars(vars = setdiff(names(.),
+                                                  c("Pentad", "lon", "lat", "site", "watocc_ever", "dist_coast")),
+                                   sep = "_") %>% #  # HARD CODED. Check that these are the variables that don't change over time
+        dplyr::mutate(tdiff = tmmx - tmmn) %>%
         dplyr::filter(year %in% years)
 
     # Scale variables
