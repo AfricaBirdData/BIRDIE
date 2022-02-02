@@ -3,6 +3,7 @@
 #' @inheritParams ppl_run_pipe_distr
 #'
 #' @return
+#' @import occuR
 #' @export
 #'
 #' @examples
@@ -39,10 +40,10 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         print(paste("Trying model", m))
         tryCatch({
             fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                         reformulate(site_mod, response = "psi")),
-                            visit_data = occuRdata$visit,
-                            site_data = occuRdata$site,
-                            print = varargs$print_fitting)
+                                                reformulate(site_mod, response = "psi")),
+                                   visit_data = occuRdata$visit,
+                                   site_data = occuRdata$site,
+                                   print = varargs$print_fitting)
 
             # Check if degrees of freedom can be calculated
             occuR::dof.occuR(fit)
