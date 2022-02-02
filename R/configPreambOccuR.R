@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @examples
-#' prepPream(year = 2010, server = TRUE)
+#' configPreambOccuR(year = 2010, server = TRUE)
 configPreambOccuR <- function(year, server){
 
     if(server){

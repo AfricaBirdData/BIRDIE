@@ -14,7 +14,7 @@
 #' @export
 #'
 #' @examples
-#' prepPream(year = 2010, server = TRUE)
+#' configPreambJAGS(year = 2010, server = TRUE)
 configPreambJAGS <- function(year, site, server){
 
     if(server){

@@ -26,5 +26,5 @@ A list with:
 Set basic variables to run BIRDIE scripts locally or remotely.
 }
 \examples{
-prepPream(year = 2010, server = TRUE)
+configPreambOccuR(year = 2010, server = TRUE)
 }
