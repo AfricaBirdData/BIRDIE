@@ -8,7 +8,7 @@ rm(list = ls())
 # Script settings ---------------------------------------------------------
 
 data_dir <- "analysis/data/"
-mod_file <- "analysis/models/cwac_ssm_2ss_dyn.jags"
+mod_file <- "analysis/models/cwac_ssm_lat_season.jags"
 data_outdir <- "analysis/out_nosync/"
 plot_outdir <- "analysis/out_nosync/"
 
