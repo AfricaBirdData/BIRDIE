@@ -31,7 +31,8 @@ and years indicated by 'spp_code' and 'years'. If TRUE, data will be downloaded
 from ABAP once per session and cached in a temp file. After this the cached
 file will be used, unless download is set to "force", in which case data will
 be downloaded regardless of the cached file. If FALSE data will not be
-downloaded or retrieved from cache.}
+downloaded or retrieved from cache. Note that in this case there won't be
+any detection data! Only sites and associated covariates.}
 
 \item{save}{If TRUE data is saved to disc, but see 'overwrite'.}
 
