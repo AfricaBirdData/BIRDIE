@@ -39,10 +39,14 @@ site_ctm <- catchmt[unlist(st_intersects(site_spt, catchmt)),]
 
 # Get counts for the site -------------------------------------------------
 
+# Get counts between 93 and 20
+year_rg <- c(1993, 2020)
 counts <- getCwacSiteCounts(site_id)
+counts <- counts %>%
+  filter(Year >= year_rg[1], Year <= year_rg[2])
 
 # Add missing surveys
-counts <- addMissingCwacCounts(counts)
+counts <- addMissingCwacCounts(counts, years = year_rg[1]:year_rg[2])
 
 # Give missing surveys a date based on the dates from other surveys
 month_summer <- counts %>%
