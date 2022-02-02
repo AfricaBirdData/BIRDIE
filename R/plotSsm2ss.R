@@ -35,9 +35,9 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
     post_stt <- data.frame(mu_est = fit$mean$mu_t,
                            mu_lb = fit$q2.5$mu_t,
                            mu_ub = fit$q97.5$mu_t,
-                           year = ssmcounts$year,
-                           season = ssmcounts$Season,
-                           count = log(ssmcounts$count + 0.1)) %>%
+                           year = ssm_counts$year,
+                           season = ssm_counts$Season,
+                           count = log(ssm_counts$count + 0.1)) %>%
         dplyr::filter(season != "O") %>%
         dplyr::mutate(season = ifelse(season == "S", 1, 2))
 
