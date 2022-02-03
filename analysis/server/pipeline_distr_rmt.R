@@ -4,8 +4,8 @@ library(dplyr)
 
 rm(list = ls())
 
-test_years <- c(2009, 2017, 2018)
-config <- configPreambOccuR(year = 2008, server = TRUE)
+test_years <- c(2010, 2017)
+config <- configPreambOccuR(year = 2017, server = TRUE)
 
 # Create indicator storage files?
 ppl_create_indtr_files(config, overwrite_indtr = TRUE)
