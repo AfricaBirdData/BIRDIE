@@ -24,6 +24,7 @@ Imports:
     ggplot2,
     grDevices,
     gridExtra,
+    Hmisc,
     jagsUI,
     lubridate,
     lwgeom,
