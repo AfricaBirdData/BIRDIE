@@ -25,7 +25,7 @@ necessary for plots and summaries.}
 See \link{configPreambOccuR}}
 
 \item{steps}{A character vector containing the steps of the pipeline to run.
-Defaults to all of them.}
+Can contain:"data", "fit", "summ", "indtr". Defaults to all of them.}
 
 \item{...}{Other arguments passed on to other functions}
 }

@@ -4,13 +4,12 @@
 #' See \link{configPreambOccuR}
 #' @param overwrite_indtr Logical. If TRUE, existing files in directories
 #' corresponding to the species in config$species will be overwritten.
-#' @param ...
 #'
 #' @return
 #' @export
 #'
 #' @examples
-ppl_create_indtr_files <- function(config, overwrite_indtr, ...){
+ppl_create_indtr_files <- function(config, overwrite_indtr){
 
     for(i in seq_along(config$species)){
 

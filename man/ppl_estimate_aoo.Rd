@@ -14,6 +14,9 @@ ppl_estimate_aoo(sp_code, year, config, verbose, ...)
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
 
+\item{verbose}{Logical. If TRUE, the new line added to the indicator table
+is displayed in the console.}
+
 \item{...}{Other arguments passed on to other functions}
 }
 \value{

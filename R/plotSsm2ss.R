@@ -12,7 +12,7 @@
 #' @return A list with two elements: i) plot: a plot with summer and winter fitted states, as well as the long-term trend,
 #' ii) data: the data used to create the individual plots. This is useful for extracting the data used by ggplot to render the plots
 #' (e.g. for exporting to the dashboard)
-#' @importFrom ggplot2 aes
+#' @import ggplot2
 #' @export
 #'
 #' @examples
@@ -63,15 +63,15 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
     stt_plot <- post_stt %>%
         tidyr::pivot_longer(cols = c(mu_est, mu_lb, mu_ub),
                             names_to = "quantile") %>%
-        ggplot2::ggplot() +
-        ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
-        ggplot2::geom_point(aes(x = year, y = count, col = factor(season)), show.legend = FALSE) +
-        ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
-        ggplot2::scale_colour_manual(values = plot_options$colors) +
-        # ggplot2::coord_cartesian(ylim = ylims) +
-        ggplot2::facet_wrap("season", ncol = 2,
-                            labeller = ggplot2::labeller(season = c("1" = "Summer", "2" = "Winter"))) +
-        ggplot2::xlab("Year") + ggplot2::ylab(abund_label) +
+        ggplot() +
+        geom_path(aes(x = year, y = value, linetype = quantile)) +
+        geom_point(aes(x = year, y = count, col = factor(season)), show.legend = FALSE) +
+        scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
+        scale_colour_manual(values = plot_options$colors) +
+        # coord_cartesian(ylim = ylims) +
+        facet_wrap("season", ncol = 2,
+                   labeller = labeller(season = c("1" = "Summer", "2" = "Winter"))) +
+        xlab("Year") + ylab(abund_label) +
         plot_options$pers_theme
 
 
@@ -105,11 +105,11 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         dplyr::select(-dplyr::starts_with("prop")) %>%
         tidyr::pivot_longer(cols = -year,
                             names_to = "quantile") %>%
-        ggplot2::ggplot() +
-        ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
-        ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
-        ggplot2::scale_colour_manual(values = plot_options$colors) +
-        ggplot2::xlab("Year") + ggplot2::ylab(rate_label) +
+        ggplot() +
+        geom_path(aes(x = year, y = value, linetype = quantile)) +
+        scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
+        scale_colour_manual(values = plot_options$colors) +
+        xlab("Year") + ylab(rate_label) +
         plot_options$pers_theme
 
 
@@ -120,11 +120,11 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         dplyr::select(-dplyr::starts_with("beta")) %>%
         tidyr::pivot_longer(cols = -year,
                             names_to = "quantile") %>%
-        ggplot2::ggplot() +
-        ggplot2::geom_path(aes(x = year, y = value, linetype = quantile)) +
-        ggplot2::scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
-        ggplot2::scale_colour_manual(values = plot_options$colors) +
-        ggplot2::xlab("Year") + ggplot2::ylab(ratio_label) +
+        ggplot() +
+        geom_path(aes(x = year, y = value, linetype = quantile)) +
+        scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
+        scale_colour_manual(values = plot_options$colors) +
+        xlab("Year") + ylab(ratio_label) +
         plot_options$pers_theme
 
 

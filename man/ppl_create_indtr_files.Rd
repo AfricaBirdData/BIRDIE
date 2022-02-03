@@ -4,7 +4,7 @@
 \alias{ppl_create_indtr_files}
 \title{Create indicator storage files}
 \usage{
-ppl_create_indtr_files(config, overwrite_indtr, ...)
+ppl_create_indtr_files(config, overwrite_indtr)
 }
 \arguments{
 \item{config}{A list with pipeline configuration parameters.
@@ -12,8 +12,6 @@ See \link{configPreambOccuR}}
 
 \item{overwrite_indtr}{Logical. If TRUE, existing files in directories
 corresponding to the species in config$species will be overwritten.}
-
-\item{...}{}
 }
 \value{
 

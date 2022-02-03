@@ -7,7 +7,7 @@
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambOccuR}
 #' @param steps A character vector containing the steps of the pipeline to run.
-#' Defaults to all of them.
+#' Can contain:"data", "fit", "summ", "indtr". Defaults to all of them.
 #' @param ... Other arguments passed on to other functions
 #'
 #' @return
