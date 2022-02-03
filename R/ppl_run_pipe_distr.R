@@ -33,11 +33,7 @@ ppl_run_pipe_distr <- function(sp_code, sp_name, year, config,
         # Estimate area of occupancy (AOO) for the year or also previous years
         # if year is earlier than 2010 (i.e. initial time window)
         for(t in seq_along(config$years)){
-
-            if((t > config$dyear/2) | (config$year > (2009 + config$dyear/2))){
-                ppl_estimate_aoo(sp_code, year = config$years[t], config, ...)
-            }
-
+            ppl_estimate_aoo(sp_code, year = config$years[t], config, ...)
         }
 
         # Estimate annual change in AOO and if year is greater than 2017,
