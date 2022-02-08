@@ -4,7 +4,8 @@ library(dplyr)
 
 rm(list = ls())
 
-test_years <- c(2010, 2017)
+# test_years <- c(2010, 2017)
+test_years <- 2011:2016
 config <- configPreambOccuR(year = 2017, server = TRUE)
 
 # Create indicator storage files?
@@ -12,7 +13,7 @@ ppl_create_indtr_files(config, overwrite_indtr = FALSE)
 
 
 # Overwrite?
-overwrite_indtr <- TRUE
+overwrite_indtr <- FALSE
 
 # Create indicator file path
 indtr_path <- file.path(config$fit_dir, "group", paste0("indtr_", "group", ".csv"))
@@ -42,6 +43,9 @@ for(y in seq_along(test_years)){
     year <- test_years[y]
     config <- configPreambOccuR(year = year, server = TRUE)
 
+    # test species
+    config$species <- config$species[1:10]
+
     for(i in seq_along(config$species)){
 
         sp_code <- config$species[i]
@@ -59,7 +63,7 @@ for(y in seq_along(test_years)){
                            sp_name = sp_name,
                            year = year,
                            config = config,
-                           steps = c("indtr"),
+                           steps = c("data", "fit", "summ", "indtr"),
                            download_from_abap = TRUE,
                            save_occu_data = TRUE,
                            overwrite_occu_data = c("site", "visit", "det"),
