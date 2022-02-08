@@ -29,7 +29,7 @@ estimateOccuSpType <- function(sp_type, year, config){
             ffs <- list()
 
             for(i in seq_along(species)){
-                ffs[[i]] <- read.csv(file.path("analysis/out_nosync", species[i], paste0("occur_pred_", yy, "_", species[i], ".csv")))
+                ffs[[i]] <- read.csv(file.path(config$fit_dir, species[i], paste0("occur_pred_", yy, "_", species[i], ".csv")))
             }
 
             ffs <- bind_rows(ffs)
@@ -49,7 +49,7 @@ estimateOccuSpType <- function(sp_type, year, config){
             ## PLOT
 
             # Add geometry
-            gm <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+            gm <- readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
                 dplyr::select(Pentad = Name)
 
             pred_sel <- gm %>%
