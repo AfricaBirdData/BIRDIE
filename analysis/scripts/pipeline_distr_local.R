@@ -10,13 +10,41 @@ config <- configPreambOccuR(year = 2008, server = FALSE)
 # Create indicator storage files?
 ppl_create_indtr_files(config, overwrite_indtr = TRUE)
 
-for(i in seq_along(config$species)){
-    for(y in seq_along(test_years)){
+
+# Overwrite?
+overwrite_indtr <- FALSE
+
+# Create indicator file path
+indtr_path <- file.path(config$fit_dir, "group", paste0("indtr_", "group", ".csv"))
+
+# Check if file exists
+if(!file.exists(indtr_path) | (file.exists(indtr_path) & overwrite_indtr)){
+
+    # Create empty data frame
+    indtr <- data.frame(species = character(),
+                        indicator = character(),
+                        start_date = character(),
+                        end_date = character(),
+                        term = character(),
+                        estimate = numeric(),
+                        st_dev = numeric(),
+                        lb95 = numeric(),
+                        ub95 = numeric(),
+                        opt = numeric())
+
+    # Save
+    write.csv(indtr, indtr_path, row.names = FALSE)
+
+}
+
+for(y in seq_along(test_years)){
+
+    year <- test_years[y]
+    config <- configPreambOccuR(year = year, server = FALSE)
+
+    for(i in seq_along(config$species)){
 
         sp_code <- config$species[i]
-        year <- test_years[y]
-
-        config <- configPreambOccuR(year = year, server = FALSE)
 
         # Species name
         sp_name <- BIRDIE::barberspan %>%
@@ -41,4 +69,8 @@ for(i in seq_along(config$species)){
                            verbose = TRUE)
 
     }
+
+    # Estimate species type indicators
+    ppl_estimate_distr_sp_type(sp_type = "group", year, config, force_predict = FALSE, verbose = TRUE)
+
 }
