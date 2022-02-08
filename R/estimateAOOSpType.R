@@ -9,7 +9,7 @@ estimateAOOSpType <- function(sp_type, year, config, force_predict = FALSE, verb
 
     # Lookup species in the group
     if(sp_type == "group"){
-        species <- c(4, 6, 41, 235)
+        species <- config$species[1:4] # This needs to be fixed when groups are properly defined
     } else {
         stop("Sorry the group doesn't exist")
     }
