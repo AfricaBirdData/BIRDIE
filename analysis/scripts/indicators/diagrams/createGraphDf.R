@@ -16,20 +16,21 @@ createGraphDf <- function(elem_list, target){
         elem_list$cond2 <- elem_list$cond
         elem_list$cond3 <- elem_list$cond
 
-        elem_list <- elem_list[c("target", "cond1", groups[groups == group], "cond2", groups[groups != group], "cond3", "time", "indicator", "process_lvl")]
+        elem_list <- elem_list[c("target", "indicator", "cond1", groups[groups == group], "cond2", groups[groups != group], "cond3", "time")]
 
     } else if(target %in% c("species", "site")){
 
         elem_list$cond1 <- elem_list$cond
         elem_list$cond2 <- elem_list$cond
 
-        elem_list <- elem_list[c("target", "cond1", groups[groups != group], "cond2", "time", "indicator", "process_lvl")]
+        elem_list <- elem_list[c("target", "indicator", "cond1", groups[groups != group], "cond2", "time")]
 
     }
 
     graph_df <- expand.grid(elem_list, stringsAsFactors = FALSE)
 
-    # eliminate non-necessary elements
+
+    # Eliminate non-necessary elements ----------------------------------------
 
     # More than one across condition
     n_across <- graph_df %>%
@@ -48,7 +49,7 @@ createGraphDf <- function(elem_list, target){
 
     }
 
-    # Filters that don't match the target, with "at" condition (these should have their own diagrammes)
+    # Filters that don't match the target, with "at" condition (these should have their own diagrams)
     if(sum(c("taxon", "geo") %in% names(graph_df)) > 1){
 
         if(group == "taxon"){
@@ -61,19 +62,42 @@ createGraphDf <- function(elem_list, target){
     }
 
     # Remove across "global" conditions
-    if(group == "taxon" && ncol(graph_df) == 7){
+    if(group == "taxon" && ncol(graph_df) == 6){
         graph_df <- graph_df %>%
             filter(!(cond1 == "across" & geo == "global"))
-    } else if(group == "taxon" && ncol(graph_df) == 9){
+    } else if(group == "taxon" && ncol(graph_df) == 8){
         graph_df <- graph_df %>%
             filter(!(cond2 == "across" & geo == "global"))
     }
 
+    # Remove distribution indicators for site and site_type
+    if(target %in% c("site", "site_type")){
+        graph_df <- graph_df %>%
+            filter(indicator != "distr")
+    }
+
+    # Remove ancillary indicators for species and sp_type
+    if(target %in% c("species", "sp_type")){
+        graph_df <- graph_df %>%
+            filter(indicator != "ancll")
+    }
+
+    # Remove diversity indicators for species
+    if(target == "species"){
+        graph_df <- graph_df %>%
+            filter(indicator != "div")
+    }
+
+    if(target != "species"){
+        graph_df <- graph_df %>%
+            filter(!(indicator == "div" & taxon == "species"))
+    }
+
     # Set attributes to determine the possible conditions
-    if(ncol(graph_df) == 7){
-        attr(graph_df, "filters") <- names(graph_df)[c(3,5)]
-    } else if(ncol(graph_df) == 9){
-        attr(graph_df, "filters") <- names(graph_df)[c(3,5,7)]
+    if(ncol(graph_df) == 6){
+        attr(graph_df, "filters") <- names(graph_df)[c(4,6)]
+    } else if(ncol(graph_df) == 8){
+        attr(graph_df, "filters") <- names(graph_df)[c(4,6,8)]
     }
 
     return(graph_df)

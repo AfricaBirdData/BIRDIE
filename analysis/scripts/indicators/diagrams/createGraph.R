@@ -44,6 +44,7 @@ createGraph <- function(df){
         cat1 <- names(df)[i]
         cat2 <- names(df)[i+1]
         lvs <- unique(df[,cat1])
+        lvs <- lvs[!is.na(lvs)]
 
         for(j in seq_along(lvs)){
 
