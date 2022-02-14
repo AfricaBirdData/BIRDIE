@@ -16,6 +16,9 @@ ee_Initialize(drive = TRUE)
 
 rm(list = ls())
 
+
+config <- configPreambOccuR(year = 2009, server = FALSE) # The year doesn't matter
+
 years <- 2008:2019
 
 pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa")
@@ -67,20 +70,20 @@ for(i in seq_along(years)){
                   by = c("CardNo"))
 
     # Update
-    if(file.exists("analysis/data/visit_dat_sa_gee_08_19.rds")){
-        visit_old <- readRDS("analysis/data/visit_dat_sa_gee_08_19.rds")
+    if(file.exists(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))){
+        visit_old <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))
         visit <- rbind(visit_old, visit)
     }
 
     # Save
-    saveRDS(visit, "analysis/data/visit_dat_sa_gee_08_19.rds")
+    saveRDS(visit, file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))
 
 }
 
 
 # Prepare variables for fitting -------------------------------------------
 
-visit <- readRDS("analysis/data/visit_dat_sa_gee_08_19.rds")
+visit <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))
 
 visit <- visit %>%
     mutate(Date = lubridate::date(Date),
@@ -88,4 +91,4 @@ visit <- visit %>%
            month = lubridate::month(Date),
            ndvi = ndvi/1e4)
 
-saveRDS(visit, "analysis/data/visit_dat_sa_gee_08_19.rds")
+saveRDS(visit, file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))

@@ -14,6 +14,9 @@ ee_Initialize(drive = TRUE)
 rm(list = ls())
 
 
+config <- configPreambOccuR(year = 2009, server = TRUE) # The year doesn't matter
+
+
 # Load pentads to GEE -----------------------------------------------------
 
 # Load ABAP pentads
@@ -23,9 +26,9 @@ pentads_sa <- getRegionPentads(.region_type = "country", .region = "South Africa
 eeid <- sprintf("%s/%s", ee_get_assethome(), 'pentads')
 
 # Upload to EE (if not done already)
-# uploadPentadsToEE(pentads = dplyr::select(pentads_sa, Name),
-#                   asset_id = eeid,
-#                   load = FALSE)
+uploadPentadsToEE(pentads = dplyr::select(pentads_sa, Name),
+                  asset_id = eeid,
+                  load = FALSE)
 
 # Load pentads from GEE
 ee_pentads <- ee$FeatureCollection(eeid)
@@ -78,7 +81,7 @@ sitedata <- sitedata %>%
                   .fns = ~.x/10)) %>%
     st_drop_geometry()
 
-saveRDS(out, "analysis/data/site_dat_sa_gee_08_19.rds")
+saveRDS(out, file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 # Annotate with yearly surface water occurrence --------------------------------
@@ -101,9 +104,9 @@ out <- out %>%
     rename_with(~gsub("X", "watext_", .x), .cols = starts_with("X")) %>%
     st_drop_geometry()
 
-readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
     left_join(out, by = "Name") %>%
-    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    saveRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 # Recurrence of pixels with water each year
 out <- addVarEEimage(ee_pentads, stackCollection, "mean")
@@ -116,9 +119,9 @@ out <- out %>%
 mutate(across(.fns = ~tidyr::replace_na(.x, 0))) %>%
     st_drop_geometry()
 
-readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
     left_join(out, by = "Name") %>%
-    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    saveRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 # Annotate with overall surface water occurrence --------------------------
@@ -138,9 +141,9 @@ out <- out %>%
                 .cols = starts_with("water_occur")) %>%
     st_drop_geometry()
 
-readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
     left_join(out, by = "Name") %>%
-    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    saveRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 # Annotate with yearly NDVI -----------------------------------------------
@@ -167,15 +170,15 @@ out <- out %>%
                   .fns = ~.x/10000)) %>%
     st_drop_geometry()
 
-readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
     left_join(out, by = "Name") %>%
-    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    saveRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 # Add geometries -----------------------------------------------------------
 
 # Load data
-sitedata <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+sitedata <- readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 # Add geometries
 sitedata <- sitedata %>%
@@ -190,14 +193,14 @@ sitedata <- sitedata %>%
     mutate(lon = cc$X,
            lat = cc$Y)
 
-saveRDS(sitedata, "analysis/data/site_dat_sa_gee_08_19.rds")
+saveRDS(sitedata, file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 # Annotate with distance to coast -----------------------------------------
 
 library(rnaturalearth)
 
-pp <- readRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+pp <- readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 # Create bounding box
 sabox <- st_bbox(pp) + c(-1, -1, 3, 1)
@@ -216,7 +219,7 @@ pp$dist_coast <- as.numeric(st_distance(pp, coast[1,]))/1000 # in kilometers
 plot(pp["dist_coast"])
 
 # Save
-saveRDS(pp, "analysis/data/site_dat_sa_gee_08_19.rds")
+saveRDS(pp, file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
 
 
 
@@ -234,6 +237,6 @@ out <- out %>%
     dplyr::select(Name, elev = dem) %>%
     st_drop_geometry()
 
-readRDS("analysis/data/site_dat_sa_gee_08_19.rds") %>%
+readRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds")) %>%
     left_join(out, by = "Name") %>%
-    saveRDS("analysis/data/site_dat_sa_gee_08_19.rds")
+    saveRDS(file.path(config$data_dir, "site_dat_sa_gee_08_19.rds"))
