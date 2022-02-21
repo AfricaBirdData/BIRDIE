@@ -58,6 +58,10 @@ ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
                         n.cores = 3, DIC = TRUE, verbose = TRUE)
 
     # Save
+    if(length(sp_code) > 1){
+        sp_code <- "group"
+    }
+
     saveRDS(fit, file.path(config$data_outdir, sp_code, paste0("ssm_fit_", site, "_", config$years_ch, "_", sp_code, ".rds")))
 
 }

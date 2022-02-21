@@ -21,6 +21,10 @@ ppl_summarize_ssm <- function(sp_code, site, year, config, ...){
     ssmcounts <- prepSsmData(counts, sp_code, keep = Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec))
 
     # Load fit
+    if(length(sp_code) > 1){
+        sp_code <- "group"
+    }
+
     fit <- readRDS(file.path(config$data_outdir, sp_code, paste0("ssm_fit_", site, "_", config$years_ch, "_", sp_code, ".rds")))
 
     # Plot
