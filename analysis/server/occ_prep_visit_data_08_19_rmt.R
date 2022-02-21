@@ -17,7 +17,7 @@ ee_Initialize(drive = TRUE)
 rm(list = ls())
 
 
-config <- configPreambOccuR(year = 2009, server = TRUE) # The year doesn't matter
+config <- BIRDIE::configPreambOccuR(year = 2009, server = TRUE) # The year doesn't matter
 
 years <- 2008:2019
 
