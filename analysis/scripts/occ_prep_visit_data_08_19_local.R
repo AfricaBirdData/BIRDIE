@@ -70,7 +70,7 @@ for(i in seq_along(years)){
                   by = c("CardNo"))
 
     # Update
-    if(file.exists(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))){
+    if(i != 1){
         visit_old <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds"))
         visit <- rbind(visit_old, visit)
     }
