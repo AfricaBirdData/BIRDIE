@@ -22,7 +22,7 @@ ppl_create_site_visit <- function(sp_code, year, config, ...){
     # Load data and subset years
     sitedata <- readRDS(datafile) %>%
         sf::st_drop_geometry() %>%
-        dplyr::select(Pentad = Name, lon, lat, watocc_ever, dist_coast, ends_with(match = as.character(config$years))) %>%
+        dplyr::select(Pentad = Name, lon, lat, watocc_ever, dist_coast, dplyr::ends_with(match = as.character(config$years))) %>%
         tidyr::drop_na()   # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 
     visitdata <- readRDS(file.path(config$data_dir, "visit_dat_sa_gee_08_19.rds")) %>%
