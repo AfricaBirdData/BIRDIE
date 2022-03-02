@@ -44,7 +44,7 @@ for(y in seq_along(test_years)){
     config <- configPreambOccuR(year = year, server = TRUE)
 
     # test species
-    config$species <- config$species[1:10]
+    config$species <- config$species[11:length(config$species)]
 
     for(i in seq_along(config$species)){
 
