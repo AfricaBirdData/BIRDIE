@@ -67,12 +67,16 @@ prepDataOccuR <- function(spp_code = NULL, years = NULL,
             # Add detections to visit data
             visit_data <- visit_data %>%
                 dplyr::left_join(sp_detect %>%
-                                     dplyr::select(CardNo, obs = Spp) %>%
-                                     dplyr::mutate(obs = if_else(obs == "-", 0, 1)),
-                                 by = "CardNo")
+                                     dplyr::select(CardNo, StartDate, Pentad, obs = Spp) %>%
+                                     dplyr::mutate(obs = ifelse(obs == "-", 0, 1)),
+                                 by = c("CardNo", "StartDate", "Pentad"))
         } else {
             stop("spp_code and years must be provided if download is TRUE")
         }
+    }
+
+    if(any(is.na(visit_data$obs))){
+        stop("NA found in detection data")
     }
 
     # Long format for site variables and years
