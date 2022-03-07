@@ -22,7 +22,13 @@ ppl_run_pipe_distr <- function(sp_code, sp_name, year, config,
     }
 
     if("fit" %in% steps){
-        ppl_fit_occur_model(sp_code, year, config, ...)
+
+        fit_status <- ppl_fit_occur_model(sp_code, year, config, ...)
+
+        # Stop if there are no detections
+        if(fit_status == 1){
+            return(1)
+        }
     }
 
     if("summ" %in% steps){

@@ -15,6 +15,11 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     occuRdata <- ppl_prep_occur_data(sp_code, year, config, ...)
 
+    # Stop if there are no detections
+    if(occuRdata == 1){
+        return(1)
+    }
+
 
     # Define models -----------------------------------------------------------
 
@@ -59,5 +64,11 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             }) # TryCatch fit
     }
 
+    # Return 0 if success
+    if(success){
+        return(0)
+    } else {
+        return(2)
+    }
 
 }

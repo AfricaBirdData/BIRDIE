@@ -59,7 +59,7 @@ for(y in seq_along(test_years)){
                            sp_name = sp_name,
                            year = year,
                            config = config,
-                           steps = c("indtr"),
+                           steps = c("data", "fit", "summ", "indtr"),
                            download_from_abap = TRUE,
                            save_occu_data = TRUE,
                            overwrite_occu_data = c("site", "visit", "det"),

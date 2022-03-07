@@ -22,6 +22,12 @@ ppl_prep_occur_data <- function(sp_code, year, config, ...){
     visit_data <- read.csv(visitfile)
     det_data <- read.csv(detfile)
 
+    # Stop if there are no detections
+    if(!1 %in% unique(det_data$obs)){
+        warning(paste("No detection of species", sp_code))
+        return(1)
+    }
+
     # Add detection data to visits
     visit_data <- visit_data %>%
         dplyr::left_join(det_data, by = c("Pentad", "year", "visit"))
