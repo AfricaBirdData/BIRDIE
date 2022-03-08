@@ -1,6 +1,7 @@
 #' Summarize predictions from state-space JAGS model
 #'
-#' @inheritParams ppl_run_pipe_abu
+#' @param sp_code SAFRING code of the species of interest
+#' @inheritParams ppl_run_pipe_abu1
 #'
 #' @return
 #' @export
@@ -11,7 +12,7 @@ ppl_summarize_ssm <- function(sp_code, site, year, config, ...){
     print(paste("Summarizing state-space JAGS model at", Sys.time()))
 
     # Load counts
-    counts <- readRDS(paste0(config$data_dir, site, "_93_20_visit_covts.rds"))
+    counts <- readRDS(file.path(config$data_dir, paste(site, year, "visit_covts.rds", sep = "_")))
 
     # Filter years
     counts <- counts %>%
@@ -83,10 +84,10 @@ ppl_summarize_ssm <- function(sp_code, site, year, config, ...){
                       winter.prop.ci.upper)
 
     # Export sample
-    datadir <- paste0(config$data_outdir, sp_code, "/ssm_pred_", site, "_", config$years_ch, "_", sp_code, ".csv")
+    datadir <- file.path(config$data_outdir, sp_code, paste0("ssm_pred_", site, "_", config$years_ch, "_", sp_code, ".csv"))
     utils::write.csv(out_df, datadir, row.names = FALSE)
 
-    plotdir <- paste0(config$plot_outdir, sp_code, "/ssm_plot_", site, "_", config$years_ch, "_", sp_code, ".png")
+    plotdir <- file.path(config$data_outdir, sp_code, paste0("ssm_plot_", site, "_", config$years_ch, "_", sp_code, ".png"))
     ggplot2::ggsave(plotdir, plot = p$plot, width = 6.4, height = 5.2)
 
 }

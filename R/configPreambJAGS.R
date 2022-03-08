@@ -21,10 +21,10 @@ configPreambJAGS <- function(year, site, server){
     if(server){
 
         # Define data and output directories
-        data_dir <- "/home/birdie/analysis/data/"
+        data_dir <- "/home/birdie/analysis/data"
         mod_file <- "/drv_birdie/Working/git/BIRDIE/analysis/models/cwac_ssm_lat_season.jags"
-        data_outdir <- "/drv_birdie/birdie_ftp/"
-        plot_outdir <- "/drv_birdie/birdie_ftp/"
+        data_outdir <- "/drv_birdie/birdie_ftp"
+        plot_outdir <- "/drv_birdie/birdie_ftp"
 
         # Define years to fit
         dyear <- 13
@@ -35,13 +35,13 @@ configPreambJAGS <- function(year, site, server){
     } else {
 
         # Define data and output directories
-        data_dir <- "analysis/data/"
+        data_dir <- "analysis/data"
         mod_file <- "analysis/models/cwac_ssm_lat_season.jags"
-        data_outdir <- "analysis/out_nosync/"
-        plot_outdir <- "analysis/out_nosync/"
+        data_outdir <- "analysis/out_nosync"
+        plot_outdir <- "analysis/out_nosync"
 
         # Define years to fit
-        dyear <- 13
+        dyear <- 24
 
         # Define species to fit models to
         species <- c(4, 6, 41, 235, 240)
@@ -49,7 +49,7 @@ configPreambJAGS <- function(year, site, server){
     }
 
     # Define a range of years covered by the occupancy model
-    year_range <- c(year - dyear, year + dyear)
+    year_range <- c(year - dyear, year)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 

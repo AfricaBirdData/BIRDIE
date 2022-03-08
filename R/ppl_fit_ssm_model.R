@@ -1,6 +1,7 @@
 #' Fit state-space JAGS model
 #'
-#' @inheritParams ppl_run_pipe_abu
+#' @param sp_code SAFRING code of the species of interest
+#' @inheritParams ppl_run_pipe_abu1
 #'
 #' @return
 #' @export
@@ -9,7 +10,7 @@
 ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
 
     # Load counts
-    counts <- readRDS(paste0(config$data_dir, site, "_93_20_visit_covts.rds"))
+    counts <- readRDS(file.path(config$data_dir, paste(site, year, "visit_covts.rds", sep = "_")))
 
     # Filter years
     counts <- counts %>%
@@ -36,11 +37,14 @@ ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
 
     # Prepare data (note the addition of 0.1 to avoid infinite values)
     data <- list(obs = log(ssmcounts$count + 0.1),
-                 summer = case_when(ssmcounts$Season == "S"~ 1L,
+                 summer = dplyr::case_when(ssmcounts$Season == "S"~ 1L,
                                     ssmcounts$Season == "W" ~ 0L,
                                     TRUE ~ NA_integer_),
-                 nyears = n_distinct(ssmcounts$year),
-                 year = ssmcounts %>% group_by(year) %>% mutate(y = cur_group_id()) %>% pull(y),
+                 nyears = dplyr::n_distinct(ssmcounts$year),
+                 year = ssmcounts %>%
+                     dplyr::group_by(year) %>%
+                     dplyr::mutate(y = dplyr::cur_group_id()) %>%
+                     dplyr::pull(y),
                  N = nrow(ssmcounts),
                  X = as.matrix(covts_x),
                  K = ncol(covts_x))
