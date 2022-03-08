@@ -26,7 +26,7 @@ prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
         dplyr::arrange(StartDate)
 
     # Prepare species output name
-    if(length(spp_sel) == 1){
+    if(!is.null(spp_sel) && length(spp_sel) == 1){
         sp_name <- counts %>%
             dplyr::filter(!is.na(Common_species),
                           SppRef == spp_sel) %>%

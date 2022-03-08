@@ -7,7 +7,7 @@ node [shape = rectangle, style = filled, fillcolor = Linen]
 
 subgraph cluster_1 {
 
-label = "   Species abundance for each site   "
+label = "   ABU1: Species abundance for each site   "
 
 # Databases
 gee [label = 'GEE', shape = cylinder, fillcolor = DodgerBlue, width = 1.3]
@@ -55,7 +55,7 @@ sp_site_abu -> sp_abu
 
 subgraph cluster_2 {
 
-label = "     Total abundance for each site     "
+label = "     ABU2: Total abundance for each site     "
 
 # Databases
 sp_abu2 [label = "<f0> Abundance| sp 1 | sp 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
@@ -79,7 +79,7 @@ select_site2 -> sum_spp
 
 subgraph cluster_3 {
 
-label = "Total abundance for each species and year"
+label = "ABU3: Total abundance for each species and year"
 
 # Databases
 sp_abu3 [label = "<f0> Abundance| sp 1 | sp 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]

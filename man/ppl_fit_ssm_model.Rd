@@ -7,7 +7,7 @@
 ppl_fit_ssm_model(sp_code, site, year, config, ...)
 }
 \arguments{
-\item{sp_code}{SAFRING code of the species to run the pipeline for}
+\item{sp_code}{SAFRING code of the species of interest}
 
 \item{site}{Code for site of interest.}
 

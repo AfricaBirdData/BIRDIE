@@ -17,7 +17,9 @@ ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
         dplyr::filter(Year %in% config$years)
 
     # Prepare data to fit an SSM
-    ssmcounts <- prepSsmData(counts, sp_code, keep = Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec))
+    ssmcounts <- prepSsmData(counts = counts,
+                             spp_sel = if(sp_code == "all"){NULL} else {sp_code},
+                             keep = Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec))
 
     # Prepare covariates ---------------------------------------------------------
 

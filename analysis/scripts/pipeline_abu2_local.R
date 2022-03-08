@@ -17,7 +17,7 @@ site_ids <- sites %>%
     site_id <- 26352535
 
     # Run branch 1 of abundance pipeline for site
-    ppl_run_pipe_abu1(site = site_id,
+    ppl_run_pipe_abu2(site = site_id,
                       year = year,
                       config = config,
                       steps = c("fit", "summ"))
