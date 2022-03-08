@@ -16,7 +16,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     occuRdata <- ppl_prep_occur_data(sp_code, year, config, ...)
 
     # Stop if there are no detections
-    if(occuRdata == 1){
+    if(is.numeric(occuRdata) && occuRdata == 1){
         return(1)
     }
 
