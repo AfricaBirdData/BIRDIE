@@ -31,6 +31,13 @@ ppl_data_ssm <- function(site, year, config, ...){
     # Download counts for the site
     counts <- CWAC::getCwacSiteCounts(site)
 
+    # Add Doug's data if site is Du Toit's Pan
+    if(site == 28462448){
+        counts <- rbind(counts,
+                        utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv"))) %>%
+            dplyr::arrange(StartDate)
+    }
+
     # Set analysis period as the period from first count to two years after last count
     year_rg <- range(counts$Year)
 
