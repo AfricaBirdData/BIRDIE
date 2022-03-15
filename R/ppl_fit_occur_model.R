@@ -51,7 +51,23 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
                                    print = varargs$print_fitting)
 
             # Check if degrees of freedom can be calculated
-            occuR::dof.occuR(fit)
+            dof <- occuR::dof.occuR(fit)
+
+            # If non-linear effect of month on detection has very few dof,
+            # fit linear effect to avoid singular covariance matrix (CAUTION! THIS IS HARD CODED)
+            if(dof[3] < 3){
+                visit_mod_ln <- c("1", "log(TotalHours+1)", "month")
+                fit <- occuR::fit_occu(forms = list(reformulate(visit_mod_ln, response = "p"),
+                                                    reformulate(site_mod, response = "psi")),
+                                       visit_data = occuRdata$visit,
+                                       site_data = occuRdata$site,
+                                       print = varargs$print_fitting)
+
+                # Create notification
+                sink(file.path(config$fit_dir, sp_code, paste0("linear_month_effect_", sp_code,".txt")))
+                print(e)
+                sink()
+            }
 
             success <- TRUE
             saveRDS(fit, file.path(config$fit_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
