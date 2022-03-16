@@ -54,6 +54,7 @@ for(y in seq_along(test_years)){
         sp_name <- BIRDIE::barberspan %>%
             dplyr::filter(SppRef == sp_code) %>%
             mutate(name = paste(Common_species, Common_group)) %>%
+            mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
             pull(name) %>%
             unique()
 

@@ -8,7 +8,7 @@ test_years <- c(2009, 2017, 2018)
 config <- configPreambOccuR(year = 2008, server = FALSE)
 
 # Create indicator storage files?
-ppl_create_indtr_files(config, overwrite_indtr = TRUE)
+ppl_create_indtr_files(config, overwrite_indtr = FALSE)
 
 
 # Overwrite?
@@ -50,6 +50,7 @@ for(y in seq_along(test_years)){
         sp_name <- BIRDIE::barberspan %>%
             dplyr::filter(SppRef == sp_code) %>%
             mutate(name = paste(Common_species, Common_group)) %>%
+            mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
             pull(name) %>%
             unique()
 

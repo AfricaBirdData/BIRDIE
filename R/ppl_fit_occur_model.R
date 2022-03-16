@@ -4,6 +4,7 @@
 #'
 #' @return
 #' @import occuR
+#' @import mgcv
 #' @export
 #'
 #' @examples
@@ -39,23 +40,27 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     # Fit models sequentially if they don't work
     success <- FALSE
     m <- 0
-    while(!success && m <= length(site_mods)){
+    while(!success && m <= (length(site_mods) - 1)){
+
         m <- m + 1
+
         site_mod <- site_mods[[m]]
         print(paste("Trying model", m))
+
         tryCatch({
+
             fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                                reformulate(site_mod, response = "psi")),
-                                   visit_data = occuRdata$visit,
-                                   site_data = occuRdata$site,
-                                   print = varargs$print_fitting)
+                                         reformulate(site_mod, response = "psi")),
+                            visit_data = occuRdata$visit,
+                            site_data = occuRdata$site,
+                            print = varargs$print_fitting)
 
             # Check if degrees of freedom can be calculated
-            dof <- occuR::dof.occuR(fit)
+            dof <- occuR::dof.occuR(fit, each = TRUE)
 
             # If non-linear effect of month on detection has very few dof,
-            # fit linear effect to avoid singular covariance matrix (CAUTION! THIS IS HARD CODED)
-            if(dof[3] < 3){
+            # fit linear effect to avoid singular covariance matrix
+            if(dof$p < 3){
                 visit_mod_ln <- c("1", "log(TotalHours+1)", "month")
                 fit <- occuR::fit_occu(forms = list(reformulate(visit_mod_ln, response = "p"),
                                                     reformulate(site_mod, response = "psi")),
@@ -73,10 +78,13 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             saveRDS(fit, file.path(config$fit_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
 
         }, error = function(e){
+
             success <- FALSE
+
             sink(file.path(config$fit_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,".txt")))
             print(e)
             sink()
+
             }) # TryCatch fit
     }
 
