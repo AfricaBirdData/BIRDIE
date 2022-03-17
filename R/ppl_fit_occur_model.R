@@ -50,6 +50,8 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     # If non-linear effect of month on detection has very few dof,
     # fit linear effect to avoid singular covariance matrix
+    print(paste(round(dof$p, 1), "DOF for the effect of month on p"))
+
     if(dof$p < 3){
 
         visit_mod <- c("1", "log(TotalHours+1)", "month")
