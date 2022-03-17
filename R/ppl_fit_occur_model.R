@@ -54,11 +54,11 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     if(dof$p < 3){
 
-        visit_mod <- c("1", "log(TotalHours+1)", "month")
+        visit_mod <- c("1", "log(TotalHours+1)")
 
         # Create notification
-        sink(file.path(config$fit_dir, sp_code, paste0("linear_month_effect_", sp_code,".txt")))
-        print("Model fitted with a linear effect of month", split = TRUE)
+        sink(file.path(config$fit_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
+        print("Model fitted without effect of month", split = TRUE)
         sink()
     }
 
