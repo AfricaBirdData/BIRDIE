@@ -40,7 +40,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     # Determine whether the non-linear effect of month in p is necessary with the
     # simplest model for occupancy probabilities
     fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                        reformulate(site_mods[3], response = "psi")),
+                                        reformulate(site_mods[[3]], response = "psi")),
                            visit_data = occuRdata$visit,
                            site_data = occuRdata$site,
                            print = varargs$print_fitting)
