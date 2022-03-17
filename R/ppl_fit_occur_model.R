@@ -37,6 +37,30 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
+    # Determine whether the non-linear effect of month in p is necessary with the
+    # simplest model for occupancy probabilities
+    fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
+                                        reformulate(site_mods[3], response = "psi")),
+                           visit_data = occuRdata$visit,
+                           site_data = occuRdata$site,
+                           print = varargs$print_fitting)
+
+    # Calculate degrees of freedom
+    dof <- occuR::dof.occuR(fit, each = TRUE)
+
+    # If non-linear effect of month on detection has very few dof,
+    # fit linear effect to avoid singular covariance matrix
+    if(dof$p < 3){
+
+        visit_mod <- c("1", "log(TotalHours+1)", "month")
+
+        # Create notification
+        sink(file.path(config$fit_dir, sp_code, paste0("linear_month_effect_", sp_code,".txt")))
+        print("Model fitted with a linear effect of month", split = TRUE)
+        sink()
+    }
+
+
     # Fit models sequentially if they don't work
     success <- FALSE
     m <- 0
@@ -50,29 +74,13 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         tryCatch({
 
             fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                         reformulate(site_mod, response = "psi")),
-                            visit_data = occuRdata$visit,
-                            site_data = occuRdata$site,
-                            print = varargs$print_fitting)
+                                                reformulate(site_mod, response = "psi")),
+                                   visit_data = occuRdata$visit,
+                                   site_data = occuRdata$site,
+                                   print = varargs$print_fitting)
 
             # Check if degrees of freedom can be calculated
-            dof <- occuR::dof.occuR(fit, each = TRUE)
-
-            # If non-linear effect of month on detection has very few dof,
-            # fit linear effect to avoid singular covariance matrix
-            if(dof$p < 3){
-                visit_mod_ln <- c("1", "log(TotalHours+1)", "month")
-                fit <- occuR::fit_occu(forms = list(reformulate(visit_mod_ln, response = "p"),
-                                                    reformulate(site_mod, response = "psi")),
-                                       visit_data = occuRdata$visit,
-                                       site_data = occuRdata$site,
-                                       print = varargs$print_fitting)
-
-                # Create notification
-                sink(file.path(config$fit_dir, sp_code, paste0("linear_month_effect_", sp_code,".txt")))
-                print(e)
-                sink()
-            }
+            occuR::dof.occuR(fit, each = TRUE)
 
             success <- TRUE
             saveRDS(fit, file.path(config$fit_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
@@ -82,7 +90,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             success <- FALSE
 
             sink(file.path(config$fit_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,".txt")))
-            print(e)
+            print(e, split = TRUE)
             sink()
 
             }) # TryCatch fit
