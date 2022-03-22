@@ -24,10 +24,10 @@ configPreambOccuR <- function(year, server){
         fit_dir <- "/drv_birdie/birdie_ftp"
 
         # Define years to fit
-        dyear <- 4  # this will be 4 in the server and 2 locally
+        dyear <- 2  # this will be 4 in the server and 2 locally
 
         # and spatio-temporal effect
-        sptemp <- "t2(lon, lat, occasion, k = c(20, 4), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(20, 4) in the server and c(15, 3) locally
+        sptemp <- "t2(lon, lat, occasion, k = c(25, 3), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(25, 3) in the server and c(15, 3) locally
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
