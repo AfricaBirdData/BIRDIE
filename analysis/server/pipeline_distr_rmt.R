@@ -6,16 +6,7 @@ rm(list = ls())
 
 # test_years <- c(2010, 2017)
 test_years <- 2012:2016
-
-# Detection models
-visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
-
-# Occupancy models
-site_mods <- list(mod1 = c("-1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"),
-                  mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
-                  mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
-
-config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = 50, site_mods, visit_mod, server = TRUE)
+config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = 50, server = TRUE)
 
 # Create indicator storage files?
 ppl_create_indtr_files(config, overwrite_indtr = FALSE)
@@ -50,7 +41,7 @@ if(!file.exists(indtr_path) | (file.exists(indtr_path) & overwrite_indtr)){
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 50, site_mods, visit_mod, server = TRUE)
+    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 50, server = TRUE)
 
     # test species
     config$species <- config$species[74:length(config$species)]

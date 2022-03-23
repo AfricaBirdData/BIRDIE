@@ -4,7 +4,7 @@
 \alias{configPreambOccuR}
 \title{Prepare server or local preamble}
 \usage{
-configPreambOccuR(year, dur, dim_grid, site_mods, visit_mods, server)
+configPreambOccuR(year, dur, dim_grid, server)
 }
 \arguments{
 \item{year}{Year of interest.}
@@ -14,14 +14,6 @@ covered by the analysis.}
 
 \item{dim_grid}{An integer giving the dimension of the grid used for spatial effects.
 This dimension gives the number \code{k} see \code{\link[mgcv]{choose.k}}.}
-
-\item{site_mods}{A list of formulas with model specifications for occupancy probabilities.
-Models are specified supplying the names of the model terms in a character vector.
-A spatio-temporal effect is added to the first model of the list.}
-
-\item{visit_mods}{A list of (or a single) formula/s with model specifications for
-detection probabilities. Models are specified supplying the names of the model terms
-in a character vector.}
 
 \item{server}{Logical. If TRUE the preamble is prepared to run remotely,
 otherwise it is prepared to run locally.}
@@ -40,14 +32,5 @@ A list with:
 Set basic variables to run BIRDIE scripts locally or remotely.
 }
 \examples{
-site_mods <- list(mod1 = c("1", "dist_coast", "prcp"),
-                  mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')"),
-                  mod3 = c("1", "dist_coast"))
-
-visit_mods <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
-
-configPreambOccuR(year = 2010, dur = 3, dim_grid = 25,
-                 site_mods = site_mods,
-                 visit_mods = visit_mods,
-                 server = FALSE)
+configPreambOccuR(year = 2010, server = TRUE)
 }
