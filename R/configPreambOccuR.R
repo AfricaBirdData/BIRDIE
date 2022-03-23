@@ -2,6 +2,10 @@
 #'
 #' @description Set basic variables to run BIRDIE scripts locally or remotely.
 #' @param year Year of interest.
+#' @param dur Temporal coverage of the analysis in years. `year` will be the last year
+#' covered by the analysis.
+#' @param dim_grid An integer giving the dimension of the grid used for spatial effects.
+#' This dimension gives the number `k` see \code{\link[mgcv]{choose.k}}.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
 #'
@@ -15,19 +19,13 @@
 #'
 #' @examples
 #' configPreambOccuR(year = 2010, server = TRUE)
-configPreambOccuR <- function(year, server){
+configPreambOccuR <- function(year, dur, dim_grid, server){
 
     if(server){
 
         # Define data and output directories
         data_dir <- "/home/birdie/analysis/data"
         fit_dir <- "/drv_birdie/birdie_ftp"
-
-        # Define years to fit
-        dyear <- 2  # this will be 4 in the server and 2 locally
-
-        # and spatio-temporal effect
-        sptemp <- "t2(lon, lat, occasion, k = c(50, 3), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(50, 3) in the server and c(15, 3) locally
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
@@ -38,19 +36,16 @@ configPreambOccuR <- function(year, server){
         data_dir <- "analysis/data"
         fit_dir <- "analysis/out_nosync"
 
-        # Define years to fit
-        dyear <- 2  # this will be 4 in the server and 2 locally
-
-        # and spatio-temporal effect
-        sptemp <- "t2(lon, lat, occasion, k = c(15, 3), bs = c('ts', 'cs'), d = c(2, 1))" # this will be c(20, 4) in the server and c(15, 3) locally
-
         # Define species to fit models to
         species <- c(4, 6, 41, 235, 240)
 
     }
 
+    # Define spatio-temporal effect
+    sptemp <- paste0("t2(lon, lat, occasion, k = c(,", dim_grid, ",", dur - 1, "), bs = c('ts', 'cs'), d = c(2, 1))")
+
     # Define a range of years covered by the occupancy model
-    year_range <- c(year - dyear/2, year + dyear/2)
+    year_range <- c(year - duration - 1, year)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
