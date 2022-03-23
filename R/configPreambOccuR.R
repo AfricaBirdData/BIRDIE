@@ -6,6 +6,12 @@
 #' covered by the analysis.
 #' @param dim_grid An integer giving the dimension of the grid used for spatial effects.
 #' This dimension gives the number `k` see \code{\link[mgcv]{choose.k}}.
+#' @param site_mods A list of formulas with model specifications for occupancy probabilities.
+#' Models are specified supplying the names of the model terms in a character vector.
+#' A spatio-temporal effect is added to the first model of the list.
+#' @param visit_mods A list of (or a single) formula/s with model specifications for
+#' detection probabilities. Models are specified supplying the names of the model terms
+#' in a character vector.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
 #'
@@ -18,8 +24,17 @@
 #' @export
 #'
 #' @examples
-#' configPreambOccuR(year = 2010, server = TRUE)
-configPreambOccuR <- function(year, dur, dim_grid, server){
+#' site_mods <- list(mod1 = c("1", "dist_coast", "prcp"),
+#'                   mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')"),
+#'                   mod3 = c("1", "dist_coast"))
+#'
+#' visit_mods <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
+#'
+#' configPreambOccuR(year = 2010, dur = 3, dim_grid = 25,
+#'                  site_mods = site_mods,
+#'                  visit_mods = visit_mods,
+#'                  server = FALSE)
+configPreambOccuR <- function(year, dur, dim_grid, site_mods, visit_mods, server){
 
     if(server){
 
@@ -44,12 +59,15 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
     # Define spatio-temporal effect
     sptemp <- paste0("t2(lon, lat, occasion, k = c(", dim_grid, ", ", dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
 
+    site_mods[[1]] <- c(site_mods[[1]], sptemp)
+
     # Define a range of years covered by the occupancy model
     year_range <- c(year - dur + 1, year)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
     list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, sptemp=sptemp,
-         year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years)
+         year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years,
+         site_mods=site_mods, visit_mods=visit_mods)
 
 }
