@@ -28,7 +28,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     if(config$dur > 2){
         sptemp <- paste0("t2(lon, lat, occasion, k = c(", config$dim_grid, ", ", config$dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
     } else {
-        sptemp <- paste0("t2(lon, lat, bs = 'ts')")
+        sptemp <- paste0("t2(lon, lat, k = ", config$dim_grid ,", bs = 'ts')")
     }
 
     # Detection
