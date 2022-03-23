@@ -5,7 +5,7 @@ library(dplyr)
 rm(list = ls())
 
 # test_years <- c(2010, 2017)
-test_years <- 2011:2016
+test_years <- 2012:2016
 config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = 50, server = TRUE)
 
 # Create indicator storage files?
