@@ -28,7 +28,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
     # Occupancy
-    site_mods <- list(mod1 = c("-1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", config$sptemp),
+    site_mods <- list(mod1 = c("-1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')", config$sptemp),
                       mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                       mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
