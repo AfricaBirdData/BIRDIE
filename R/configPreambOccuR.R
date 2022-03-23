@@ -57,7 +57,12 @@ configPreambOccuR <- function(year, dur, dim_grid, site_mods, visit_mods, server
     }
 
     # Define spatio-temporal effect
-    sptemp <- paste0("t2(lon, lat, occasion, k = c(", dim_grid, ", ", dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
+    if(dur > 2){
+        sptemp <- paste0("t2(lon, lat, occasion, k = c(", dim_grid, ", ", dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
+    } else {
+        sptemp <- c("occasion", paste0("t2(lon, lat, bs = 'ts', k = ", dim_grid,")"))
+    }
+
 
     site_mods[[1]] <- c(site_mods[[1]], sptemp)
 
