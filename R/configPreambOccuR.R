@@ -45,7 +45,7 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
     sptemp <- paste0("t2(lon, lat, occasion, k = c(,", dim_grid, ",", dur - 1, "), bs = c('ts', 'cs'), d = c(2, 1))")
 
     # Define a range of years covered by the occupancy model
-    year_range <- c(year - duration - 1, year)
+    year_range <- c(year - dur - 1, year)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 

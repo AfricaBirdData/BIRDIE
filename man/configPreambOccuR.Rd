@@ -4,10 +4,16 @@
 \alias{configPreambOccuR}
 \title{Prepare server or local preamble}
 \usage{
-configPreambOccuR(year, server)
+configPreambOccuR(year, dur, dim_grid, server)
 }
 \arguments{
 \item{year}{Year of interest.}
+
+\item{dur}{Temporal coverage of the analysis in years. \code{year} will be the last year
+covered by the analysis.}
+
+\item{dim_grid}{An integer giving the dimension of the grid used for spatial effects.
+This dimension gives the number \code{k} see \code{\link[mgcv]{choose.k}}.}
 
 \item{server}{Logical. If TRUE the preamble is prepared to run remotely,
 otherwise it is prepared to run locally.}
