@@ -21,26 +21,16 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         return(1)
     }
 
-
-    # Define models -----------------------------------------------------------
-
-    # Detection
-    visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
-
-    # Occupancy
-    site_mods <- list(mod1 = c("-1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')", config$sptemp),
-                      mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
-                      mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
-
-
     # Model fitting -----------------------------------------------------------
 
     print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
+    visit_mod <- config$visit_mods
+
     # Determine whether the non-linear effect of month in p is necessary with the
     # simplest model for occupancy probabilities
     fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
-                                        reformulate(site_mods[[3]], response = "psi")),
+                                        reformulate(config$site_mods[[3]], response = "psi")),
                            visit_data = occuRdata$visit,
                            site_data = occuRdata$site,
                            print = varargs$print_fitting)
@@ -66,11 +56,11 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     # Fit models sequentially if they don't work
     success <- FALSE
     m <- 0
-    while(!success && m <= (length(site_mods) - 1)){
+    while(!success && m <= (length(config$site_mods) - 1)){
 
         m <- m + 1
 
-        site_mod <- site_mods[[m]]
+        site_mod <- config$site_mods[[m]]
         print(paste("Trying model", m))
 
         tryCatch({
