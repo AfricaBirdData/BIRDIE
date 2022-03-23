@@ -50,6 +50,6 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
     years <- year_range[1]:year_range[2]
 
     list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, sptemp=sptemp,
-         year=year, dyear=dyear, year_range=year_range, years_ch=years_ch, years=years)
+         year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years)
 
 }
