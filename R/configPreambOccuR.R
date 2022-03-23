@@ -41,15 +41,12 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
 
     }
 
-    # Define spatio-temporal effect
-    sptemp <- paste0("t2(lon, lat, occasion, k = c(", dim_grid, ", ", dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
-
     # Define a range of years covered by the occupancy model
     year_range <- c(year - dur + 1, year)
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, sptemp=sptemp,
+    list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, dim_grid=dim_grid,
          year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years)
 
 }

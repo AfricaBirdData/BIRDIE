@@ -24,11 +24,18 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     # Define models -----------------------------------------------------------
 
+    # Define spatio-temporal effect
+    if(config$dur > 2){
+        sptemp <- paste0("t2(lon, lat, occasion, k = c(", config$dim_grid, ", ", config$dur, "), bs = c('ts', 'cs'), d = c(2, 1))")
+    } else {
+        sptemp <- paste0("t2(lon, lat, bs = 'ts')")
+    }
+
     # Detection
     visit_mod <- c("1", "log(TotalHours+1)", "s(month, bs = 'cs')")
 
     # Occupancy
-    site_mods <- list(mod1 = c("-1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')", config$sptemp),
+    site_mods <- list(mod1 = c("-1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec", sptemp),
                       mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                       mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
