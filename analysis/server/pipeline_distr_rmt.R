@@ -6,7 +6,7 @@ rm(list = ls())
 
 # test_years <- c(2010, 2017)
 test_years <- 2012:2016
-config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = 50, server = TRUE)
+config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = c(30,30), server = TRUE)
 
 # Create indicator storage files?
 ppl_create_indtr_files(config, overwrite_indtr = FALSE)
@@ -41,7 +41,7 @@ if(!file.exists(indtr_path) | (file.exists(indtr_path) & overwrite_indtr)){
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 50, server = TRUE)
+    config <- configPreambOccuR(year = year, dur = 3, dim_grid = c(10,10), server = TRUE)
 
     # test species
     config$species <- config$species[74:length(config$species)]
