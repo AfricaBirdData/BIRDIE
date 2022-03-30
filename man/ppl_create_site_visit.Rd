@@ -4,12 +4,16 @@
 \alias{ppl_create_site_visit}
 \title{Create site and visit occupancy files}
 \usage{
-ppl_create_site_visit(sp_code, year, config, ...)
+ppl_create_site_visit(sp_code, year, force_gee_dwld = FALSE, config, ...)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
 
 \item{year}{Year to run to the pipeline for}
+
+\item{force_gee_dwld}{Whether covariates from Google Earth Engine should be
+downloaded, even if a file with covariates is already present on disk.
+Defaults to FALSE.}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
@@ -17,8 +21,17 @@ See \link{configPreambOccuR}}
 \item{...}{Other arguments passed on to other functions}
 }
 \value{
-
+The first part of the function creates two data frames (in .csv format)
+that will be saved to disk: GEE annotated ABAP site data and GEE annotated ABAP
+visit data. The second part of the functions creates three data frames that will
+be saved to disk: occuR-formatted site, visit and species detection data frames,
+all in .csv format.
 }
 \description{
-Create site and visit occupancy files
+This function prepares site and visit occupancy data to fit an
+occuR model from ABAP data. It has two parts: the first part downloads ABAP
+data and annotates them with covariates from Google Earth Engine using the
+functions \code{\link{prepGEESiteData()}} and \code{\link{prepGEEVisitData()}},
+the second part uses the function \code{\link{createOccuRData}} to format the
+data for the \code{occuR} package.
 }

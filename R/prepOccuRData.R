@@ -6,16 +6,16 @@
 #' @export
 #'
 #' @examples
-ppl_prep_occur_data <- function(sp_code, year, config, ...){
+prepOccuRData <- function(sp_code, year, config, ...){
 
     varargs <- list(...)
 
     # Prepare data ------------------------------------------------------------
 
     # File names
-    visitfile <- file.path(config$fit_dir, paste0("occur_visit_dat_sa_", config$years_ch, ".csv"))
-    sitefile <- file.path(config$fit_dir, paste0("occur_site_dat_sa_", config$years_ch, ".csv"))
-    detfile <- file.path(config$fit_dir, sp_code, paste0("occur_det_dat_sa_", config$years_ch, ".csv"))
+    visitfile <- file.path(config$out_dir, paste0("occur_visit_dat_sa_", config$years_ch, ".csv"))
+    sitefile <- file.path(config$out_dir, paste0("occur_site_dat_sa_", config$years_ch, ".csv"))
+    detfile <- file.path(config$out_dir, sp_code, paste0("occur_det_dat_sa_", config$years_ch, ".csv"))
 
     # Read in site and visit data
     site_data <- read.csv(sitefile)

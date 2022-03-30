@@ -18,14 +18,14 @@
 #' @export
 #'
 #' @examples
-#' configPreambOccuR(year = 2010, server = TRUE)
+#' configPreambOccuR(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
 configPreambOccuR <- function(year, dur, dim_grid, server){
 
     if(server){
 
         # Define data and output directories
         data_dir <- "/home/birdie/analysis/data"
-        fit_dir <- "/drv_birdie/birdie_ftp"
+        out_dir <- "/drv_birdie/birdie_ftp"
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
@@ -34,7 +34,7 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
 
         # Define data and output directories
         data_dir <- "analysis/data"
-        fit_dir <- "analysis/out_nosync"
+        out_dir <- "analysis/out_nosync"
 
         # Define species to fit models to
         species <- c(4, 6, 41, 235, 240)
@@ -46,7 +46,7 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, fit_dir=fit_dir, species=species, dim_grid=dim_grid,
+    list(server=server, data_dir=data_dir, out_dir=out_dir, species=species, dim_grid=dim_grid,
          year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years)
 
 }

@@ -25,7 +25,7 @@
 #' @export
 #'
 #' @examples
-summarizePredOccuR <- function(pred_p, pred_psi, pred_data, visit_data,
+summarizeOccuRPred <- function(pred_p, pred_psi, pred_data, visit_data,
                                quants = NULL){
 
     if(is.vector(pred_p) & is.vector(pred_psi)){

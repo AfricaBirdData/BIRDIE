@@ -10,12 +10,12 @@
 ppl_summarize_occur <- function(sp_code, sp_name, year, config, ...){
 
     # Predict from model
-    pred_occu <- ppl_predict_occur(sp_code, year, config, ...)
+    pred_occu <- predictOccuR(sp_code, year, config, ...)
 
     print("Summarizing predictions")
 
     # Summarize predictions
-    summ_occu <- summarizePredOccuR(pred_p = pred_occu$pred$pboot,
+    summ_occu <- summarizeOccuRPred(pred_p = pred_occu$pred$pboot,
                                     pred_psi = pred_occu$pred$psiboot,
                                     pred_data = pred_occu$pred_data,
                                     visit_data = pred_occu$occuRdata$visit,
@@ -27,7 +27,7 @@ ppl_summarize_occur <- function(sp_code, sp_name, year, config, ...){
         # save data and plots if the year is in the middle of the series or
         # higher (middle should give the most accurate temporal estimate)
 
-        if((t > config$dyear/2) | (config$year < (2009 + config$dyear/2))){
+        if((t > config$dur/2) | (config$year < (2009 + config$dur))){
 
             # select year
             yy <- substring(as.character(config$years[t]), 3, 4)
@@ -40,13 +40,25 @@ ppl_summarize_occur <- function(sp_code, sp_name, year, config, ...){
 
             # Save predictions
             pred_sel %>%
-                write.csv(file.path(config$fit_dir, sp_code, paste0("occur_pred_", yy, "_", sp_code, ".csv")),
+                write.csv(file.path(config$out_dir, sp_code, paste0("occur_pred_", yy, "_", sp_code, ".csv")),
                           row.names = FALSE)
 
             ## PLOTS
 
+            # Download geometry if not present on disk
+            pentads_file <- file.path(tempdir(), "sa_pentads.rds")
+
+            if(file.exists(pentads_file)){
+                pentads_sa <- readRDS(pentads_file)
+            } else {
+                pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa") # HARD CODED
+                saveRDS(pentads_sa, file.path(tempdir(), "sa_pentads.rds"))
+            }
+
             # Add geometry
             pred_sel <- pred_occu$pred_sites %>%
+                dplyr::left_join(pentads_sa, by = c("Pentad" = "pentad")) %>%
+                sf::st_as_sf() %>%
                 dplyr::select(Pentad) %>%
                 dplyr::left_join(pred_sel, by = "Pentad")
 
@@ -75,9 +87,9 @@ ppl_summarize_occur <- function(sp_code, sp_name, year, config, ...){
                 ggtitle(paste(sp_name, config$years[t])) +
                 facet_wrap("lim")
 
-            ggsave(file.path(config$fit_dir, sp_code, paste0("occur_psi_", yy, "_", sp_code, ".png")), psi)
-            ggsave(file.path(config$fit_dir, sp_code, paste0("occur_p_", yy, "_", sp_code, ".png")), p)
-            ggsave(file.path(config$fit_dir, sp_code, paste0("occur_occu_", yy, "_", sp_code, ".png")), occu)
+            ggsave(file.path(config$out_dir, sp_code, paste0("occur_psi_", yy, "_", sp_code, ".png")), psi)
+            ggsave(file.path(config$out_dir, sp_code, paste0("occur_p_", yy, "_", sp_code, ".png")), p)
+            ggsave(file.path(config$out_dir, sp_code, paste0("occur_occu_", yy, "_", sp_code, ".png")), occu)
 
         }
     }

@@ -12,7 +12,7 @@
 #' @export
 #'
 #' @examples
-prepPredictDataOccuR <- function(occuRdata, pred_sites, years, scaling = FALSE){
+prepPredictOccuRData <- function(occuRdata, pred_sites, years, scaling = FALSE){
 
     # Add site info if not present
     pred_sites <- pred_sites %>%

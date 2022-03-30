@@ -14,7 +14,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     # Prepare data ------------------------------------------------------------
 
-    occuRdata <- ppl_prep_occur_data(sp_code, year, config, ...)
+    occuRdata <- prepOccuRData(sp_code, year, config, ...)
 
     # Stop if there are no detections
     if(is.numeric(occuRdata) && occuRdata == 1){
@@ -64,7 +64,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         visit_mod <- c("1", "log(TotalHours+1)")
 
         # Create notification
-        sink(file.path(config$fit_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
+        sink(file.path(config$out_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
         print("Model fitted without effect of month", split = TRUE)
         sink()
     }
@@ -92,13 +92,13 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             occuR::dof.occuR(fit, each = TRUE)
 
             success <- TRUE
-            saveRDS(fit, file.path(config$fit_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
+            saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
 
         }, error = function(e){
 
             success <- FALSE
 
-            sink(file.path(config$fit_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,".txt")))
+            sink(file.path(config$out_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,".txt")))
             print(e, split = TRUE)
             sink()
 
