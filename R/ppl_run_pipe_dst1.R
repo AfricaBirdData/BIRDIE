@@ -1,5 +1,9 @@
 #' Run distribution indicators pipeline branch 1
 #'
+#' @description Branch 1 of the distribution indicators pipeline estimates
+#' occupancy probabilities in South Africa for a selected species. These
+#' occupancy probabilities form the basis for building more elaborated
+#' indicators in other pipeline branches.
 #' @param sp_code SAFRING code of the species to run the pipeline for
 #' @param sp_name Common name of the species to run the pipeline for. This is
 #' necessary for plots and summaries.

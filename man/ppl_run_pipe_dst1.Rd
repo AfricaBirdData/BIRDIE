@@ -33,5 +33,8 @@ Can contain: "data", "fit", "summ". Defaults to all of them.}
 
 }
 \description{
-Run distribution indicators pipeline branch 1
+Branch 1 of the distribution indicators pipeline estimates
+occupancy probabilities in South Africa for a selected species. These
+occupancy probabilities form the basis for building more elaborated
+indicators in other pipeline branches.
 }

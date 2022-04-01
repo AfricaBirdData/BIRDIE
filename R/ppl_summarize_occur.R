@@ -72,7 +72,7 @@ ppl_summarize_occur <- function(sp_code, sp_name, year, config, ...){
 
             # Detection probabilities
             p <- pred_sel %>%
-                mutate(p = if_else(is.na(p), 0, p)) %>%
+                dplyr::mutate(p = ifelse(is.na(p), 0, p)) %>%
                 ggplot() +
                 geom_sf(aes(fill = p), size = 0.01) +
                 scale_fill_viridis_c(name = "p", limits = c(0, 1)) +

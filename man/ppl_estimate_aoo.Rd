@@ -4,12 +4,10 @@
 \alias{ppl_estimate_aoo}
 \title{Estimate Area of Occupancy}
 \usage{
-ppl_estimate_aoo(sp_code, year, config, verbose, ...)
+ppl_estimate_aoo(sp_code, config, verbose, ...)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
-
-\item{year}{Year to run to the pipeline for}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
