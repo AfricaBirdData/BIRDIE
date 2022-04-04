@@ -17,15 +17,7 @@ ppl_run_pipe_abu1 <- function(site, year, config,
 
     # Prepare covariates if necessary
     if("data" %in% steps){
-
-        library(rgee)
-        ee_check()
-        ee_Initialize(drive = TRUE)
-
         ppl_data_ssm(site_id, year, config)
-
-        detach("package:rgee", unload = TRUE)
-
     }
 
     # Load counts

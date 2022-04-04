@@ -8,6 +8,10 @@
 #' @examples
 ppl_data_ssm <- function(site, year, config, ...){
 
+    rgee::ee_check()
+    rgee::ee_Initialize(drive = TRUE)
+
+
     # Prepare site data -------------------------------------------------------
 
     # List all sites in South Africa
@@ -88,7 +92,7 @@ ppl_data_ssm <- function(site, year, config, ...){
     # Upload to GEE -----------------------------------------------------------
 
     # Set a name for the asset
-    eeid <- sprintf("%s/%s", ee_get_assethome(), 'cwac_visits')
+    eeid <- sprintf("%s/%s", rgee::ee_get_assethome(), 'cwac_visits')
 
     # Upload to EE (if not done already)
     visits %>%
@@ -102,7 +106,7 @@ ppl_data_ssm <- function(site, year, config, ...){
     # Annotate with TerraClimate ----------------------------------------------
 
     # Load the remote data asset
-    ee_visit <- ee$FeatureCollection(eeid)
+    ee_visit <- rgee::ee$FeatureCollection(eeid)
 
     # Define bands
     bands <- c("pr", "tmmn", "tmmx")
@@ -158,7 +162,7 @@ ppl_data_ssm <- function(site, year, config, ...){
     # Annotate with water occurrence ------------------------------------------
 
     # Load the remote data asset
-    ee_visit <- ee$FeatureCollection(eeid)
+    ee_visit <- rgee::ee$FeatureCollection(eeid)
 
     visit_water <- vector("list", length = 2)
 

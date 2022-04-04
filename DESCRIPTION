@@ -32,6 +32,7 @@ Imports:
     mgcv,
     occuR,
     purrr,
+    rgee,
     rgeos,
     sf,
     tidyr,
