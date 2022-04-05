@@ -45,12 +45,6 @@ prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
         dplyr::count(Card) %>%
         dplyr::pull(n) %>% max() > 1)){
         stop("Some cards are repeated in different days!")
-    } else if((counts %>%
-               dplyr::filter(!is.na(Card)) %>%
-               dplyr::count(Card, StartDate) %>%
-               dplyr::count(StartDate) %>%
-               dplyr::pull(n) %>% max() > 1)){
-        stop("Some dates have more than one card!")
     }
 
     # Filter species ----------------------------------------------------------
