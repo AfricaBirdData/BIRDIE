@@ -47,11 +47,11 @@ ppl_create_site_visit <- function(sp_code, year, force_gee_dwld = FALSE,
     }
 
     # Load data and subset years
-    sitedata <- read.csv(sitefile) %>%
+    sitedata <- utils::read.csv(sitefile) %>%
         dplyr::select(Pentad = Name, lon, lat, watocc_ever, dist_coast, dplyr::ends_with(match = as.character(config$years))) %>%
         tidyr::drop_na()   # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
 
-    visitdata <- read.csv(visitfile) %>%
+    visitdata <- utils::read.csv(visitfile) %>%
         dplyr::filter(year %in% config$years)
 
 
