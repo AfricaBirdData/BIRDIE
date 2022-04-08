@@ -1,6 +1,6 @@
 #' Estimate change in Area of Occupancy
 #'
-#' @inheritParams ppl_run_pipe_distr
+#' @inheritParams ppl_run_pipe_dst2
 #' @param term A character string with one of three options with the time-frame
 #' for the change: 'annual' (1 year), 'short' (15 years), 'long' (30 years).
 #' @param verbose Logical. If TRUE, the new line added to the indicator table

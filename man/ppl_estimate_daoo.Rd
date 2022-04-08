@@ -23,8 +23,6 @@ for the change: 'annual' (1 year), 'short' (15 years), 'long' (30 years).}
 
 \item{verbose}{Logical. If TRUE, the new line added to the indicator table
 is displayed in the console.}
-
-\item{...}{Other arguments passed on to other functions}
 }
 \value{
 

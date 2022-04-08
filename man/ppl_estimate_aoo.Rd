@@ -14,8 +14,6 @@ See \link{configPreambOccuR}}
 
 \item{verbose}{Logical. If TRUE, the new line added to the indicator table
 is displayed in the console.}
-
-\item{...}{Other arguments passed on to other functions}
 }
 \value{
 
