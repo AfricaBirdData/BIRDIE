@@ -1,50 +1,15 @@
 library(BIRDIE)
-library(dplyr)
-# library(occuR)
 
 rm(list = ls())
 
-# test_years <- c(2010, 2017)
-test_years <- 2012:2016
-config <- configPreambOccuR(year = 2012, dur = 3, dim_grid = 50, server = TRUE)
+test_years <- 2012:2019
 
-# Create indicator storage files?
-ppl_create_indtr_files(config, overwrite_indtr = FALSE)
-
-
-# Overwrite?
-overwrite_indtr <- FALSE
-
-# Create indicator file path
-indtr_path <- file.path(config$fit_dir, "group", paste0("indtr_", "group", ".csv"))
-
-# Check if file exists
-if(!file.exists(indtr_path) | (file.exists(indtr_path) & overwrite_indtr)){
-
-    # Create empty data frame
-    indtr <- data.frame(species = character(),
-                        indicator = character(),
-                        start_date = character(),
-                        end_date = character(),
-                        term = character(),
-                        estimate = numeric(),
-                        st_dev = numeric(),
-                        lb95 = numeric(),
-                        ub95 = numeric(),
-                        opt = numeric())
-
-    # Save
-    write.csv(indtr, indtr_path, row.names = FALSE)
-
-}
+# DISTRIBUTION PIPELINE BRANCH 1 ------------------------------------------
 
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 50, server = TRUE)
-
-    # test species
-    config$species <- config$species[74:length(config$species)]
+    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 40, server = TRUE)
 
     for(i in seq_along(config$species)){
 
@@ -53,29 +18,33 @@ for(y in seq_along(test_years)){
         # Species name
         sp_name <- BIRDIE::barberspan %>%
             dplyr::filter(SppRef == sp_code) %>%
-            mutate(name = paste(Common_species, Common_group)) %>%
-            mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
-            pull(name) %>%
+            dplyr::mutate(name = paste(Common_species, Common_group)) %>%
+            dplyr::mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
+            dplyr::pull(name) %>%
             unique()
 
         print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-        ppl_run_pipe_distr(sp_code = sp_code,
-                           sp_name = sp_name,
-                           year = year,
-                           config = config,
-                           steps = c("fit"),
-                           download_from_abap = TRUE,
-                           save_occu_data = TRUE,
-                           overwrite_occu_data = c("site", "visit", "det"),
-                           scale_vars_occur = list(visit = NULL,
-                                                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                           print_fitting = FALSE,
-                           verbose = TRUE)
+        ppl_run_pipe_dst1(sp_code = sp_code,
+                          sp_name = sp_name,
+                          year = year,
+                          config = config,
+                          steps = c("data", "fit", "summ"),
+                          force_gee_dwld = FALSE,
+                          force_abap_dwld = FALSE,
+                          save_occu_data = TRUE,
+                          overwrite_occu_data = c("site", "visit", "det"),
+                          scale_vars_occur = list(visit = NULL,
+                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                          print_fitting = TRUE,
+                          verbose = TRUE)
 
+        ppl_run_pipe_dst2(sp_code = sp_code,
+                          config = config,
+                          indtr = c("aoo", "daoo"),
+                          overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
+                          verbose = TRUE,
+                          scale_vars_occur = list(visit = NULL,
+                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
     }
-
-    # Estimate species type indicators
-    ppl_estimate_distr_sp_type(sp_type = "group", year, config, force_predict = FALSE, verbose = TRUE)
-
 }
