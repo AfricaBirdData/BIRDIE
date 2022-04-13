@@ -25,19 +25,23 @@ for(y in seq_along(test_years)){
 
         print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-        ppl_run_pipe_dst1(sp_code = sp_code,
-                          sp_name = sp_name,
-                          year = year,
-                          config = config,
-                          steps = c("data", "fit", "summ"),
-                          force_gee_dwld = FALSE,
-                          force_abap_dwld = FALSE,
-                          save_occu_data = TRUE,
-                          overwrite_occu_data = c("site", "visit", "det"),
-                          scale_vars_occur = list(visit = NULL,
-                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                          print_fitting = TRUE,
-                          verbose = TRUE)
+        out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                      sp_name = sp_name,
+                                      year = year,
+                                      config = config,
+                                      steps = c("data", "fit", "summ"),
+                                      force_gee_dwld = FALSE,
+                                      force_abap_dwld = FALSE,
+                                      save_occu_data = TRUE,
+                                      overwrite_occu_data = c("site", "visit", "det"),
+                                      scale_vars_occur = list(visit = NULL,
+                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                                      print_fitting = TRUE,
+                                      verbose = TRUE)
+
+        if(out_dst1 == 1){
+            next
+        }
 
         ppl_run_pipe_dst2(sp_code = sp_code,
                           config = config,
