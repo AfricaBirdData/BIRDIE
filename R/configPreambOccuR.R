@@ -30,6 +30,9 @@ configPreambOccuR <- function(year, dur, dim_grid, server){
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
 
+        # Remove partially identified species
+        species <- species[species < 10000]
+
     } else {
 
         # Define data and output directories
