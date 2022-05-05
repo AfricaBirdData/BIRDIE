@@ -5,7 +5,7 @@ library(BIRDIE)
 rm(list = ls())
 
 test_years <- c(2012, 2013, 2014)
-year <- 2010
+# year <- 2010
 
 # DISTRIBUTION PIPELINE BRANCH 1 ------------------------------------------
 
@@ -41,6 +41,8 @@ for(y in seq_along(test_years)){
                                                               site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                       print_fitting = TRUE,
                                       verbose = TRUE)
+
+        print("Pipeline DST1 status = ", out_dst1)
 
         if(out_dst1 == 1){
             next

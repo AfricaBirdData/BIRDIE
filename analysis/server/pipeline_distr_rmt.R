@@ -36,8 +36,10 @@ for(y in seq_along(test_years)){
                                       overwrite_occu_data = c("site", "visit", "det"),
                                       scale_vars_occur = list(visit = NULL,
                                                               site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                                      print_fitting = TRUE,
+                                      print_fitting = FALSE,
                                       verbose = TRUE)
+
+        print("Pipeline DST1 status = ", out_dst1)
 
         if(out_dst1 == 1){
             next
