@@ -21,7 +21,8 @@ ppl_data_ssm <- function(site, year, config, ...){
     site_spt <- sites %>%
         dplyr::filter(LocationCode == site) %>%
         dplyr::select(LocationCode, LocationName, X, Y) %>%
-        sf::st_as_sf(coords = c("X", "Y"), dim = "XY", crs = sf::st_crs(4326))
+        sf::st_as_sf(coords = c("X", "Y"), dim = "XY", crs = sf::st_crs(4326)) %>%
+        dplyr::distinct()
 
     # Read in catchment data
     catchmt <- sf::read_sf(file.path(config$data_dir, "catchmt_4.shp")) # THIS IS HARD CODED
