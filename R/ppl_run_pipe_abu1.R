@@ -17,7 +17,7 @@ ppl_run_pipe_abu1 <- function(site, year, config,
 
     # Prepare covariates if necessary
     if("data" %in% steps){
-        ppl_data_ssm(site_id, year, config)
+        ppl_data_ssm(site, year, config)
     }
 
     # Load counts
