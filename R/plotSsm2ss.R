@@ -41,6 +41,16 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         dplyr::filter(season != "O") %>%
         dplyr::mutate(season = ifelse(season == "S", 1, 2))
 
+    # There might be counts in more than one day per season and year, so
+    # we plot the mean for the season
+    post_stt <- post_stt %>%
+        dplyr::group_by(year, season) %>%
+        dplyr::summarize(count = mean(count),
+                         mu_est = mean(mu_est),
+                         mu_lb = mean(mu_lb),
+                         mu_ub = mean(mu_ub)) %>%
+        ungroup()
+
     if(linear){
         post_stt <- post_stt %>%
             dplyr::mutate(dplyr::across(.cols = -c(year, season),
