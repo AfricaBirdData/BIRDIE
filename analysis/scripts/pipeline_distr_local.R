@@ -42,7 +42,7 @@ for(y in seq_along(test_years)){
                                       print_fitting = TRUE,
                                       verbose = TRUE)
 
-        print("Pipeline DST1 status = ", out_dst1)
+        print(paste("Pipeline DST1 status =", out_dst1))
 
         if(out_dst1 == 1){
             next
