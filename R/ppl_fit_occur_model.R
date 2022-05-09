@@ -21,6 +21,9 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         return(1)
     }
 
+    if(is.numeric(occuRdata) && occuRdata == 2){
+        return(2)
+    }
 
     # Define models -----------------------------------------------------------
 

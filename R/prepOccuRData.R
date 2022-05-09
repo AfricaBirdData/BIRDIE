@@ -28,6 +28,12 @@ prepOccuRData <- function(sp_code, year, config, ...){
         return(1)
     }
 
+    # Or too few detections
+    if(sum(det_data$obs) < 5){
+        warning(paste("Less than 5 detection of species", sp_code))
+        return(2)
+    }
+
     # Add detection data to visits
     visit_data <- visit_data %>%
         dplyr::left_join(det_data, by = c("Pentad", "year", "visit"))
