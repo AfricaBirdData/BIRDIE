@@ -34,7 +34,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
             warning(paste("There are no detections for species", sp_code))
             return(1)
         } else if(fit_status == 2){
-            warning(paste("Less than 5 detections for species", sp_code))
+            warning(paste("Species", sp_code, "detected in less than 5 pentads"))
             return(1)
         } else {
             # set pipeline status

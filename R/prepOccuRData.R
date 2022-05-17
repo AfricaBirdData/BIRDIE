@@ -28,9 +28,14 @@ prepOccuRData <- function(sp_code, year, config, ...){
         return(1)
     }
 
-    # Or too few detections
-    if(sum(det_data$obs) < 5){
-        warning(paste("Less than 5 detection of species", sp_code))
+    # Or species detected in too few Pentads
+    n_pentads <- det_data %>%
+        dplyr::count(Pentad, obs) %>%
+        dplyr::filter(obs == 1) %>%
+        nrow()
+
+    if(n_pentads < 5){
+        warning(paste("Species", sp_code, "detected in less than 5 pentads"))
         return(2)
     }
 
