@@ -22,12 +22,11 @@ configPreambJAGS <- function(year, site, server){
 
         # Define data and output directories
         data_dir <- "/home/birdie/analysis/data"
+        out_dir <- "/drv_birdie/birdie_ftp"
         mod_file <- "/drv_birdie/Working/git/BIRDIE/analysis/models/cwac_ssm_lat_season.jags"
-        data_outdir <- "/drv_birdie/birdie_ftp"
-        plot_outdir <- "/drv_birdie/birdie_ftp"
 
         # Define years to fit
-        dyear <- 13
+        dyear <- 24
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
@@ -36,9 +35,8 @@ configPreambJAGS <- function(year, site, server){
 
         # Define data and output directories
         data_dir <- "analysis/data"
+        out_dir <- "analysis/out_nosync"
         mod_file <- "analysis/models/cwac_ssm_lat_season.jags"
-        data_outdir <- "analysis/out_nosync"
-        plot_outdir <- "analysis/out_nosync"
 
         # Define years to fit
         dyear <- 24
@@ -53,8 +51,8 @@ configPreambJAGS <- function(year, site, server){
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, mod_file=mod_file,
-         data_outdir=data_outdir, plot_outdir=plot_outdir, species=species,
-         year=year, dyear=dyear, year_range=year_range, years_ch=years_ch, years=years)
+    list(server=server, data_dir=data_dir, out_dir=out_dir, mod_file=mod_file,
+         species=species, year=year, dyear=dyear, year_range=year_range,
+         years_ch=years_ch, years=years)
 
 }
