@@ -18,9 +18,6 @@ See \link{configPreambJAGS}}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Summarize predictions from state-space JAGS model
 }

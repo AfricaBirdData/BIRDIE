@@ -21,9 +21,6 @@ used if they exist.}
 \item{verbose}{Logical. If TRUE, the new line added to the indicator table
 is displayed in the console.}
 }
-\value{
-
-}
 \description{
 Estimate Area Of Occupancy for species type
 }

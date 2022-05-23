@@ -14,9 +14,6 @@ estimateOccuSpType(sp_type, year, config)
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
 }
-\value{
-
-}
 \description{
 Estimate occupancy for species type
 }

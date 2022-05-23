@@ -30,9 +30,6 @@ is displayed in the console.}
 
 \item{...}{}
 }
-\value{
-
-}
 \description{
 Estimate distribution indicators for species type
 }

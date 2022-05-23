@@ -10,9 +10,6 @@ prepGEEVisitData(config)
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
 }
-\value{
-
-}
 \description{
 Prepare Google Earth Engine visit data
 }

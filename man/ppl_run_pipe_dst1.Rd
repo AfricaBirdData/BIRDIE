@@ -29,9 +29,6 @@ Can contain: "data", "fit", "summ". Defaults to all of them.}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Branch 1 of the distribution indicators pipeline estimates
 occupancy probabilities in South Africa for a selected species. These

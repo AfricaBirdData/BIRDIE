@@ -28,9 +28,6 @@ corresponding to the species in config$species will be overwritten.}
 \item{verbose}{Logical. If TRUE, the new line added to the indicator table
 is displayed in the console.}
 }
-\value{
-
-}
 \description{
 Run distribution indicators pipeline branch 2
 }

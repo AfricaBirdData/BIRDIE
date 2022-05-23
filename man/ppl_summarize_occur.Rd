@@ -19,9 +19,6 @@ See \link{configPreambOccuR}}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Summarize prediction from occuR model
 }

@@ -34,9 +34,6 @@ Defaults to FALSE.}
 \item{force_gee}{If TRUE annotation with GEE info will occur even if a
 dataset with covariates is already present on disk.}
 }
-\value{
-
-}
 \description{
 Prepare Google Earth Engine data for CWAC species counts
 }

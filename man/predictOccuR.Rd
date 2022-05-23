@@ -16,9 +16,6 @@ See \link{configPreambOccuR}}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Predict from occuR model fit
 }

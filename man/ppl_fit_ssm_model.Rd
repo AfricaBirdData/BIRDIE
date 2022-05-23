@@ -4,22 +4,15 @@
 \alias{ppl_fit_ssm_model}
 \title{Fit state-space JAGS model}
 \usage{
-ppl_fit_ssm_model(sp_code, site, year, config, ...)
+ppl_fit_ssm_model(sp_code, config, ...)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species of interest}
-
-\item{site}{Code for site of interest.}
-
-\item{year}{Year to run to the pipeline for}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
 \item{...}{Other arguments passed on to other functions}
-}
-\value{
-
 }
 \description{
 Fit state-space JAGS model

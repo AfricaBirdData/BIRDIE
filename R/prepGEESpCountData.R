@@ -62,7 +62,11 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     eeCounts_id <- file.path(rgee::ee_get_assethome(), 'cwac_counts')
 
     # Upload to EE (if not done already). Delete first
-    rgee::ee_manage_delete(eeCounts_id, quiet = FALSE, strict = TRUE)
+    assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
+
+    if(eeCounts_id %in% assets$ID){
+        rgee::ee_manage_delete(eeCounts_id, quiet = FALSE, strict = TRUE)
+    }
 
     counts %>%
         dplyr::rename(Date = StartDate) %>%
@@ -77,7 +81,17 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Join counts and catchment data ------------------------------------------
 
-    eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
+    # check that the asset has been produced and wait longer otherwise
+    assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
+
+    try = 1
+    if(eeCounts_id %in% assets$ID | try > 5){
+        eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
+    } else {
+        Sys.sleep(60)
+        try = try + 1
+    }
+
     eeCatchment <- rgee::ee$FeatureCollection(eeCatchm_id)
 
     # Use an equals filter to specify how the collections match.
@@ -208,12 +222,14 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     # Save data with covariates -----------------------------------------------
 
     # Correct
-    counts %>%
+    counts <- counts %>%
         sf::st_drop_geometry() %>%
-        dplyr::left_join(counts_vars, by = "id_count") %>%
+        dplyr::left_join(counts_vars, by = "id_count")
+
+    counts %>%
         utils::write.csv(outfile, row.names = FALSE)
 
-    print(paste("Dataset saved at", outfile))
+    print(paste("Dataset with GEE covts saved at", outfile))
 
     return(counts)
 

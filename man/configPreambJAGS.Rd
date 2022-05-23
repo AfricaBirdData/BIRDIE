@@ -4,12 +4,10 @@
 \alias{configPreambJAGS}
 \title{Prepare server or local preamble}
 \usage{
-configPreambJAGS(year, site, server)
+configPreambJAGS(year, server)
 }
 \arguments{
 \item{year}{Year of interest.}
-
-\item{site}{Code for site of interest.}
 
 \item{server}{Logical. If TRUE the preamble is prepared to run remotely,
 otherwise it is prepared to run locally.}

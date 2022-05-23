@@ -12,9 +12,6 @@ ppl_create_indtr_file(sp_code, overwrite_indtr)
 \item{overwrite_indtr}{Logical. If TRUE, existing files in directories
 corresponding to the species in config$species will be overwritten.}
 }
-\value{
-
-}
 \description{
 Create indicator storage files
 }

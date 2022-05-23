@@ -1,33 +1,33 @@
 library(BIRDIE)
-library(dplyr)
 
 rm(list = ls())
 
-year <- 2006
+config <- BIRDIE::configPreambJAGS(2017, server = FALSE)
 
-config <- configPreambJAGS(year = year, server = FALSE)
+for(i in 1:length(config$species)){
 
-site <- 26352535
+    sp_code <- config$species[i]
 
-for(i in seq_along(config$species)){
 
-    config <- configPreambJAGS(year = year, server = FALSE)
+    # PREPARE SSM SPECIES DATA ------------------------------------------------
 
-    sp_code = config$species[i]
+    # Read in catchment data. This should go as an argument
+    catchment <- sf::read_sf(file.path(config$data_dir, "catchmt_4.shp"))
 
-    # Species name
-    sp_name <- BIRDIE::barberspan %>%
-        dplyr::filter(SppRef == sp_code) %>%
-        mutate(name = paste(Common_species, Common_group)) %>%
-        pull(name) %>%
-        unique()
+    # Remove marine area around South Africa and also neighboring countries
+    # and simplify
+    catchment <- catchment %>%
+        dplyr::filter(AREA < 150) %>%
+        dplyr::select(QUATERNARY, QUAT_CODE) %>%
+        sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000)
 
-    print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+    counts <- ppl_create_data_ssm(sp_code, config$year, catchment, config,
+                                  steps = c("missing", "gee", "subset"),
+                                  upload_catchment = FALSE, force_gee = TRUE)
 
-    ppl_run_pipe_abu(sp_code = sp_code,
-                     site = site,
-                     year = year,
-                     config = config,
-                     steps = c("fit", "summ"))
+
+    # Fit model ---------------------------------------------------------------
+
+    ppl_fit_ssm_model(sp_code, config)
 
 }

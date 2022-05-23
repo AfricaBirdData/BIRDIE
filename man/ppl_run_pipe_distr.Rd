@@ -29,9 +29,6 @@ Can contain:"data", "fit", "summ", "indtr". Defaults to all of them.}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Run distribution indicators pipeline
 }

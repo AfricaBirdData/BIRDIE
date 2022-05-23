@@ -15,9 +15,6 @@ and the variable must be called 'site'. Detections must be represented by a
 variable named 'obs', which should be 1 when the species was detected and 0
 otherwise.}
 }
-\value{
-
-}
 \description{
 Plot detection from occupancy data
 }

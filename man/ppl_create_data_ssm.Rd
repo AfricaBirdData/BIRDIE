@@ -4,9 +4,18 @@
 \alias{ppl_create_data_ssm}
 \title{Prepare covariate data for abundance pipeline}
 \usage{
-ppl_create_data_ssm(sp_code, year, catchment, config, ...)
+ppl_create_data_ssm(
+  sp_code,
+  year,
+  catchment,
+  config,
+  steps = c("missing", "gee", "subset"),
+  ...
+)
 }
 \arguments{
+\item{sp_code}{SAFRING reference number of the species we want to analyze.}
+
 \item{year}{Year to run to the pipeline for}
 
 \item{catchment}{A sf object with polygons corresponding to the catchment, or
@@ -15,10 +24,13 @@ reference area considered for the covariates associated with CWAC sites.}
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
-\item{...}{Other arguments passed on to \link{prepGEESpCountData}}
-}
-\value{
+\item{steps}{A character vector expressing the processing steps for the CWAC
+data. It can be one or more of: "missing" - add missing counts as missing
+data, "gee" - annotate data with covariates from Google Earth Engine, and
+"subset" - subset data to those sites with presence of the species and
+a coverage of at least 10 years from 1993 to 2021. It defaults to all steps.}
 
+\item{...}{Other arguments passed on to \link{prepGEESpCountData}}
 }
 \description{
 Prepare covariate data for abundance pipeline

@@ -2,7 +2,6 @@
 #'
 #' @description Set basic variables to run BIRDIE scripts locally or remotely.
 #' @param year Year of interest.
-#' @param site Code for site of interest.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
 #'
@@ -16,7 +15,7 @@
 #'
 #' @examples
 #' configPreambJAGS(year = 2010, server = TRUE)
-configPreambJAGS <- function(year, site, server){
+configPreambJAGS <- function(year, server){
 
     if(server){
 

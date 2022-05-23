@@ -7,60 +7,50 @@
 #' @export
 #'
 #' @examples
-ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
+ppl_fit_ssm_model <- function(sp_code, config, ...){
 
-    # Load counts
-    counts <- readRDS(file.path(config$data_dir, paste(site, year, "visit_covts.rds", sep = "_")))
 
-    # Filter years
+    counts <- read.csv(file.path(config$out_dir, sp_code, paste0("abu_model_data_", sp_code, "_", config$years_ch, ".csv")))
+
+    # Create a sequential 'site' variable
     counts <- counts %>%
-        dplyr::filter(Year %in% config$years)
-
-    # Prepare data to fit an SSM
-    ssmcounts <- prepSsmData(counts = counts,
-                             spp_sel = if(sp_code == "all"){NULL} else {sp_code},
-                             keep = Hmisc::Cs(CountCondition, prcp, tmmn, tmmx, watext, watrec))
-
-    # Prepare covariates ---------------------------------------------------------
+        dplyr::group_by(LocationCode) %>%
+        dplyr::mutate(site = dplyr::cur_group_id()) %>%
+        dplyr::ungroup()
 
     # Create covariate matrix
-    covts_x <- ssmcounts %>%
+    covts_x <- counts %>%
         dplyr::mutate(intcp = 1) %>%
         dplyr::select(intcp, prcp, tmmn, tmmx, watext, watrec) %>%
-        dplyr::mutate(across(.cols = c(prcp, tmmn, tmmx, watext, watrec), .fns = ~scale(.x)))
-
-    covts_z <- ssmcounts %>%
-        dplyr::mutate(intcp = 1,
-                      CountCondition = if_else(is.na(CountCondition), 0L, CountCondition)) %>%
-        dplyr::select(intcp, CountCondition)
-
-
-    # JAGS model --------------------------------------------------------------
+        dplyr::mutate(dplyr::across(.cols = c(prcp, tmmn, tmmx, watext, watrec), .fns = ~scale(.x)))
 
     # Prepare data (note the addition of 0.1 to avoid infinite values)
-    data <- list(obs = log(ssmcounts$count + 0.1),
-                 summer = dplyr::case_when(ssmcounts$Season == "S"~ 1L,
-                                    ssmcounts$Season == "W" ~ 0L,
-                                    TRUE ~ NA_integer_),
-                 nyears = dplyr::n_distinct(ssmcounts$year),
-                 year = ssmcounts %>%
-                     dplyr::group_by(year) %>%
-                     dplyr::mutate(y = dplyr::cur_group_id()) %>%
-                     dplyr::pull(y),
-                 N = nrow(ssmcounts),
-                 X = as.matrix(covts_x),
-                 K = ncol(covts_x))
+    data <- list(
+        count = counts$count,
+        summer = dplyr::case_when(counts$Season == "S"~ 1L,
+                                  counts$Season == "W" ~ 0L,
+                                  TRUE ~ NA_integer_),
+        nyears = dplyr::n_distinct(counts$year),
+        nsites = dplyr::n_distinct(counts$site),
+        year = counts %>%
+            dplyr::group_by(year) %>%
+            dplyr::mutate(y = dplyr::cur_group_id()) %>%
+            dplyr::pull(y),
+        site = counts$site,
+        N = nrow(counts),
+        X = as.matrix(covts_x),
+        K = ncol(covts_x))
 
-    param = c("beta", "lambda", "sig.zeta", "sig.w", "sig.eps", "sig.alpha", "sig.e", "mu_t")
+    param = c("B", "beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t")
 
     print(paste("Fitting state-space JAGS model at", Sys.time()))
 
     # Fit 2-season dynamic trend model
     fit <- jagsUI::jags(data = data,
                         parameters.to.save = param,
-                        model.file = config$mod_file,
-                        n.chains = 3, n.iter = 10000, n.burnin = 5000,
-                        modules = c('glm','lecuyer', 'dic'), parallel = TRUE,
+                        model.file = "analysis/models/cwac_ssm_lat_season_multi_hier.R",
+                        n.chains = 3, n.iter = 15000, n.burnin = 10000,
+                        modules = c('glm', 'dic'), parallel = TRUE,
                         n.cores = 3, DIC = TRUE, verbose = TRUE)
 
     # Save
@@ -68,6 +58,6 @@ ppl_fit_ssm_model <- function(sp_code, site, year, config, ...){
         sp_code <- "group"
     }
 
-    saveRDS(fit, file.path(config$data_outdir, sp_code, paste0("ssm_fit_", site, "_", config$years_ch, "_", sp_code, ".rds")))
+    saveRDS(fit, file.path(config$out_dir, sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
 
 }

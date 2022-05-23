@@ -19,9 +19,6 @@ Can contain: "data", "fit", "summ". Defaults to all of them.}
 
 \item{...}{Other arguments passed on to other functions}
 }
-\value{
-
-}
 \description{
 Run abundance indicators pipeline for a site
 }
