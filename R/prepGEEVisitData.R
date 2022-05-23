@@ -83,7 +83,7 @@ prepGEEVisitData <- function(config){
                       month = lubridate::month(Date),
                       ndvi = ndvi/1e4)
 
-    write.csv(visitdata,
+    utils::write.csv(visitdata,
               file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv")),
               row.names = FALSE)
 

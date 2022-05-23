@@ -20,9 +20,15 @@ prepGEESiteData <- function(config){
     pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa") # HARD CODED
 
     # Set a name for the asset
-    eeid <- sprintf("%s/%s", rgee::ee_get_assethome(), 'pentads')
+    eeid <- file.path(rgee::ee_get_assethome(), 'pentads')
 
-    # Upload to EE (if not done already)
+    # Upload to EE (if not done already). Delete first
+    # assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
+    #
+    # if(eeid %in% assets$ID){
+    #     rgee::ee_manage_delete(eeid, quiet = FALSE, strict = TRUE)
+    # }
+
     # ABAP::uploadPentadsToEE(pentads = dplyr::select(pentads_sa, Name),
                             # asset_id = eeid,
                             # load = FALSE)
@@ -215,7 +221,7 @@ prepGEESiteData <- function(config){
         sf::st_drop_geometry() %>%
         dplyr::left_join(out, by = "Name")
 
-    write.csv(sitedata,
+    utils::write.csv(sitedata,
               file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv")),
               row.names = FALSE)
 
