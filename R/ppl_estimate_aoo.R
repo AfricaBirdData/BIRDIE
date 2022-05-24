@@ -12,7 +12,7 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
 
     # retrieve indicator file
     indtr_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code,".csv"))
-    indtr <- read.csv(indtr_file)
+    indtr <- utils::read.csv(indtr_file)
 
     # Calculate the position of year in relation to the optimal year
     # This will be used for the opt field
@@ -35,7 +35,8 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
 
         # If it exists and current opt is smaller than the new opt stop
         if(nrow(case) > 0 && case$opt <= opt){
-            return(warning(paste("Year", year, "AOO not updated because there is a better record in the database")))
+            print(paste("Year", year, "AOO not updated because there is a better record in the database"))
+            next
         } else if(nrow(case) > 0 && case$opt > opt){
             indtr <- indtr %>%
                 dplyr::filter(!(species == sp_code & indicator == "aoo" &
@@ -88,9 +89,10 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
     }
 
     # Save to disc
-    write.csv(indtr,
-              indtr_file,
-              row.names = FALSE)
+    indtr %>%
+        dplyr::arrange(indicator, term, start_date) %>%
+        utils::write.csv(indtr_file,
+                         row.names = FALSE)
 
 
 

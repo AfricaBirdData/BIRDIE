@@ -14,11 +14,7 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
 
     # retrieve indicator file
     indtr_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code,".csv"))
-    indtr <- read.csv(indtr_file)
-
-    # Calculate the position of year in relation to the optimal year
-    # This will be used for the opt field
-    opts <- abs(1:config$dur - ceiling(config$dur/2))
+    indtr <- utils::read.csv(indtr_file)
 
     for(t in seq_along(config$years)){
 
@@ -27,8 +23,6 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
         if(year < 2009){
             next
         }
-
-        opt <- opts[t]
 
         # Set initial date
         ini_year <- dplyr::case_when(term == "annual" ~ year - 1,
@@ -45,9 +39,10 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
                               start_date == ini & end_date == end & term == tt)
 
         # If it exists and current opt is smaller than the new opt stop
-        if(nrow(case) > 0 && case$opt <= opt){
-            return(warning(paste("Year", year, "DAOO not updated because there is a better record in the database")))
-        } else if(nrow(case) > 0 && case$opt > opt){
+        if(nrow(case) > 0 && case$opt == 0){
+            print(paste("Year", year, "DAOO not updated because there is a better record in the database"))
+            next
+        } else if(nrow(case) > 0 && case$opt > 0){
             indtr <- indtr %>%
                 dplyr::filter(!(species == sp_code & indicator == "daoo" &
                                     start_date == ini & end_date == end & term == tt))
@@ -55,7 +50,17 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
 
         # Estimate daoo
         daoo <- indtr %>%
-            dplyr::filter(species == sp_code & indicator == "aoo", (start_date == ini | end_date == end)) %>%
+            dplyr::filter(species == sp_code & indicator == "aoo", (start_date == ini | end_date == end))
+
+        if(nrow(daoo) < 2){
+            print(paste("We are probably missing AOO for previous years to compute dAOO in", year))
+            next
+        }
+
+        # Set opt value to max value found for AOO
+        opt_daoo <- max(daoo$opt)
+
+        daoo <- daoo %>%
             dplyr::mutate(start_date = as.Date(start_date, format = "%d-%m-%Y")) %>%
             dplyr::arrange(start_date) %>%
             dplyr::mutate(estimate = estimate - dplyr::lag(estimate),
@@ -63,17 +68,13 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
             dplyr::filter(!is.na(estimate)) %>%
             dplyr::mutate(indicator = "daoo",
                           term = tt,
-                          start_date = as.character(start_date, format = "%d-%m-%Y"),
+                          start_date = ini,
+                          end_date = end,
                           estimate = round(estimate, 2),
                           st_dev = round(st_dev, 3),
                           lb95 = round(qnorm(0.025, estimate, st_dev), 3),
                           ub95 = round(qnorm(0.975, estimate, st_dev), 3),
-                          opt = opt)
-
-        if(nrow(daoo) == 0){
-            warning(paste("We are probably missing AOO for previous years to compute dAOO in", year))
-            next
-        }
+                          opt = opt_daoo)
 
         # Add new row
         indtr <- rbind(indtr, daoo)
@@ -85,8 +86,9 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
         }
     }
 
-    write.csv(indtr,
-              indtr_file,
-              row.names = FALSE)
+    indtr %>%
+        dplyr::arrange(indicator, term, start_date) %>%
+        utils::write.csv(indtr_file,
+                         row.names = FALSE)
 
 }
