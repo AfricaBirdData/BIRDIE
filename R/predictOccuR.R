@@ -12,6 +12,11 @@ predictOccuR <- function(sp_code, year, config, ...){
 
     occuRdata <- prepOccuRData(sp_code, year, config, ...)
 
+    # Stop if there are too few detections
+    if(is.numeric(occuRdata) && occuRdata %in% c(1, 2)){
+        return(1)
+    }
+
 
     # Prepare prediction data -------------------------------------------------
 

@@ -46,6 +46,11 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
         # Predict from model
         preds <- predictOccuR(sp_code, year, config, ...)
 
+        # Stop if there are too few detections
+        if(is.numeric(occuRdata) && occuRdata %in% c(1, 2)){
+            return(1)
+        }
+
 
         # Estimate realized occupancy ---------------------------------------------
 
@@ -94,6 +99,6 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
         utils::write.csv(indtr_file,
                          row.names = FALSE)
 
-
+    return(0)
 
 }

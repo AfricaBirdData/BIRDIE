@@ -22,7 +22,12 @@ ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
 
     if("aoo" %in% indtr){
         # Estimate area of occupancy (AOO)
-        ppl_estimate_aoo(sp_code, config, verbose, ...)
+        aoo_status <- ppl_estimate_aoo(sp_code, config, verbose, ...)
+
+        if(aoo_status == 1){
+            return(1)
+        }
+
     }
 
     if("daoo" %in% indtr){

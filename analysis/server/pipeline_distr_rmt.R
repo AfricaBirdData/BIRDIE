@@ -45,12 +45,18 @@ for(y in seq_along(test_years)){
             next
         }
 
-        ppl_run_pipe_dst2(sp_code = sp_code,
-                          config = config,
-                          indtr = c("aoo", "daoo"),
-                          overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
-                          verbose = TRUE,
-                          scale_vars_occur = list(visit = NULL,
-                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+        out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
+                                      config = config,
+                                      indtr = c("aoo", "daoo"),
+                                      overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
+                                      verbose = TRUE,
+                                      scale_vars_occur = list(visit = NULL,
+                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+
+        if(out_dst2 == 1){
+            next
+        }
+
+        print(paste("Pipeline DST2 status =", out_dst2))
     }
 }
