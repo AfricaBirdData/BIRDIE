@@ -1,0 +1,77 @@
+digraph {
+
+graph [layout = dot, rankdir = TB, splines = polyline]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle, style = filled, fillcolor = Linen]
+
+subgraph cluster_1 {
+
+    label = "DST1: Species occupancy"
+
+    # Databases
+    gee [label = 'GEE', shape = cylinder, fillcolor = DodgerBlue, width = 1.3]
+    abap [label = 'ABAP', shape = cylinder, fillcolor = DodgerBlue, width = 1.3]
+
+    # Data input/output
+    site_data [label = 'site_data', shape = parallelogram, fillcolor = PaleTurquoise1, width = 2]
+    visit_data [label = 'visit_data', shape = parallelogram, fillcolor = PaleTurquoise1, width = 2]
+    detec_data [label = 'detec_data', shape = parallelogram, fillcolor = PaleTurquoise1, width = 2]
+    occur_fit [label = 'occu_fit', shape = parallelogram, fillcolor = PaleTurquoise2, width = 2]
+    occur_est1 [label = 'occu_estimate', shape = parallelogram, fillcolor = PaleTurquoise3, width = 2]
+
+    # Functions
+    site_visit [label =  'ppl_create_site_visit()']
+    fit_occur[label = 'ppl_fit_occur_model()']
+    summ_occur [label= 'ppl_summarize_occur()']
+
+    # Aux
+    #inv1 [label = "i1", shape = point, height = 0]
+    #inv2 [label = "i2", shape = point, height = 0]
+
+    # edge definitions with the node IDs
+    {gee abap}  -> site_visit -> {site_data visit_data detec_data}
+    {site_data visit_data detec_data} -> fit_occur
+    fit_occur -> occur_fit -> summ_occur -> occur_est1
+
+
+    #{rank = same; est_aoo; indtr_file; create_indtr}
+    #{rank = same; summ_ssm inv1}
+    #{rank = same; select_sp inv2}
+
+    }
+
+    subgraph cluster_2 {
+
+    label = "DST2: Species distribution indicators"
+
+    # Data input/output
+    occur_est [label = 'occu_estimate', shape = parallelogram, fillcolor = PaleTurquoise3, width = 2]
+    indtr_file [label = 'indtr_file', shape = parallelogram, fillcolor = PaleTurquoise4, width = 2]
+
+    # Functions
+    est_aoo [label = "ppl_estimate_aoo()"]
+    est_daoo [label = "ppl_estimate_daoo()"]
+    create_indtr [label = "ppl_create_indtr_files()"]
+
+    # Decisions
+    indtr_file_exists [label = 'indtr_file exists', shape = diamond, fillcolor = MediumPurple]
+
+    # Aux
+    #inv1 [label = "i1", shape = point, height = 0]
+    #inv2 [label = "i2", shape = point, height = 0]
+
+    # edge definitions with the node IDs
+    occur_est -> indtr_file_exists [weight = 0]
+    indtr_file_exists -> create_indtr [label = "No"]
+    indtr_file_exists -> est_aoo [label = "Yes"]
+    create_indtr -> est_aoo
+    est_aoo -> est_daoo [weight = 0]
+    est_daoo -> indtr_file [weight = 0]
+
+    {rank = same; est_aoo create_indtr}
+    #{rank = same; summ_ssm inv1}
+    #{rank = same; select_sp inv2}
+
+    }
+}
