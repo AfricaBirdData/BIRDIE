@@ -25,6 +25,7 @@ ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
         aoo_status <- ppl_estimate_aoo(sp_code, config, verbose, ...)
 
         if(aoo_status == 1){
+            print(paste("Too few detections to estimate AOO for species", sp_code))
             return(1)
         }
 
