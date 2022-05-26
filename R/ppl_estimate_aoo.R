@@ -47,7 +47,7 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
         preds <- predictOccuR(sp_code, year, config, ...)
 
         # Stop if there are too few detections
-        if(is.numeric(occuRdata) && occuRdata %in% c(1, 2)){
+        if(is.numeric(preds) && preds %in% c(1, 2)){
             return(1)
         }
 
