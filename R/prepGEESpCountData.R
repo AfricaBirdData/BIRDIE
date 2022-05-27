@@ -205,7 +205,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Recurrence of pixels with water each year
     suppressMessages(
-        visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts,
+        visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
                                                        collection = "JRC/GSW1_3/YearlyHistory",
                                                        reducer = "mean",
                                                        maxdiff = 1000,
