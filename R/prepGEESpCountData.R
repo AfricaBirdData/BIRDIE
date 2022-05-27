@@ -123,7 +123,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Annotate with TerraClimate ----------------------------------------------
 
-    print("Annotating CWAC with TerraClimate")
+    message("Annotating CWAC with TerraClimate")
 
     # Define bands
     bands <- c("pr", "tmmn", "tmmx")
@@ -178,7 +178,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Annotate with water occurrence ------------------------------------------
 
-    print("Annotating CWAC with surface water")
+    message("Annotating CWAC with surface water")
 
     visit_water <- vector("list", length = 2)
 
@@ -229,7 +229,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     counts %>%
         utils::write.csv(outfile, row.names = FALSE)
 
-    print(paste("Dataset with GEE covts saved at", outfile))
+    message(paste("Dataset with GEE covts saved at", outfile))
 
     return(counts)
 
