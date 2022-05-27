@@ -4,12 +4,10 @@
 \alias{ppl_summarize_ssm}
 \title{Summarize predictions from state-space JAGS model}
 \usage{
-ppl_summarize_ssm(sp_code, site, year, config, ...)
+ppl_summarize_ssm(sp_code, year, config, ...)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species of interest}
-
-\item{site}{Code for site of interest.}
 
 \item{year}{Year to run to the pipeline for}
 
