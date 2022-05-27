@@ -38,9 +38,11 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quat_catchm')
 
     if(upload_catchment){
-        catchment %>%
-            CWAC::uploadCountsToEE(asset_id = eeCatchm_id,
-                                   load = FALSE)
+        suppressMessages(
+            catchment %>%
+                CWAC::uploadCountsToEE(asset_id = eeCatchm_id,
+                                       load = FALSE)
+        )
     }
 
     # Find nearest catchment to site counts. Nearest because some sites are on the
@@ -68,13 +70,15 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         rgee::ee_manage_delete(eeCounts_id, quiet = FALSE, strict = TRUE)
     }
 
-    counts %>%
-        dplyr::rename(Date = StartDate) %>%
-        dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
-        dplyr::mutate(Date = as.character(Date)) %>%
-        dplyr::select(id_count, Date, QUAT_CODE) %>%
-        CWAC::uploadCountsToEE(asset_id = eeCounts_id,
-                               load = FALSE)
+    suppressMessages(
+        counts %>%
+            dplyr::rename(Date = StartDate) %>%
+            dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
+            dplyr::mutate(Date = as.character(Date)) %>%
+            dplyr::select(id_count, Date, QUAT_CODE) %>%
+            CWAC::uploadCountsToEE(asset_id = eeCounts_id,
+                                   load = FALSE)
+    )
 
     # It might be that the object has not been yet created in GEE
     Sys.sleep(60)
@@ -132,11 +136,13 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     f <- function(band){
 
         # Annotate with GEE TerraClimate
-        visit_env <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
-                                                collection = "IDAHO_EPSCOR/TERRACLIMATE",
-                                                reducer = "mean",
-                                                maxdiff = 15,
-                                                bands = band)
+        suppressMessages(
+            visit_env <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
+                                                    collection = "IDAHO_EPSCOR/TERRACLIMATE",
+                                                    reducer = "mean",
+                                                    maxdiff = 15,
+                                                    bands = band)
+        )
 
         # Fix names and variables
         visit_env <- visit_env %>%
@@ -183,11 +189,13 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     visit_water <- vector("list", length = 2)
 
     # Number of pixels with water each year
-    visit_water[[1]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
-                                                   collection = "JRC/GSW1_3/YearlyHistory",
-                                                   reducer = "count",
-                                                   maxdiff = 1000,
-                                                   bands = "waterClass")
+    suppressMessages(
+        visit_water[[1]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
+                                                       collection = "JRC/GSW1_3/YearlyHistory",
+                                                       reducer = "count",
+                                                       maxdiff = 1000,
+                                                       bands = "waterClass")
+    )
 
     # Fix names and variables
     visit_water[[1]] <- visit_water[[1]] %>%
@@ -196,11 +204,13 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         sf::st_drop_geometry()
 
     # Recurrence of pixels with water each year
-    visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts,
-                                                   collection = "JRC/GSW1_3/YearlyHistory",
-                                                   reducer = "mean",
-                                                   maxdiff = 1000,
-                                                   bands = "waterClass")
+    suppressMessages(
+        visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts,
+                                                       collection = "JRC/GSW1_3/YearlyHistory",
+                                                       reducer = "mean",
+                                                       maxdiff = 1000,
+                                                       bands = "waterClass")
+    )
 
     # Fix names and variables
     visit_water[[2]] <- visit_water[[2]] %>%
