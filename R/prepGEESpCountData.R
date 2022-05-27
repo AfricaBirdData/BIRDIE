@@ -39,8 +39,8 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     if(upload_catchment){
         catchment %>%
-            ABAP::uploadPentadsToEE(asset_id = eeCatchm_id,
-                                    load = FALSE)
+            CWAC::uploadCountsToEE(asset_id = eeCatchm_id,
+                                   load = FALSE)
     }
 
     # Find nearest catchment to site counts. Nearest because some sites are on the
@@ -73,8 +73,8 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
         dplyr::mutate(Date = as.character(Date)) %>%
         dplyr::select(id_count, Date, QUAT_CODE) %>%
-        ABAP::uploadPentadsToEE(asset_id = eeCounts_id,
-                                load = FALSE)
+        CWAC::uploadCountsToEE(asset_id = eeCounts_id,
+                               load = FALSE)
 
     # It might be that the object has not been yet created in GEE
     Sys.sleep(60)
@@ -132,7 +132,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     f <- function(band){
 
         # Annotate with GEE TerraClimate
-        visit_env <- ABAP::addVarEEclosestImage(ee_pentads = new_pols,
+        visit_env <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
                                                 collection = "IDAHO_EPSCOR/TERRACLIMATE",
                                                 reducer = "mean",
                                                 maxdiff = 15,
@@ -183,7 +183,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     visit_water <- vector("list", length = 2)
 
     # Number of pixels with water each year
-    visit_water[[1]] <- ABAP::addVarEEclosestImage(ee_pentads = new_pols,
+    visit_water[[1]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
                                                    collection = "JRC/GSW1_3/YearlyHistory",
                                                    reducer = "count",
                                                    maxdiff = 1000,
@@ -196,7 +196,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         sf::st_drop_geometry()
 
     # Recurrence of pixels with water each year
-    visit_water[[2]] <- ABAP::addVarEEclosestImage(ee_pentads = new_pols,
+    visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts,
                                                    collection = "JRC/GSW1_3/YearlyHistory",
                                                    reducer = "mean",
                                                    maxdiff = 1000,
