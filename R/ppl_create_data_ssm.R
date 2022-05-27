@@ -27,8 +27,12 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         sp_data <- CWAC::getCwacSppCounts(sp_code)
 
+        sp_data <- sp_data %>%
+            dplyr::select(-c(TimeStart, TimeEnd))
+
         # Add DuToit's Doug's extra data
-        dutoit <- utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv"))
+        dutoit <- utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv")) %>%
+            dplyr::select(-c(TimeStart, TimeEnd))
 
         # Transfer column types and bind data frames (the below comes from the CWAC package)
         dutoit <- dutoit %>%
@@ -39,8 +43,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                 Country = readr::col_character(),
                 StartDate = readr::col_date(format = ""),
                 Season = readr::col_character(),
-                TimeStart = readr::col_time(format = ""),
-                TimeEnd = readr::col_time(format = ""),
+                # TimeStart = readr::col_time(format = ""),
+                # TimeEnd = readr::col_time(format = ""),
                 WetlandThreat = readr::col_logical(),
                 Notes = readr::col_character(),
                 record_status = readr::col_character(),
