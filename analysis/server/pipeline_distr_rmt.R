@@ -53,10 +53,11 @@ for(y in seq_along(test_years)){
                                       scale_vars_occur = list(visit = NULL,
                                                               site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
 
+        print(paste("Pipeline DST2 status =", out_dst2))
+
         if(out_dst2 == 1){
             next
         }
 
-        print(paste("Pipeline DST2 status =", out_dst2))
     }
 }
