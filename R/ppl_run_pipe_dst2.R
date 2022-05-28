@@ -36,4 +36,6 @@ ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
         ppl_estimate_daoo(sp_code, config, term = "annual", verbose, ...)
     }
 
+    return(0)
+
 }
