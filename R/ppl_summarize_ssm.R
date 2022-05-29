@@ -7,7 +7,7 @@
 #' @export
 #'
 #' @examples
-ppl_summarize_ssm <- function(sp_code, year, config, ...){
+ppl_summarize_ssm <- function(sp_code, config, ...){
 
     print(paste("Summarizing state-space JAGS model at", Sys.time()))
 
