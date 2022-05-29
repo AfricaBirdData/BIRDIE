@@ -84,7 +84,7 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
     # Export sample
-    datadir <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", sp_code, "_", site, "_", config$years_ch, ".csv"))
+    datadir <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", sp_code, "_", site_sel, "_", config$years_ch, ".csv"))
     utils::write.csv(out_df, datadir, row.names = FALSE)
 
 }
