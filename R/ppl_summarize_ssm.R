@@ -9,7 +9,7 @@
 #' @examples
 ppl_summarize_ssm <- function(sp_code, config, ...){
 
-    print(paste("Summarizing state-space JAGS model at", Sys.time()))
+    message(paste("Summarizing state-space JAGS model at", Sys.time()))
 
     # Load counts
     counts <- utils::read.csv(file.path(config$out_dir, sp_code, paste0("abu_model_data_", sp_code, "_", config$years_ch,".csv")))
@@ -84,7 +84,7 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
     # Export sample
-    datadir <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", sp_code, "_", site_sel, "_", config$years_ch, ".csv"))
-    utils::write.csv(out_df, datadir, row.names = FALSE)
+    datadir <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", sp_code, "_all_", config$years_ch, ".csv"))
+    utils::write.csv(out_all_sites, datadir, row.names = FALSE)
 
 }
