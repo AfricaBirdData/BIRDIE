@@ -71,7 +71,6 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
     site_plot_data <- vector("list", length(unique(post_stt$site)))
 
-    browser()
 
     for(i in seq_along(site_plot_data)){
 
