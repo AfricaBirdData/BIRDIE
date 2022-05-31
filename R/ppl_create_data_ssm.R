@@ -192,10 +192,12 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             counts <- utils::read.csv(file.path(config$out_dir, sp_code, paste0("abu_gee_data_", sp_code, "_", config$years_ch, ".csv")))
         }
 
-        print("Finding suitable CWAC sites (>= 15 year coverage from 1993 to 2021)")
+        print("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
 
-        # Find those sites that have a coverage of at
+        # Find those sites that have a coverage of at least 10 years between 1993-2021
         sites_good <- sp_data %>%
+            dplyr::filter(!is.na(Season),
+                          Season != "O") %>%
             dplyr::count(LocationCode) %>%
             dplyr::filter(n > 10) %>%
             dplyr::pull(LocationCode)
