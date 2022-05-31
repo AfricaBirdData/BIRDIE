@@ -41,7 +41,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
         X = as.matrix(covts_x),
         K = ncol(covts_x))
 
-    param = c("B", "beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t")
+    param = c("beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t")
 
     print(paste("Fitting state-space JAGS model at", Sys.time()))
 
