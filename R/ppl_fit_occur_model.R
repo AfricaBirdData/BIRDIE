@@ -45,7 +45,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     # Model fitting -----------------------------------------------------------
 
-    print(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
+    message(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
 
     # Determine whether the non-linear effect of month in p is necessary with the
     # simplest model for occupancy probabilities
@@ -60,7 +60,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
     # If non-linear effect of month on detection has very few dof,
     # fit linear effect to avoid singular covariance matrix
-    print(paste(round(dof$p, 1), "DOF for the effect of month on p"))
+    message(paste(round(dof$p, 1), "DOF for the effect of month on p"))
 
     if(dof$p < 3){
 
@@ -68,7 +68,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
         # Create notification
         sink(file.path(config$out_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
-        print("Model fitted without effect of month", split = TRUE)
+        message("Model fitted without effect of month", split = TRUE)
         sink()
     }
 
@@ -81,7 +81,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         m <- m + 1
 
         site_mod <- site_mods[[m]]
-        print(paste("Trying model", m))
+        message(paste("Trying model", m))
 
         tryCatch({
 
@@ -95,7 +95,6 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             occuR::dof.occuR(fit, each = TRUE)
 
             success <- TRUE
-            saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
 
         }, error = function(e){
 
@@ -106,10 +105,15 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
             sink()
 
             }) # TryCatch fit
+
+        if(success && any(is.na(sqrt(diag(fit$res$cov.fixed))))){
+            success <- FALSE
+        }
     }
 
-    # Return 0 if success
+    # Save fit and return 0 if success
     if(success){
+        saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occur_fit_", config$years_ch, "_", sp_code, ".rds")))
         return(0)
     } else {
         return(2)
