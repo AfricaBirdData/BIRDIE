@@ -42,12 +42,12 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
                       mod2 = c("1", "dist_coast", "s(prcp, bs = 'cs')", "s(tdiff, bs = 'cs')", "s(ndvi, bs = 'cs')", "s(watext, bs = 'cs')", "s(watrec, bs = 'cs')"),
                       mod3 = c("1", "dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec"))
 
+    browser()
+
 
     # Model fitting -----------------------------------------------------------
 
     message(paste0("Fitting model at ", Sys.time(), ". This will take a while..."))
-
-    browser()
 
     # Determine whether the non-linear effect of month in p is necessary with the
     # simplest model for occupancy probabilities
