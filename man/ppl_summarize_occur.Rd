@@ -6,19 +6,6 @@
 \usage{
 ppl_summarize_occur(sp_code, sp_name, year, config, ...)
 }
-\arguments{
-\item{sp_code}{SAFRING code of the species to run the pipeline for}
-
-\item{sp_name}{Common name of the species to run the pipeline for. This is
-necessary for plots and summaries.}
-
-\item{year}{Year to run to the pipeline for}
-
-\item{config}{A list with pipeline configuration parameters.
-See \link{configPreambOccuR}}
-
-\item{...}{Other arguments passed on to other functions}
-}
 \description{
 Summarize prediction from occuR model
 }

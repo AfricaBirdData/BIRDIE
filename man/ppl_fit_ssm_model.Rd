@@ -12,7 +12,7 @@ ppl_fit_ssm_model(sp_code, config, ...)
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
-\item{...}{Other arguments passed on to other functions}
+\item{...}{Other parameters to pass on to \link{prepGEESpCountData}}
 }
 \description{
 Fit state-space JAGS model

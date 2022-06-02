@@ -6,16 +6,6 @@
 \usage{
 prepOccuRData(sp_code, year, config, ...)
 }
-\arguments{
-\item{sp_code}{SAFRING code of the species to run the pipeline for}
-
-\item{year}{Year to run to the pipeline for}
-
-\item{config}{A list with pipeline configuration parameters.
-See \link{configPreambOccuR}}
-
-\item{...}{Other arguments passed on to other functions}
-}
 \description{
 Prepare occuR data for model fitting
 }

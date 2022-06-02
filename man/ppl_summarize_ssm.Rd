@@ -12,7 +12,7 @@ ppl_summarize_ssm(sp_code, config, ...)
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
-\item{...}{Other arguments passed on to other functions}
+\item{...}{Other parameters to pass on to \link{prepGEESpCountData}}
 }
 \description{
 Summarize predictions from state-space JAGS model

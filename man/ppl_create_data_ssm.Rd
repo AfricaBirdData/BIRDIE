@@ -16,8 +16,6 @@ ppl_create_data_ssm(
 \arguments{
 \item{sp_code}{SAFRING reference number of the species we want to analyze.}
 
-\item{year}{Year to run to the pipeline for}
-
 \item{catchment}{A sf object with polygons corresponding to the catchment, or
 reference area considered for the covariates associated with CWAC sites.}
 

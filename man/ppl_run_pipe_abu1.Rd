@@ -2,23 +2,28 @@
 % Please edit documentation in R/ppl_run_pipe_abu1.R
 \name{ppl_run_pipe_abu1}
 \alias{ppl_run_pipe_abu1}
-\title{Run abundance indicators pipeline for a site}
+\title{Run abundance pipeline ABU1}
 \usage{
-ppl_run_pipe_abu1(site, year, config, steps = c("data", "fit", "summ"), ...)
+ppl_run_pipe_abu1(
+  sp_code,
+  config,
+  steps = c("data", "fit", "summary"),
+  prep_data_steps,
+  ...
+)
 }
 \arguments{
-\item{site}{Code for site of interest.}
-
-\item{year}{Year to run to the pipeline for}
+\item{sp_code}{SAFRING reference number of the species we want to analyze.}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
-\item{steps}{A character vector containing the steps of the pipeline to run.
-Can contain: "data", "fit", "summ". Defaults to all of them.}
+\item{steps}{Pipeline steps to run. It can be one or more of: c("data", "fit", "summary").}
 
-\item{...}{Other arguments passed on to other functions}
+\item{prep_data_steps}{Data preparation steps to pass on to \link{ppl_create_data_ssm}}
+
+\item{...}{Other parameters to pass on to \link{prepGEESpCountData}}
 }
 \description{
-Run abundance indicators pipeline for a site
+Run abundance pipeline ABU1
 }
