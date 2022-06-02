@@ -89,11 +89,10 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
 
     try = 1
-    if(eeCounts_id %in% assets$ID | try > 10){
-        message(paste("Checking GEE counts status", try, "of 10"))
-        eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
-    } else {
+    while(!eeCounts_id %in% assets$ID && try < 10){
+        message(paste("Checking GEE counts status", try+1, "of 10"))
         Sys.sleep(60)
+        eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
         try = try + 1
     }
 
