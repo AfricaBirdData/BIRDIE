@@ -4,13 +4,19 @@
 \alias{ppl_create_indtr_file}
 \title{Create indicator storage files}
 \usage{
-ppl_create_indtr_file(sp_code, overwrite_indtr)
+ppl_create_indtr_file(sp_code, year, overwrite_indtr, update_file = NULL)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
 
+\item{year}{Year to run to the pipeline for}
+
 \item{overwrite_indtr}{Logical. If TRUE, existing files in directories
 corresponding to the species in config$species will be overwritten.}
+
+\item{update_file}{A character string with the file path to a previous indicator
+file that should serve as a basis for the new indicator file. Defaults to NULL,
+and so a clean new file would be created.}
 }
 \description{
 Create indicator storage files

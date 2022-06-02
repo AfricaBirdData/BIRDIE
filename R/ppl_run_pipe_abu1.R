@@ -1,50 +1,36 @@
-#' Run abundance indicators pipeline for a site
+#' Run abundance pipeline ABU1
 #'
-#' @param site Code for site of interest.
-#' @param year Year to run to the pipeline for
+#' @param sp_code SAFRING reference number of the species we want to analyze.
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambJAGS}
-#' @param steps A character vector containing the steps of the pipeline to run.
-#' Can contain: "data", "fit", "summ". Defaults to all of them.
-#' @param ... Other arguments passed on to other functions
+#' @param steps Pipeline steps to run. It can be one or more of: c("data", "fit", "summary").
+#' @param prep_data_steps Data preparation steps to pass on to \link{ppl_create_data_ssm}
+#' @param ... Other parameters to pass on to \link{prepGEESpCountData}
 #'
 #' @return
 #' @export
 #'
 #' @examples
-ppl_run_pipe_abu1 <- function(site, year, config,
-                              steps = c("data", "fit", "summ"), ...){
+ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary"),
+                              prep_data_steps, ...){
 
-    # Prepare covariates if necessary
     if("data" %in% steps){
-        ppl_create_data_ssm(site, year, config)
+        counts <- ppl_create_data_ssm(sp_code, config$year, config,
+                                      steps = prep_data_steps, ...)
     }
 
-    # Load counts
-    counts <- readRDS(file.path(config$data_dir, paste(site, year, "visit_covts.rds", sep = "_")))
 
-    # Loop through selected species
-    for(i in seq_along(config$species)){
+    # Fit model ---------------------------------------------------------------
 
-        sp_code <- config$species[i]
-
-        # Species name
-        sp_name <- counts %>%
-            dplyr::filter(SppRef == sp_code) %>%
-            dplyr::mutate(name = paste(Common_species, Common_group)) %>%
-            dplyr::pull(name) %>%
-            unique()
-
-        print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
-
-        # Fit model
-        if("fit" %in% steps){
-            ppl_fit_ssm_model(sp_code, site, year, config, ...)
-        }
-
-        # Summary and outputs
-        if("summ" %in% steps){
-            ppl_summarize_ssm(sp_code, site, year, config, ...)
-        }
+    if("fit" %in% steps){
+        ppl_fit_ssm_model(sp_code, config)
     }
+
+
+    if("summary" %in% steps){
+        ppl_summarize_ssm(sp_code, config)
+    }
+
+    return(0)
+
 }

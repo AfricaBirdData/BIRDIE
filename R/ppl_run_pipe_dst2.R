@@ -7,6 +7,7 @@
 #' See \link{configPreambOccuR}
 #' @param overwrite_indtr Logical. If TRUE, existing files in directories
 #' corresponding to the species in config$species will be overwritten.
+#' @update_file Passed on to \link{ppl_create_indtr_file}.
 #' @param verbose Logical. If TRUE, the new line added to the indicator table
 #' is displayed in the console.
 #'
@@ -15,10 +16,12 @@
 #'
 #' @examples
 ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
-                              overwrite_indtr, verbose, ...){
+                              overwrite_indtr, update_file, verbose, ...){
 
     # Create indicator file if it doesn't exist
-    ppl_create_indtr_file(sp_code, overwrite_indtr)
+    ppl_create_indtr_file(sp_code, config$year,
+                          overwrite_indtr = overwrite_indtr,
+                          update_file = update_file)
 
     if("aoo" %in% indtr){
         # Estimate area of occupancy (AOO)

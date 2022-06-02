@@ -49,6 +49,7 @@ for(y in seq_along(test_years)){
                                       config = config,
                                       indtr = c("aoo", "daoo"),
                                       overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
+                                      update_file = if(config$year == 2012){NULL} else {prev_file},
                                       verbose = TRUE,
                                       scale_vars_occur = list(visit = NULL,
                                                               site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))

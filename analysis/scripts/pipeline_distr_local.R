@@ -10,12 +10,12 @@ test_years <- c(2012, 2013, 2014)
 # DISTRIBUTION PIPELINE BRANCH 1 ------------------------------------------
 
 for(y in seq_along(test_years)){
-
+y=3
     year <- test_years[y]
     config <- configPreambOccuR(year = year, dur = 3, dim_grid = 10, server = FALSE)
 
-    for(i in seq_along(config$species)){
-
+    #for(i in seq_along(config$species)){
+i=1
         sp_code <- config$species[i]
 
         # Species name
@@ -48,12 +48,16 @@ for(y in seq_along(test_years)){
             next
         }
 
+        prev_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
+
         ppl_run_pipe_dst2(sp_code = sp_code,
                           config = config,
                           indtr = c("aoo", "daoo"),
-                          overwrite_indtr = TRUE,
+                          # overwrite_indtr = FALSE,
+                          overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
+                          update_file = if(config$year == 2012){NULL} else {prev_file},
                           verbose = TRUE,
                           scale_vars_occur = list(visit = NULL,
                                                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
-    }
+        #}
 }
