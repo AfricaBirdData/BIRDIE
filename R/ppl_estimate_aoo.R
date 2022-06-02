@@ -11,7 +11,7 @@
 ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
 
     # retrieve indicator file
-    indtr_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code,".csv"))
+    indtr_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year, ".csv"))
     indtr <- utils::read.csv(indtr_file)
 
     # Calculate the position of year in relation to the optimal year
