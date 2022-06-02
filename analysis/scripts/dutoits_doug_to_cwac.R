@@ -77,7 +77,7 @@ dougs <- dougs %>%
                   mutate(Common_group = if_else(is.na(Common_group), "", Common_group),
                          Species = paste(Common_species, Common_group),
                          Species = gsub(" $", "", Species)) %>%
-                  select(Species, SppRef),
+                  select(Species, SppRef, WetIntCode),
               by = "Species") %>%
     mutate(SppRef = as.integer(SppRef))
 
@@ -96,7 +96,7 @@ dougs <- dougs %>%
 # Convert to long format
 dougs_l <- dougs %>%
     dplyr::select(Species, SppRef, everything()) %>%
-    tidyr::pivot_longer(cols = -c(Species, SppRef, Common_group, Common_species), names_to = "StartDate", values_to = "Count")
+    tidyr::pivot_longer(cols = -c(Species, SppRef, Common_group, Common_species, WetIntCode), names_to = "StartDate", values_to = "Count")
 
 # Transform dates
 dougs_l <- dougs_l %>%
