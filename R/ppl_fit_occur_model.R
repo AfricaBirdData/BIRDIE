@@ -68,7 +68,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
         # Create notification
         sink(file.path(config$out_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
-        message("Model fitted without effect of month", split = TRUE)
+        message("Model fitted without effect of month")
         sink()
     }
 
