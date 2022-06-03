@@ -9,7 +9,6 @@ ppl_run_pipe_dst2(
   indtr = c("aoo", "daoo"),
   config,
   overwrite_indtr,
-  update_file,
   verbose,
   ...
 )
