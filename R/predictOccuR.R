@@ -53,7 +53,7 @@ predictOccuR <- function(sp_code, year, config, ...){
         pred_occu <- predict(fit, occuRdata$visit, pred_data, nboot = 1000)
 
     }, error = function(e){
-        sink(file.path(config$out_dir, sp_code, paste0("failed_pred_", sp_code,".txt")))
+        sink(file.path(config$out_dir, sp_code, paste0("failed_pred_", sp_code,"_", year, ".txt")))
         print(e)
         sink()}) # TryCatch predict
 

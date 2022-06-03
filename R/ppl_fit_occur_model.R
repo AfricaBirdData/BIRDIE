@@ -67,7 +67,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
         visit_mod <- c("1", "log(TotalHours+1)")
 
         # Create notification
-        sink(file.path(config$out_dir, sp_code, paste0("no_month_effect_", sp_code,".txt")))
+        sink(file.path(config$out_dir, sp_code, paste0("no_month_effect_", sp_code, "_", year, ".txt")))
         message("Model fitted without effect of month")
         sink()
     }
@@ -100,7 +100,7 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
             success <- FALSE
 
-            sink(file.path(config$out_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,".txt")))
+            sink(file.path(config$out_dir, sp_code, paste0("failed_fit_", m, "_", sp_code,"_", year, ".txt")))
             print(e, split = TRUE)
             sink()
 
