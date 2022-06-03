@@ -51,7 +51,7 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
                              st_dev = sqrt(st_dev^2 + dplyr::lag(st_dev^2))) %>%
             dplyr::filter(!is.na(estimate)) %>%
             dplyr::mutate(indicator = "daoo",
-                          term = tt,
+                          term = term,
                           start_date = ini,
                           end_date = end,
                           estimate = round(estimate, 2),
