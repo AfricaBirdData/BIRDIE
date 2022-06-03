@@ -32,22 +32,6 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
         ini <- paste("01", "01", ini_year, sep = "-")
         end <- paste("31", "12", year, sep = "-")
 
-        # Check if the record already exists
-        tt <- term # This is just to ensure stability
-        case <- indtr %>%
-            dplyr::filter(species == sp_code & indicator == "daoo" &
-                              start_date == ini & end_date == end & term == tt)
-
-        # If it exists and current opt is smaller than the new opt stop
-        if(nrow(case) > 0 && case$opt == 0){
-            print(paste("Year", year, "DAOO not updated because there is a better record in the database"))
-            next
-        } else if(nrow(case) > 0 && case$opt > 0){
-            indtr <- indtr %>%
-                dplyr::filter(!(species == sp_code & indicator == "daoo" &
-                                    start_date == ini & end_date == end & term == tt))
-        }
-
         # Estimate daoo
         daoo <- indtr %>%
             dplyr::filter(species == sp_code & indicator == "aoo", (start_date == ini | end_date == end))

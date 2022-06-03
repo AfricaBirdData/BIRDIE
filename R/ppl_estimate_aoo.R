@@ -28,21 +28,6 @@ ppl_estimate_aoo <- function(sp_code, config, verbose, ...){
         ini <- paste("01", "01", year, sep = "-")
         end <- paste("31", "12", year, sep = "-")
 
-        # Check if the record already exists
-        case <- indtr %>%
-            dplyr::filter(species == sp_code & indicator == "aoo" &
-                              start_date == ini & end_date == end)
-
-        # If it exists and current opt is smaller than the new opt stop
-        if(nrow(case) > 0 && case$opt <= opt){
-            print(paste("Year", year, "AOO not updated because there is a better record in the database"))
-            next
-        } else if(nrow(case) > 0 && case$opt > opt){
-            indtr <- indtr %>%
-                dplyr::filter(!(species == sp_code & indicator == "aoo" &
-                                    start_date == ini & end_date == end))
-        }
-
         # Predict from model
         preds <- predictOccuR(sp_code, year, config, ...)
 
