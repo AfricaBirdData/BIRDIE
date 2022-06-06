@@ -23,15 +23,10 @@ for(i in 1:length(config$species)){
         dplyr::select(QUATERNARY, QUAT_CODE) %>%
         sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000)
 
-    counts <- ppl_create_data_ssm(sp_code, config$year, catchment, config,
-                                  steps = c("missing", "gee", "subset"),
-                                  upload_catchment = FALSE, force_gee = TRUE)
+    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
+                                     prep_data_steps = c("missing", "gee", "subset"),
+                                     upload_catchment = FALSE, force_gee = TRUE)
 
-
-    # Fit model ---------------------------------------------------------------
-
-    ppl_fit_ssm_model(sp_code, config)
-
-    ppl_summarize_ssm(sp_code, config)
+    message(paste("ABU1 status =", status_abu1))
 
 }
