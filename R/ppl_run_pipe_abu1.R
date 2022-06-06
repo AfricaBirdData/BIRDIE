@@ -15,7 +15,8 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
                               prep_data_steps, ...){
 
     if("data" %in% steps){
-        counts <- ppl_create_data_ssm(sp_code, config$year, config,
+        counts <- ppl_create_data_ssm(sp_code = sp_code, year = config$year,
+                                      config = config,
                                       steps = prep_data_steps, ...)
 
         if(is.numeric(counts) & counts == 1){
