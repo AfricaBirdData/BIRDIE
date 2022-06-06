@@ -15,8 +15,8 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
                               verbose, overwrite, ...){
 
     # retrieve indicator files
-    indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
-    indtr_file2 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year, ".csv"))
+    indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year-1, ".csv"))
+    indtr_file2 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year, ".csv"))
 
     if(file.exists(indtr_file1)){
         indtr <- rbind(utils::read.csv(indtr_file1),
