@@ -87,7 +87,7 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
 
     indtr %>%
         dplyr::arrange(indicator, term, start_date) %>%
-        utils::write.csv(indtr_file,
+        utils::write.csv(indtr_file2,
                          row.names = FALSE)
 
 }
