@@ -9,6 +9,7 @@ ppl_estimate_daoo(
   config,
   term = c("annual", "short", "long"),
   verbose,
+  overwrite,
   ...
 )
 }
@@ -23,6 +24,8 @@ for the change: 'annual' (1 year), 'short' (15 years), 'long' (30 years).}
 
 \item{verbose}{Logical. If TRUE, the new line added to the indicator table
 is displayed in the console.}
+
+\item{overwrite}{Logical, If TRUE, previous DAOO calculations will be overwritten.}
 }
 \description{
 Estimate change in Area of Occupancy

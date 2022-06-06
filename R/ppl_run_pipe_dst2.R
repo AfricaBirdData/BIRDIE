@@ -34,7 +34,8 @@ ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
 
     if("daoo" %in% indtr){
         # Estimate change in AOO
-        ppl_estimate_daoo(sp_code, config, term = "annual", verbose, ...)
+        ppl_estimate_daoo(sp_code, config, term = "annual", verbose,
+                          overwrite = overwrite_indtr, ...)
     }
 
     return(0)

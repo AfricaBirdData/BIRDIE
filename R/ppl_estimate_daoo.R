@@ -5,12 +5,14 @@
 #' for the change: 'annual' (1 year), 'short' (15 years), 'long' (30 years).
 #' @param verbose Logical. If TRUE, the new line added to the indicator table
 #' is displayed in the console.
+#' @param overwrite Logical, If TRUE, previous DAOO calculations will be overwritten.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long"), verbose, ...){
+ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long"),
+                              verbose, overwrite, ...){
 
     # retrieve indicator files
     indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
@@ -23,6 +25,10 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
         indtr <- utils::read.csv(indtr_file2)
     }
 
+    if(overwrite){
+        indtr <- indtr %>%
+            dplyr::filter(indicator != "daoo")
+    }
 
 
     for(t in seq_along(config$years)){
