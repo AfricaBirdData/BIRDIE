@@ -12,9 +12,18 @@
 #' @examples
 ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long"), verbose, ...){
 
-    # retrieve indicator file
-    indtr_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year, ".csv"))
-    indtr <- utils::read.csv(indtr_file)
+    # retrieve indicator files
+    indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
+    indtr_file2 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year, ".csv"))
+
+    if(file.exists(indtr_file1)){
+        indtr <- rbind(utils::read.csv(indtr_file1),
+                       utils::read.csv(indtr_file2))
+    } else {
+        indtr <- utils::read.csv(indtr_file2)
+    }
+
+
 
     for(t in seq_along(config$years)){
 
@@ -60,12 +69,12 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
                           ub95 = round(qnorm(0.975, estimate, st_dev), 3),
                           opt = opt_daoo)
 
-        # Add new row
-        indtr <- rbind(indtr, daoo)
+        # Add new row to last indicator file
+        indtr <- rbind(utils::read.csv(indtr_file2), daoo)
 
         # Print results
         if(verbose){
-            print(paste(indtr_file, "updated with"))
+            print(paste(indtr_file2, "updated with"))
             print(indtr[nrow(indtr), ])
         }
     }
