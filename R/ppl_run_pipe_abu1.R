@@ -19,7 +19,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
                                       config = config,
                                       steps = prep_data_steps, ...)
 
-        if(is.numeric(counts) & counts == 1){
+        if(is.numeric(counts) && counts == 1){
             return(1)
         }
     }
