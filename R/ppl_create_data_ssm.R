@@ -23,7 +23,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
     if("missing" %in% steps | "subset" %in% steps){
 
         # Download species data
-        print("Downloading from CWAC")
+        message("Downloading from CWAC")
 
         sp_data <- CWAC::getCwacSppCounts(sp_code)
 
@@ -85,7 +85,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         # Add missing counts ------------------------------------------------------
 
-        print("Adding missing counts to all sites. This might take a while...")
+        message("Adding missing counts to all sites. This might take a while...")
 
         # List to store data from multiple sites
         counts <- vector("list", length = length(sp_sites))
@@ -175,7 +175,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             stop("No dataset with missing counts found. Perhaps you need to run the 'missing' step?")
         }
 
-        print("Annotating with covariates from GEE")
+        message("Annotating with covariates from GEE")
 
         counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
 
@@ -192,7 +192,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             counts <- utils::read.csv(file.path(config$out_dir, sp_code, paste0("abu_gee_data_", sp_code, "_", config$years_ch, ".csv")))
         }
 
-        print("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
+        message("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
 
         # Find those sites that have a coverage of at least 10 years between 1993-2021
         sites_good <- sp_data %>%
@@ -220,7 +220,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         utils::write.csv(counts, outfile, row.names = FALSE)
 
-        print(paste("Final counts dataset saved at", outfile))
+        message(paste("Final counts dataset saved at", outfile))
 
     }
 
