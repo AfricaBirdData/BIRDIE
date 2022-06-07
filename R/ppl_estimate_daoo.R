@@ -14,8 +14,12 @@
 ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long"),
                               verbose, overwrite, ...){
 
+    dyear <- dplyr::case_when(term == "annual" ~ 1,
+                              term == "short" ~ 10, # This should be 15 but still have no data in SABAP2 for 15 years
+                              term == "long" ~ 30)
+
     # retrieve indicator files
-    indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year-1, ".csv"))
+    indtr_file1 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year - dyear, ".csv"))
     indtr_file2 <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year, ".csv"))
 
     if(file.exists(indtr_file1)){
@@ -57,6 +61,11 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
         }
 
         # Set opt value to max value found for AOO
+        daoo <- daoo %>%
+            dplyr::group_by(start_date, end_date) %>%
+            dplyr::filter(opt == min(opt)) %>%
+            dplyr::ungroup()
+
         opt_daoo <- max(daoo$opt)
 
         daoo <- daoo %>%
