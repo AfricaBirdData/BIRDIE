@@ -27,11 +27,17 @@ prepSsmData <- function(counts, spp_sel = NULL, keep = NULL){
 
     # Prepare species output name
     if(!is.null(spp_sel) && length(spp_sel) == 1){
-        sp_name <- counts %>%
+
+        sp_counts <- counts %>%
             dplyr::filter(!is.na(Common_species),
-                          SppRef == spp_sel) %>%
-            dplyr::distinct(sp_name = paste(Common_species, Common_group)) %>%
+                          SppRef == spp_sel)
+
+        sp_name <- sp_counts %>%
+            dplyr::distinct(sp_name = dplyr::case_when(Common_group == Common_species ~ Common_species,
+                                                       is.na(Common_group) ~Common_species,
+                                                       TRUE ~ paste(Common_species, Common_group))) %>%
             dplyr::pull(sp_name)
+
     } else {
         sp_name <- "multi"
     }
