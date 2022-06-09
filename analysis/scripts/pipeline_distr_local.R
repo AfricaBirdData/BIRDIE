@@ -10,7 +10,7 @@ test_years <- c(2012, 2013, 2014)
 # DISTRIBUTION PIPELINE BRANCH 1 ------------------------------------------
 
 for(y in seq_along(test_years)){
-y=3
+y=1
     year <- test_years[y]
     config <- configPreambOccuR(year = year, dur = 3, dim_grid = 10, server = FALSE)
 

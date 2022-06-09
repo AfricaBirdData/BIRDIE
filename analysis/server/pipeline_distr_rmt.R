@@ -45,14 +45,17 @@ for(y in seq_along(test_years)){
             next
         }
 
-        out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
-                                      config = config,
-                                      indtr = c("aoo", "daoo"),
-                                      overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
-                                      update_file = if(config$year == 2012){NULL} else {prev_file},
-                                      verbose = TRUE,
-                                      scale_vars_occur = list(visit = NULL,
-                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+        prev_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
+
+        ppl_run_pipe_dst2(sp_code = sp_code,
+                          config = config,
+                          indtr = c("aoo", "daoo"),
+                          # overwrite_indtr = FALSE,
+                          overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
+                          update_file = if(config$year == 2012){NULL} else {prev_file},
+                          verbose = TRUE,
+                          scale_vars_occur = list(visit = NULL,
+                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
 
         print(paste("Pipeline DST2 status =", out_dst2))
 
