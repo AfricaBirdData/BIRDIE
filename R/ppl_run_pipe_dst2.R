@@ -5,6 +5,8 @@
 #' to compute. Can contain: "aoo", "daoo". Defaults to all of them.
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambOccuR}
+#' @param create Logical. If TRUE, a new indicator file will be created. Previous
+#' indicator files will be overwritten if overwrite_indtr is TRUE.
 #' @param overwrite_indtr Logical. If TRUE, existing files in directories
 #' corresponding to the species in config$species will be overwritten.
 #' @param verbose Logical. If TRUE, the new line added to the indicator table
@@ -15,11 +17,15 @@
 #'
 #' @examples
 ppl_run_pipe_dst2 <- function(sp_code, indtr = c("aoo", "daoo"), config,
-                              overwrite_indtr, verbose, ...){
+                              create, overwrite_indtr, verbose, ...){
 
-    # Create indicator file if it doesn't exist
-    ppl_create_indtr_file(sp_code, config$year,
-                          overwrite_indtr = overwrite_indtr)
+    if(create){
+
+        # Create indicator file if it doesn't exist
+        ppl_create_indtr_file(sp_code, config$year,
+                              overwrite_indtr = overwrite_indtr)
+
+    }
 
     if("aoo" %in% indtr){
         # Estimate area of occupancy (AOO)

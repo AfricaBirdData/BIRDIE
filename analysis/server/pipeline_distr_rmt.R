@@ -55,7 +55,8 @@ for(y in seq_along(test_years)){
             out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
                                           config = config,
                                           indtr = c("aoo", "daoo"),
-                                          overwrite_indtr = FALSE,
+                                          create = FALSE,
+                                          overwrite_indtr = TRUE,
                                           verbose = TRUE,
                                           scale_vars_occur = list(visit = NULL,
                                                                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))

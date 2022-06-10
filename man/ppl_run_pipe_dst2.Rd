@@ -8,6 +8,7 @@ ppl_run_pipe_dst2(
   sp_code,
   indtr = c("aoo", "daoo"),
   config,
+  create,
   overwrite_indtr,
   verbose,
   ...
@@ -21,6 +22,9 @@ to compute. Can contain: "aoo", "daoo". Defaults to all of them.}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
+
+\item{create}{Logical. If TRUE, a new indicator file will be created. Previous
+indicator files will be overwritten if overwrite_indtr is TRUE.}
 
 \item{overwrite_indtr}{Logical. If TRUE, existing files in directories
 corresponding to the species in config$species will be overwritten.}
