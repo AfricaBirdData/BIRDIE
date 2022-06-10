@@ -4,7 +4,7 @@ rm(list = ls())
 
 test_years <- 2012:2019
 
-# DISTRIBUTION PIPELINE BRANCH 1 ------------------------------------------
+run_branches <- c(1, 2)
 
 for(y in seq_along(test_years)){
 
@@ -25,38 +25,47 @@ for(y in seq_along(test_years)){
 
         message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-        out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
-                                      sp_name = sp_name,
-                                      year = year,
-                                      config = config,
-                                      steps = c("data", "fit", "summ"),
-                                      force_gee_dwld = FALSE,
-                                      force_abap_dwld = FALSE,
-                                      save_occu_data = TRUE,
-                                      overwrite_occu_data = c("site", "visit", "det"),
-                                      scale_vars_occur = list(visit = NULL,
-                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                                      print_fitting = FALSE,
-                                      verbose = TRUE)
+        if(1 %in% run_branches){
 
-        message(paste("Pipeline DST1 status =", out_dst1))
+            out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                          sp_name = sp_name,
+                                          year = year,
+                                          config = config,
+                                          steps = c("data", "fit", "summ"),
+                                          force_gee_dwld = FALSE,
+                                          force_abap_dwld = FALSE,
+                                          save_occu_data = TRUE,
+                                          overwrite_occu_data = c("site", "visit", "det"),
+                                          scale_vars_occur = list(visit = NULL,
+                                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                                          print_fitting = FALSE,
+                                          verbose = TRUE)
 
-        if(out_dst1 == 1){
-            next
+            message(paste("Pipeline DST1 status =", out_dst1))
+
+            if(out_dst1 == 1){
+                next
+            }
+
         }
 
-        out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
-                                      config = config,
-                                      indtr = c("aoo", "daoo"),
-                                      overwrite_indtr = FALSE,
-                                      verbose = TRUE,
-                                      scale_vars_occur = list(visit = NULL,
-                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
 
-        message(paste("Pipeline DST2 status =", out_dst2))
+        if(2 %in% run_branches){
 
-        if(out_dst2 == 1){
-            next
+            out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
+                                          config = config,
+                                          indtr = c("aoo", "daoo"),
+                                          overwrite_indtr = FALSE,
+                                          verbose = TRUE,
+                                          scale_vars_occur = list(visit = NULL,
+                                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
+
+            message(paste("Pipeline DST2 status =", out_dst2))
+
+            if(out_dst2 == 1){
+                next
+            }
+
         }
 
     }
