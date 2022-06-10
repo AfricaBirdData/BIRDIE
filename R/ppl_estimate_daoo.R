@@ -34,6 +34,7 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
             dplyr::filter(indicator != "daoo")
     }
 
+    new_rows <- vector("list", length(config$years))
 
     for(t in seq_along(config$years)){
 
@@ -84,17 +85,19 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
                           ub95 = round(qnorm(0.975, estimate, st_dev), 3),
                           opt = opt_daoo)
 
-        # Add new row to last indicator file
-        indtr <- rbind(utils::read.csv(indtr_file2), daoo)
+        new_rows[[t]] <- daoo
 
         # Print results
         if(verbose){
-            print(paste(indtr_file2, "updated with"))
-            print(indtr[nrow(indtr), ])
+            message(paste(indtr_file2, "updated with"))
+            message(new_rows[[t]])
         }
     }
 
-    indtr %>%
+    # Add new rows to last indicator file
+    new_rows <- dplyr::bind_rows(new_rows)
+
+    rbind(utils::read.csv(indtr_file2), new_rows) %>%
         dplyr::arrange(indicator, term, start_date) %>%
         utils::write.csv(indtr_file2,
                          row.names = FALSE)
