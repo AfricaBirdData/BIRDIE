@@ -23,7 +23,7 @@ for(y in seq_along(test_years)){
             dplyr::pull(name) %>%
             unique()
 
-        print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+        message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
         out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                       sp_name = sp_name,
@@ -39,25 +39,21 @@ for(y in seq_along(test_years)){
                                       print_fitting = FALSE,
                                       verbose = TRUE)
 
-        print(paste("Pipeline DST1 status =", out_dst1))
+        message(paste("Pipeline DST1 status =", out_dst1))
 
         if(out_dst1 == 1){
             next
         }
 
-        prev_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", year-1, ".csv"))
+        out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
+                                      config = config,
+                                      indtr = c("aoo", "daoo"),
+                                      overwrite_indtr = FALSE,
+                                      verbose = TRUE,
+                                      scale_vars_occur = list(visit = NULL,
+                                                              site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
 
-        ppl_run_pipe_dst2(sp_code = sp_code,
-                          config = config,
-                          indtr = c("aoo", "daoo"),
-                          # overwrite_indtr = FALSE,
-                          overwrite_indtr = if(config$year == 2012){TRUE}else{FALSE},
-                          update_file = if(config$year == 2012){NULL} else {prev_file},
-                          verbose = TRUE,
-                          scale_vars_occur = list(visit = NULL,
-                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")))
-
-        print(paste("Pipeline DST2 status =", out_dst2))
+        message(paste("Pipeline DST2 status =", out_dst2))
 
         if(out_dst2 == 1){
             next
