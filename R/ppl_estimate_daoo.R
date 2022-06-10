@@ -97,7 +97,14 @@ ppl_estimate_daoo <- function(sp_code, config, term = c("annual", "short", "long
     # Add new rows to last indicator file
     new_rows <- dplyr::bind_rows(new_rows)
 
-    rbind(utils::read.csv(indtr_file2), new_rows) %>%
+    out <- utils::read.csv(indtr_file2)
+
+    if(overwrite){
+        out <- out %>%
+            dplyr::filter(indicator != "daoo")
+    }
+
+    rbind(out, new_rows) %>%
         dplyr::arrange(indicator, term, start_date) %>%
         utils::write.csv(indtr_file2,
                          row.names = FALSE)
