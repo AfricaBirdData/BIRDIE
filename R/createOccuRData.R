@@ -66,7 +66,9 @@ createOccuRData <- function(sp_code, years,
 
 
     if(any(is.na(visit_data$obs))){
-        stop("NA found in detection data")
+        warning("NA found in detection data")
+        visit_data <- visit_data %>%
+            dplyr::filter(!is.na(obs))
     }
 
     # Long format for site variables and years
