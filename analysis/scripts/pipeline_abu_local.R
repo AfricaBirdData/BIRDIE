@@ -8,6 +8,8 @@ for(i in 1:length(config$species)){
 
     sp_code <- config$species[i]
 
+    message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+
 
     # PREPARE SSM SPECIES DATA ------------------------------------------------
 
@@ -21,13 +23,11 @@ for(i in 1:length(config$species)){
         dplyr::select(QUATERNARY, QUAT_CODE) %>%
         sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000)
 
-    counts <- ppl_create_data_ssm(sp_code, config$year, catchment, config,
-                                  steps = c("missing", "gee", "subset"),
-                                  upload_catchment = FALSE, force_gee = TRUE)
+    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
+                                     prep_data_steps = c("missing", "gee", "subset"),
+                                     catchment = catchment,
+                                     upload_catchment = FALSE, force_gee = TRUE)
 
-
-    # Fit model ---------------------------------------------------------------
-
-    ppl_fit_ssm_model(sp_code, config)
+    message(paste("ABU1 status =", status_abu1))
 
 }

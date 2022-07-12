@@ -8,7 +8,7 @@ for(i in 1:length(config$species)){
 
     sp_code <- config$species[i]
 
-    print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+    message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
 
     # PREPARE SSM SPECIES DATA ------------------------------------------------
