@@ -19,37 +19,41 @@ This document provides details on the statistical models and used in the data pi
 
 ## State-space models
 
-State-space models are fitted to CWAC data to decouple the underlying process of interest, namely, the population size of waterbird species, from observational artifacts that translate into counting errors. 
+State-space models are used to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider a process of interest that evolves over time, and which we may observe at certain occasions,  although distorted by some imperfect observation process. For example, we might be interested in estimating the number of birds present at a certain site, but often field observers will miss some individuals. By counting repeatedly over time, and assuming that the process of interest evolves slowly compared to observation error, we can disentangle these two processes.
 
-State-space models are use to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider a process of interest that evolves with time and which we may observe at certain occasions. However, our observations may be distorted by some imperfect observation process. For example, we might be interested in estimating the number of birds present at a certain site, but often field observers will miss some birds. By taking repeated measurements (counts in our example) over time, and assuming that the process of interest should evolve slowly compared to observation error, we may be able to disentangle these two processes.
+Here, we are interested in estimating bird abundance using counts from the Coordinated Waterbird Counts (CWAC) project (see relevant section for details). CWAC provides data ($y_i$) on counts at a number of sites. We consider that the observed counts at time $i$, at any given site, arise from a Poisson($\lambda_i$) process.
 
-In the particular case of CWAC data, we let the population size of a certain species at a given site at time $t$ be denoted by $\mu_t$. Actually, $\mu_t$ is the log of the population size (I should explain this better). Observers count the number of birds at this site at times $t = 1, 2, ..., N$, for a total of $N$ measurements. Note that for simplicity we are assuming that sampling occasions are regularly spaced, although they need not be, as we will see later. Within the CWAC programme framework, there are yearly counts and therefore, $t$ indexes the different years. Then,
+$$y_i \sim \textrm{Poisson}(\lambda_i)$$
 
-\begin{equation}
-    \begin{aligned}
-        \mu_{t} &= \mu_{t-1} + \alpha_t,\ \alpha_t \sim N(0, \sigma_{\alpha}^2)\\
-        y_t &= \mu_t + e_t,\ e_t \sim N(0, \sigma_{e}^2),
-    \end{aligned}
-\end{equation}
+We model the log of the intensity $\lambda_i$ as:
 
-where $\mu_t$ represents the number of birds present at the site at time $t$ and $y_t$ represents the number of birds counted at the site at time $t$. The terms $\alpha_t$ and $e_t$ denote stochastic changes in abundance and stochastic errors in the measurements respectively. Note that the state at time $t$, $\mu_t$ depends on the state at time $t-1$, therefore there should be a temporal structure in the process $\mu_t$ that is not present in the observations $y_t$, if we condition on $\mu_t$.
+$$\log{(\lambda_i)} \sim N(\mu_i, \sigma^2)$$
+where $\mu_i$ is the log mean abundance of waterbirds on site and $\sigma^2$ is the variance of the observer count error in the log scale. Therefore, the counts on sampling occasion $i$ depend both on the number of waterbirds, and on errors in the counts of these birds.
 
-We can now extend the model to account for the fact that many sites host migrant species that arrive during the summer months. Therefore, we would expect an influx of birds to the population that we will denote by $\beta_t$. A proportion of these birds, stay during the winter months, while others leave to their breeding grounds in the North. The change in population size during the winter months due to the wintering migrants is denoted by $\lambda_t$. Then,
+Waterbird abundance changes over the years. To model abundance dynamics on year $t$, we define $s_t$ as the summer abundance and $w_t$ as the winter abundance. Note that there might be multiple counts in a single year (counts were indexed by $i$), but abundance is considered to stay constant in any given year and season.
 
-\begin{equation}
-    \begin{aligned}
-        \mu_{t} &= \mu_{t-1} + \beta_{t-1} \textrm{summer}_t + \lambda_t \textrm{winter}_t + \omega_t,\ \omega_t \sim N(0, \sigma_{\omega}^2)\\
-        \beta_t &= \beta_{t-1} + \zeta_t, \ \zeta_t \sim N(0, \sigma_{\zeta}^2)\\
-        \lambda_t &= \lambda_{t-1} + \epsilon_t, \ \epsilon_t \sim N(0, \sigma_{\epsilon}^2)\\
-        y_t &= \mu_t + \alpha_t \textrm{summer}_t + e_t\textrm{winter}_t ,\ \alpha_t \sim N(0, \sigma_{\alpha}^2),\ e_t \sim N(0, \sigma_{e}^2)\\ 
-    \end{aligned}
-\end{equation}
+$$\mu_{i} = s_t \textrm{summer} + w_t \textrm{winter}$$
+where 'summer' is a dummy variables that takes on the value 1 in summer and 0 in winter, and 'winter' is the opposite.
 
-As previously, $\mu_t$ denotes the size of the population at time $t$. The variables $summer_t$ and $winter_t$ are indicators of summer period and winter period respectively (i.e., $summer_t$ equals 1 in summer and 0 in winter, and $winter_t$ is the opposite). The summer population at time $t$, $\mu_t$, is calculated by adding a quantity $\beta_{t-1}$ to the population at time $t-1$, $\mu_{t-1}$. Then, the winter population at time $t$ is calculated by adding a quantity $\lambda_t$, representing the difference between the summer and winter population at time $t$, to the summer population of that same time (year) $t$.
+We then define abundance dynamics as:
 
-(There is something strange here: $\beta_{t-1}$ actually is the difference between the summer population and the previous winter, when a portion of the previous summer migrants was still present (let's call these "wintering" birds). Or are we assuming that wintering birds left? Is it important at all?)
+$$s_t = s_{t-1} + \beta_t$$
+$$w_t = s_t + \xi_t$$
 
-As we can see both $\mu_t$ and $\lambda_t$ change over time and depend on their value at the previous time. This specification correspond to parameters that perform a random walk over time.
+where $\beta_t$ corresponds to the change in summer abundance from year $t-1$ to year $t$, and $\xi_t$ is the difference between summer and winter abundance, both in the log scale. If exponentiated, these parameters can be interpreted as the rate of change in the population and the winter-to-summer ratio of the population, respectively.
+
+We impose relatively smooth changes in abundance by defining autocorrelation in $\beta_t$ and $\xi_t$ terms over time, such that:
+
+$$\beta_{t+1} = \beta_t + \zeta_t$$
+$$\xi_{t+1} = \xi_t + \epsilon_t$$
+
+where $\zeta_t$ and $\epsilon_t$ are random variables that represent change in abundance change, and change in winter to summer ratio, respectively.
+
+We mentioned at the beginning that this model applies to each monitored site. However, we have multiple sites, and counts are often missing for some seasons or even full years. To facilitate the estimation of abundance in seasons with missing data, we borrow some information from sites with counts, by defining a hierarchical structure such that:
+
+$$\zeta_{tj} \sim N(0, \sigma^2_{\zeta t})$$
+$$\epsilon_{tj} \sim N(0, \sigma^2_{\epsilon t})$$
+changes at any site $j$ and year $t$ come from a common distribution of changes across all sites for that year. These distributions are normal with variances $\sigma^2_{\zeta t}$ and $\sigma^2_{\epsilon t}$ for changes in abundance and winter to summer ratio, respectively.
 
 ### Implementation:
 
