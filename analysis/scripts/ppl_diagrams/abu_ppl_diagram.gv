@@ -3,62 +3,61 @@ digraph {
 graph [layout = dot, rankdir = TB, splines = ortho, nodesep = 0.5, fontsize = 24]
 
 # define the global styles of the nodes. We can override these in box if we wish
-node [shape = rectangle, style = filled, fillcolor = Linen]
+node [shape = rectangle, style = filled, fillcolor = Linen, fontsize = 20]
 
 subgraph cluster_1 {
 
-label = "   ABU1: Species abundance for each site   "
+label = "  ABU1: Abundance for each\n species, site and year  "
 
 # Databases
 gee [label = 'GEE', shape = cylinder, fillcolor = DodgerBlue, width = 1.3]
 cwac [label = 'CWAC', shape = cylinder, fillcolor = DodgerBlue, width = 1.3]
 
 # Data input/output
-visit_data [label = 'visit data', shape = parallelogram, fillcolor = PaleTurquoise1, width = 2]
-ssm_fit [label = 'ssm fit', shape = parallelogram, fillcolor = PaleTurquoise2, width = 2]
-sp_site_abu [label = 'abu ij', shape = parallelogram, fillcolor = PaleTurquoise3, width = 2]
+visit_data [label = 'visit data', shape = parallelogram, fillcolor = PaleTurquoise1, width = 3]
+ssm_fit [label = 'ssm fit', shape = parallelogram, fillcolor = PaleTurquoise2, width = 3]
+sp_site_abu [label = 'species abu', shape = parallelogram, fillcolor = PaleTurquoise3, width = 3]
 
 
 # Functions
-data_ssm [label =  'ppl_data_ssm()', width = 2]
+data_ssm [label =  'ppl_create_data_ssm()', width = 2]
 fit_ssm[label = 'ppl_fit_ssm_model()', width = 2]
 summ_ssm [label= 'ppl_summarize_ssm()', width = 2]
 
 
 # Decisions
-select_sp [label = 'select sp j', shape = diamond, fillcolor = MediumPurple, width = 2]
-select_site [label = 'select site i', shape = diamond, fillcolor = MediumPurple, width = 2]
+
 
 
 # Aux
-inv1 [label = "i1", shape = point, height = 0]
-inv2 [label = "i2", shape = point, height = 0]
+#inv1 [label = "i1", shape = point, height = 0]
+#inv2 [label = "i2", shape = point, height = 0]
 
 
 # edge definitions with the node IDs
-{gee cwac} -> select_site -> data_ssm [weight = 0]
-data_ssm -> visit_data -> select_sp -> fit_ssm
+{gee cwac} -> data_ssm #[weight = 0]
+data_ssm -> visit_data -> fit_ssm
 fit_ssm -> ssm_fit -> summ_ssm
 summ_ssm -> sp_site_abu
-summ_ssm -> inv1 [weight = 0, dir = none]
-inv1 -> inv2 [weight = 0, dir = none, xlabel = "j+1  "]
-inv2 -> select_sp [weight = 0]
+#summ_ssm -> inv1 [weight = 0, dir = none]
+#inv1 -> inv2 [weight = 0, dir = none, xlabel = "j+1  "]
+#inv2 -> select_sp [weight = 0]
 
-{rank = same; summ_ssm inv1}
-{rank = same; select_sp inv2}
+#{rank = same; summ_ssm inv1}
+#{rank = same; select_sp inv2}
 
 }
 
 # Databases
-sp_abu [label = "<f0> Abundance| sp 1 | sp 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
+sp_abu [label = "<f0> Abundance| site 1 | site 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
 sp_site_abu -> sp_abu
 
 subgraph cluster_2 {
 
-label = "     ABU2: Total abundance for each site     "
+label = "  ABU2: Total abundance for each\n site and year (MySQL)  "
 
 # Databases
-sp_abu2 [label = "<f0> Abundance| sp 1 | sp 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
+sp_abu2 [label = "<f0> Abundance| site 1 | site 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
 
 # Data input/output
 site_abu [label = 'total site abu', shape = parallelogram, fillcolor = PaleTurquoise4, width = 2]
@@ -67,11 +66,11 @@ site_abu [label = 'total site abu', shape = parallelogram, fillcolor = PaleTurqu
 select_site2 [label = 'select site i', shape = diamond, fillcolor = MediumPurple, width = 2]
 
 # Functions
-sum_spp [label =  'ppl_sum_spp_site()', width = 2]
+sum_spp [label =  'ppl_db_sum_spp_site()', width = 2]
 
 # Edges
+sp_abu2 -> select_site2
 sum_spp -> site_abu
-sp_abu2 -> sum_spp
 select_site2 -> sum_spp
 
 }
@@ -79,28 +78,28 @@ select_site2 -> sum_spp
 
 subgraph cluster_3 {
 
-label = "ABU3: Total abundance for each species and year"
+label = "  ABU3: Total abundance for each\n species and year (MySQL) "
 
 # Databases
-sp_abu3 [label = "<f0> Abundance| sp 1 | sp 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
+sp_abu3 [label = "<f0> Abundance| site 1 | site 2 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
 
 # Data input/output
 sp_total_abu [label = 'total sp abu', shape = parallelogram, fillcolor = PaleTurquoise4, width = 2]
 
 # Functions
-sum_sp [label =  'ppl_sum_sp_abu()', width = 2]
+sum_sp [label =  'ppl_db_sum_sp_abu()', width = 2]
 
 # Decisions
-select_sp2 [label = 'select sp j', shape = diamond, fillcolor = MediumPurple, width = 2]
-select_year [label = 'select year y', shape = diamond, fillcolor = MediumPurple, width = 2]
+select_sp2 [label = 'select sp j', shape = diamond, fillcolor = MediumPurple, width = 3]
+select_year [label = 'select year y', shape = diamond, fillcolor = MediumPurple, width = 3]
 
 # Edges
-select_sp2 -> sum_sp
-sum_sp -> select_year [dir = "back"]
-sp_abu3 -> sum_sp
+sp_abu3  -> select_sp2
+select_sp2 -> select_year
+select_year -> sum_sp
 sum_sp -> sp_total_abu
 
-{rank = same; sum_sp select_sp2 select_year}
+#{rank = same; sum_sp select_sp2 select_year}
 
 }
 }

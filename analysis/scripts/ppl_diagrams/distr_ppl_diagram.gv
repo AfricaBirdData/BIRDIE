@@ -1,9 +1,9 @@
 digraph {
 
-graph [layout = dot, rankdir = TB, splines = polyline]
+graph [layout = dot, rankdir = TB, splines = polyline, nodesep = 0.5, fontsize = 24]
 
 # define the global styles of the nodes. We can override these in box if we wish
-node [shape = rectangle, style = filled, fillcolor = Linen]
+node [shape = rectangle, style = filled, fillcolor = Linen, fontsize = 20]
 
 subgraph cluster_1 {
 
