@@ -12,6 +12,15 @@ for(i in 1:length(config$species)){
 
     message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
+    # Skip species if less than 5 suitable sites were detected during fitting model fitting
+    error_file <- file.path(config$out_dir, sp_code, paste0("Less_5_sites_", sp_code, "_", config$years_ch, ".txt"))
+
+    if(file.exists(error_file)){
+        message(paste0("Less_5_sites_", sp_code, "_", config$years_ch, ".txt"))
+        next
+    }
+
+    # Else proceed with diagnostics
     fit <- readRDS(file.path(config$out_dir, sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
 
     names(fit$Rhat)
