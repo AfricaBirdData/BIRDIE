@@ -12,7 +12,7 @@ for(i in 1:length(config$species)){
 
     print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-    fit <- readRDS(file.path("analysis/out_nosync", sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
+    fit <- readRDS(file.path(config$out_dir, sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
 
     names(fit$Rhat)
 
