@@ -4,13 +4,13 @@ library(BIRDIE)
 
 rm(list = ls())
 
-test_years <- c(2012, 2013, 2014)
+test_years <- c(2012, 2013, 2014, 2015)
 
 run_branches <- c(1, 2)
 
 
 for(y in seq_along(test_years)){
-y=2
+y=4
     year <- test_years[y]
     config <- configPreambOccuR(year = year, dur = 3, dim_grid = 10, server = FALSE)
 
@@ -58,7 +58,7 @@ i=1
             out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
                                           config = config,
                                           indtr = c("aoo", "daoo"),
-                                          create = FALSE,
+                                          create = TRUE,
                                           overwrite_indtr = TRUE,
                                           verbose = TRUE,
                                           scale_vars_occur = list(visit = NULL,
