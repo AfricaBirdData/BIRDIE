@@ -2,7 +2,7 @@ library(BIRDIE)
 
 rm(list = ls())
 
-config <- BIRDIE::configPreambJAGS(2017, server = FALSE)
+config <- BIRDIE::configPreambJAGS(2017, server = TRUE)
 
 rhat_df <- data.frame()
 
