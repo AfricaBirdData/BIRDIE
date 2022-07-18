@@ -12,10 +12,9 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
     message(paste("Summarizing state-space JAGS model at", Sys.time()))
 
     # Load counts
-    counts <- utils::read.csv(file.path(config$out_dir, sp_code, paste0("abu_model_data_", sp_code, "_", config$years_ch,".csv")))
+    counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
 
-
-    fit <- readRDS(file.path(config$out_dir, sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
+    fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
 
     # Plot
     pers_theme <- ggplot2::theme_bw()
@@ -32,7 +31,8 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
 
         site_sel <- names(p)[[i]]
 
-        plotdir <- file.path(config$out_dir, sp_code, paste0("ssm_plot_", sp_code, "_", site_sel, "_", config$years_ch, ".png"))
+        plotdir <- setSpOutFilePath("ssm_plot", config, sp_code, paste0("_", site_sel, ".png"))
+
         ggplot2::ggsave(plotdir, plot = p[[i]]$plot, width = 6.4, height = 5.2)
 
         # Extract plot data
@@ -84,7 +84,8 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
     # Export sample
-    datadir <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", sp_code, "_all_", config$years_ch, ".csv"))
+    datadir <- setSpOutFilePath("ssm_pred", config, sp_code, "_all.csv")
+
     utils::write.csv(out_all_sites, datadir, row.names = FALSE)
 
 }
