@@ -10,7 +10,7 @@
 ppl_fit_ssm_model <- function(sp_code, config, ...){
 
 
-    counts <- read.csv(file.path(config$out_dir, sp_code, paste0("abu_model_data_", sp_code, "_", config$years_ch, ".csv")))
+    counts <- read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
 
     # Create a sequential 'site' variable
     counts <- counts %>%
@@ -21,10 +21,11 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     # Create covariate matrix
     covts_x <- counts %>%
         dplyr::mutate(intcp = 1) %>%
-        dplyr::select(intcp, prcp, tmmn, tmmx, watext, watrec) %>%
-        dplyr::mutate(dplyr::across(.cols = c(prcp, tmmn, tmmx, watext, watrec), .fns = ~scale(.x)))
+        dplyr::rename_with(~gsub("_mean||_count", "", .x), .cols = dplyr::everything()) %>%
+        dplyr::select(intcp, prcp, tmmn, tmmx, pdsi, watext, watrec) %>%
+        dplyr::mutate(dplyr::across(.cols = c(prcp, tmmn, tmmx, pdsi, watext, watrec), .fns = ~scale(.x)))
 
-    # Prepare data (note the addition of 0.1 to avoid infinite values)
+    # Prepare data
     data <- list(
         count = counts$count,
         summer = dplyr::case_when(counts$Season == "S"~ 1L,
@@ -58,6 +59,6 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
         sp_code <- "group"
     }
 
-    saveRDS(fit, file.path(config$out_dir, sp_code, paste0("ssm_fit_", config$years_ch, "_", sp_code, ".rds")))
+    saveRDS(fit, setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
 
 }

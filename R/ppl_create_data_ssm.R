@@ -158,8 +158,11 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         attr(counts, "missing") <- TRUE
 
-        # Save to disk
+        # Save to disk at temporary location
         saveRDS(counts, file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_w_miss.rds")))
+
+        # Save to disk permanently?
+        # saveRDS(counts, file.path("analysis/out_nosync", sp_code, paste0(sp_code, "_", config$years_ch, "_cwac_data_w_miss.rds")))
     }
 
 
@@ -189,7 +192,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
     if("subset" %in% steps){
 
         if(!exists("counts") || !isTRUE(attr(counts, "gee"))){
-            counts <- utils::read.csv(file.path(config$out_dir, sp_code, paste0("abu_gee_data_", sp_code, "_", config$years_ch, ".csv")))
+            counts <- utils::read.csv(setSpOutFilePath("abu_gee_data", config, sp_code, ".csv"))
         }
 
         message("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
@@ -216,7 +219,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         counts <- counts %>%
             dplyr::filter(LocationCode %in% sites_good)
 
-        outfile <- file.path(config$out_dir, sp_code, paste0("abu_model_data_", sp_code, "_", config$years_ch, ".csv"))
+        outfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
 
         utils::write.csv(counts, outfile, row.names = FALSE)
 

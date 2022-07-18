@@ -26,7 +26,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     rgee::ee_Initialize()
 
     # Set species code and output file name
-    outfile <- file.path(config$out_dir, sp_code, paste0("abu_gee_data_", sp_code, "_", config$years_ch, ".csv"))
+    outfile <- setSpOutFilePath("abu_gee_data", config, sp_code, ".csv")
 
     if(!force_gee & file.exists(outfile)){
         stop("File with covariates already on disk. Set force_gee = TRUE to overwrite")
@@ -35,7 +35,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     # Upload catchment areas to EE (if not done already)
 
     # Set a name for the asset
-    eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quat_catchm')
+    eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quin_catchm')
 
     if(upload_catchment){
         suppressMessages(
@@ -55,7 +55,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         sf::st_nearest_feature(catchment)
 
     counts <- counts %>%
-        dplyr::mutate(QUAT_CODE = catchment$QUAT_CODE[int_index])
+        dplyr::mutate(UNIT_ID = catchment$UNIT_ID[int_index])
 
 
     # Upload to GEE -----------------------------------------------------------
@@ -75,26 +75,10 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
             dplyr::rename(Date = StartDate) %>%
             dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
             dplyr::mutate(Date = as.character(Date)) %>%
-            dplyr::select(id_count, Date, QUAT_CODE) %>%
+            dplyr::select(id_count, Date, UNIT_ID) %>%
             CWAC::uploadCountsToEE(asset_id = eeCounts_id,
                                    load = FALSE)
     )
-
-    # It might be that the object has not been yet created in GEE
-    Sys.sleep(60)
-
-    # Join counts and catchment data ------------------------------------------
-
-    # check that the asset has been produced and wait longer otherwise
-    assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
-
-    try = 1
-    while(!eeCounts_id %in% assets$ID && try < 10){
-        message(paste("Checking GEE counts status", try+1, "of 10"))
-        Sys.sleep(60)
-        assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
-        try = try + 1
-    }
 
     eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
 
@@ -102,12 +86,12 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Use an equals filter to specify how the collections match.
     eeFilter = rgee::ee$Filter$equals(
-        leftField = 'QUAT_CODE',
-        rightField = 'QUAT_CODE')
+        leftField = 'UNIT_ID',
+        rightField = 'UNIT_ID')
 
     # Define the join.
     saveAllJoin <- rgee::ee$Join$saveAll(
-        matchesKey = 'QUAT_CODE',
+        matchesKey = 'UNIT_ID',
         ordering = 'system:time_start',
         ascending = TRUE)
 
@@ -117,7 +101,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     # Extract polygons from join results
     new_pols <- joinResults$map(function(a){
 
-        pp <- rgee::ee$Feature(rgee::ee$List(a$get("QUAT_CODE"))$get(0))
+        pp <- rgee::ee$Feature(rgee::ee$List(a$get("UNIT_ID"))$get(0))
         ll <- rgee::ee$List(a)
 
         return(
@@ -132,7 +116,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     message("Annotating CWAC with TerraClimate")
 
     # Define bands
-    bands <- c("pr", "tmmn", "tmmx")
+    bands <- c("pr", "tmmn", "tmmx", "pdsi")
 
     # Define function
     f <- function(band){
@@ -148,8 +132,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
         # Fix names and variables
         visit_env <- visit_env %>%
-            dplyr::rename_with(~gsub("val", band, .x), .cols = dplyr::starts_with("val")) %>%
-            dplyr::select(id_count, dplyr::all_of(band)) %>%
+            dplyr::select(id_count, dplyr::all_of(paste0(band, "_mean"))) %>%
             sf::st_drop_geometry()
 
         return(visit_env)
@@ -162,7 +145,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     visit_vars <- visit_vars %>%
         dplyr::bind_cols(.name_repair = "universal") %>%
         dplyr::rename(id_count = id_count...1) %>%
-        dplyr::select(id_count, dplyr::all_of(bands))
+        dplyr::select(id_count, dplyr::all_of(paste0(bands, "_mean")))
 
     # bind
     counts_vars <- counts %>%
@@ -201,8 +184,8 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Fix names and variables
     visit_water[[1]] <- visit_water[[1]] %>%
-        dplyr::rename_with(~gsub("val", "watext", .x), .cols = dplyr::starts_with("val")) %>%
-        dplyr::select(id_count, dplyr::all_of("watext")) %>%
+        dplyr::rename_with(~gsub("waterClass", "watext", .x), .cols = dplyr::starts_with("waterClass")) %>%
+        dplyr::select(id_count, dplyr::all_of("watext_count")) %>%
         sf::st_drop_geometry()
 
     # Recurrence of pixels with water each year
@@ -216,8 +199,8 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
 
     # Fix names and variables
     visit_water[[2]] <- visit_water[[2]] %>%
-        dplyr::rename_with(~gsub("val", "watrec", .x), .cols = dplyr::starts_with("val")) %>%
-        dplyr::select(id_count, dplyr::all_of("watrec")) %>%
+        dplyr::rename_with(~gsub("waterClass", "watrec", .x), .cols = dplyr::starts_with("waterClass")) %>%
+        dplyr::select(id_count, dplyr::all_of("watrec_mean")) %>%
         sf::st_drop_geometry()
 
     # bind
