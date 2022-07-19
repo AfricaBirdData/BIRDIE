@@ -39,8 +39,8 @@ affiliation:
     city: Cape Town
     country: South Africa
   - id: '3' 
-    department: Royal Belgian Institute of Natural Sciences
-    institution: Some Belgian official institution?
+    department: Operational Directorate Natural Environment
+    institution: Royal Belgian Institute of Natural Sciences
     city: Brussels
     country: Belgium
   - id: '4'
