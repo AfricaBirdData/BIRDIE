@@ -1,0 +1,81 @@
+---
+title: "BIRDIE: A datapipeline to inform wetland and waterbird conservation at multiple scales"
+runtitle: "BIRDIE Biodiversity Datapipeline"
+documentclass: frontiersSCNS  # or frontiersHLTH, or frontiersFPHY
+author:
+  - name: Francisco Cervantes
+    affiliation: '1,2'
+    etal: Cervantes # First author's last name.
+    email: f.cervantesperalta@gmail.com # Indicates corresponding Author
+    institution: Laboratory X, Institute X, Department X, Organization X
+    street: Street X
+    city: City X
+    state: State XX # only USA, Australia, Canada
+    zip: Zip Code X
+    country: Country X
+  - name: Francis Strobbe
+    affiliation: '3'
+  - name: Yvan Stojanov
+    affiliation: '3'
+  - name: Michael Brooks
+    affiliation: '4'
+  - name: Vernon Visser
+    affiliation: '1'
+  - name: Nancy Job
+    affiliation: '2'
+  - name: Andrew Skowno
+    affiliation: '2'
+  - name: Res Altwegg
+    affiliation: '1'
+affiliation:
+  - id: '1'
+    department: Centre for Statistics in Ecology, the Environment and Conservation
+    institution: University of Cape Town
+    city: Cape Town
+    country: South Africa
+  - id: '2' 
+    department: South African National Biodiversity Institute
+    institution: Kirstenbosch Research Centre
+    city: Cape Town
+    country: South Africa
+  - id: '3' 
+    department: Royal Belgian Institute of Natural Sciences
+    institution: Some Belgian official institution?
+    city: Brussels
+    country: Belgium
+  - id: '4'
+    department: FitzPatrick Institute of African Ornithology
+    institution: University of Cape Town
+    city: Cape Town
+    country: South Africa
+output: rticles::frontiers_article
+csl: frontiers.csl
+bibliography: test.bib
+---
+
+\begin{abstract}
+
+1000 words max
+
+We are collecting a lot of data
+
+We need to process and analyze these data to make it useful for decision making
+
+Fast and effective decision making is necessary to stop biodiversity loss and preserve ecosystem services
+
+Wetlands deliver critical ecosystem services
+
+Birds are convenient indicators of the state of wetlands
+
+With the South African Biodiversity Data Pipeline for Wetlands and Waterbirds, we use two citizen science
+bird monitoring dataset to assess the state of waterbirds populations and its relationship with 
+wetland conditions.
+
+Acknowledging that decision making must occur at multiple scales, from site management to international
+coordination, we have developed a granular framework in which population indicators are estimated
+at small scales, and then these are aggregated to understand changes at broader scales.
+
+
+
+\end{abstract}
+

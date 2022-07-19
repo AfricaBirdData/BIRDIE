@@ -1,0 +1,170 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% This is just an example/guide for you to refer to when submitting manuscripts to Frontiers, it is not mandatory to use Frontiers .cls files nor frontiers.tex  %
+% This will only generate the Manuscript, the final article will be typeset by Frontiers after acceptance.
+%                                              %
+%                                                                                                                                                         %
+% When submitting your files, remember to upload this *tex file, the pdf generated with it, the *bib file (if bibliography is not within the *tex) and all the figures.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Version 3.4 Generated 2018/06/15 %%%
+%%% You will need to have the following packages installed: datetime, fmtcount, etoolbox, fcprefix, which are normally inlcuded in WinEdt. %%%
+%%% In http://www.ctan.org/ you can find the packages and how to install them, if necessary. %%%
+
+\documentclass[utf8]{frontiersSCNS}
+
+%\setcitestyle{square} % for Physics and Applied Mathematics and Statistics articles
+\usepackage{url,hyperref,lineno,microtype,subcaption}
+\usepackage[onehalfspacing]{setspace}
+
+\linenumbers
+
+
+% BELOW TAKEN FROM rticles plos template
+%
+% amsmath package, useful for mathematical formulas
+\usepackage{amsmath}
+% amssymb package, useful for mathematical symbols
+\usepackage{amssymb}
+
+% hyperref package, useful for hyperlinks
+\usepackage{hyperref}
+
+% graphicx package, useful for including eps and pdf graphics
+% include graphics with the command \includegraphics
+\usepackage{graphicx}
+
+% Sweave(-like)
+\usepackage{fancyvrb}
+\DefineVerbatimEnvironment{Sinput}{Verbatim}{fontshape=sl}
+\DefineVerbatimEnvironment{Soutput}{Verbatim}{}
+\DefineVerbatimEnvironment{Scode}{Verbatim}{fontshape=sl}
+\newenvironment{Schunk}{}{}
+\DefineVerbatimEnvironment{Code}{Verbatim}{}
+\DefineVerbatimEnvironment{CodeInput}{Verbatim}{fontshape=sl}
+\DefineVerbatimEnvironment{CodeOutput}{Verbatim}{}
+\newenvironment{CodeChunk}{}{}
+
+% cite package, to clean up citations in the main text. Do not remove.
+\usepackage{cite}
+
+\usepackage{color}
+
+% Below is from frontiers
+%
+\bibliographystyle{frontiersinSCNS}
+% Use doublespacing - comment out for single spacing
+%\usepackage{setspace}
+%\doublespacing
+
+
+% Leave a blank line between paragraphs instead of using \\
+
+
+\def\keyFont{\fontsize{8}{11}\helveticabold }
+
+
+%% ** EDIT HERE **
+%% PLEASE INCLUDE ALL MACROS BELOW
+
+%% END MACROS SECTION
+
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+
+
+
+\def\Authors{
+  Francisco Cervantes\,\textsuperscript{1,2*},
+  Francis Strobbe\,\textsuperscript{3},
+  Yvan Stojanov\,\textsuperscript{3},
+  Michael Brooks\,\textsuperscript{4},
+  Vernon Visser\,\textsuperscript{1},
+  Nancy Job\,\textsuperscript{2},
+  Andrew Skowno\,\textsuperscript{2},
+  Res Altwegg\,\textsuperscript{1}}
+
+\def\Address{
+
+  \textsuperscript{1} Centre for Statistics in Ecology, the Environment
+and Conservation, University of Cape Town,  Cape Town,   South Africa
+  
+  \textsuperscript{2} South African National Biodiversity
+Institute, Kirstenbosch Research Centre,  Cape Town,   South Africa
+  
+  \textsuperscript{3} Royal Belgian Institute of Natural Sciences, Some
+Belgian official institution?,  Brussels,   Belgium
+  
+  \textsuperscript{4} FitzPatrick Institute of African
+Ornithology, University of Cape Town,  Cape Town,   South Africa
+  }
+
+  \def\corrAuthor{Francisco Cervantes}\def\corrAddress{Laboratory X,
+Institute X, Department X, Organization X\\Street X\\City X, State
+XX, Zip Code X Country
+X}\def\corrEmail{\href{mailto:f.cervantesperalta@gmail.com}{\nolinkurl{f.cervantesperalta@gmail.com}}}
+  \def\firstAuthorLast{Cervantes {et~al.}}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+\begin{document}
+
+\onecolumn
+\firstpage{1}
+
+
+\title[BIRDIE Biodiversity Datapipeline]{BIRDIE: A datapipeline to
+inform wetland and waterbird conservation at multiple scales}
+\author[\firstAuthorLast]{\Authors}
+\address{} %This field will be automatically populated
+\correspondance{} %This field will be automatically populated
+
+\extraAuth{}% If there are more than 1 corresponding author, comment this line and uncomment the next one.
+%\extraAuth{corresponding Author2 \\ Laboratory X2, Institute X2, Department X2, Organization X2, Street X2, City X2 , State XX2 (only USA, Canada and Australia), Zip Code2, X2 Country X2, email2@uni2.edu}
+
+
+\maketitle
+
+\begin{abstract}
+
+1000 words max
+
+We are collecting a lot of data
+
+We need to process and analyze these data to make it useful for decision making
+
+Fast and effective decision making is necessary to stop biodiversity loss and preserve ecosystem services
+
+Wetlands deliver critical ecosystem services
+
+Birds are convenient indicators of the state of wetlands
+
+With the South African Biodiversity Data Pipeline for Wetlands and Waterbirds, we use two citizen science
+bird monitoring dataset to assess the state of waterbirds populations and its relationship with 
+wetland conditions.
+
+Acknowledging that decision making must occur at multiple scales, from site management to international
+coordination, we have developed a granular framework in which population indicators are estimated
+at small scales, and then these are aggregated to understand changes at broader scales.
+
+
+
+\end{abstract}
+
+
+\end{document}
