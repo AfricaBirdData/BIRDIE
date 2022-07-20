@@ -7,12 +7,12 @@ author:
     affiliation: '1,2'
     etal: Cervantes # First author's last name.
     email: f.cervantesperalta@gmail.com # Indicates corresponding Author
-    institution: Laboratory X, Institute X, Department X, Organization X
-    street: Street X
-    city: City X
+    institution: University of Cape Town
+    street: Rondebosch
+    city: Cape Town
     state: State XX # only USA, Australia, Canada
-    zip: Zip Code X
-    country: Country X
+    zip: 7700
+    country: South Africa
   - name: Francis Strobbe
     affiliation: '3'
   - name: Yvan Stojanov
@@ -21,9 +21,9 @@ author:
     affiliation: '4'
   - name: Vernon Visser
     affiliation: '1'
-  - name: Nancy Job
-    affiliation: '2'
   - name: Andrew Skowno
+    affiliation: '2'
+  - name: Nancy Job
     affiliation: '2'
   - name: Res Altwegg
     affiliation: '1'
@@ -51,30 +51,38 @@ affiliation:
 output: rticles::frontiers_article
 csl: frontiers.csl
 bibliography: test.bib
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
 ---
 
 \begin{abstract}
 
 1000 words max
 
-We are collecting a lot of data
-
-We need to process and analyze these data to make it useful for decision making
-
-Fast and effective decision making is necessary to stop biodiversity loss and preserve ecosystem services
-
-Wetlands deliver critical ecosystem services
-
-Birds are convenient indicators of the state of wetlands
-
-With the South African Biodiversity Data Pipeline for Wetlands and Waterbirds, we use two citizen science
-bird monitoring dataset to assess the state of waterbirds populations and its relationship with 
-wetland conditions.
-
-Acknowledging that decision making must occur at multiple scales, from site management to international
-coordination, we have developed a granular framework in which population indicators are estimated
-at small scales, and then these are aggregated to understand changes at broader scales.
-
+With increasing pressure on Earth's ecosystems, we have seen substantial efforts
+in the collection of ecological and environmental data, over the last decade. More
+recently, data management workflows and repositories have improved, making these
+data more accessible. However, raw data needs to be analyzed and interrogated in
+order to make management decisions; a process that can be complex and time
+consuming. The South African Biodiversity Data Pipeline for Wetlands and
+Waterbirds (BIRDIE) aims at helping fast and efficient decision making, bridging
+the gap between raw ecological datasets and final decision makers. BIRDIE will be
+an online portal that will not only serve ecological data, but also implement
+analytical routines to process these data and produce policy-relevant indicators. 
+The project focuses on waterbirds and their use as indicators of wetland condition. 
+We use two citizen-science bird monitoring datasets to assess the state
+of waterbirds populations in South Africa, and a suite of environmental 
+layers to link waterbird populations with the state of the hosting wetlands. 
+Acknowledging that decision making must occur at multiple scales, from site
+management to international coordination, we have developed a granular framework
+in which population indicators are estimated at small scales, and then these are
+aggregated to compute the similar indicators at broader scales. BIRDIE will provide free 
+access to these indicators on an online dashboard that will go live next year, and
+that will be updated regularly, as new data arrive. Although the project is 
+currently focused on South Africa, the same waterbird datasets are available for
+other African countries, and therefore we envision expanding BIRDIE's coverage
+in the future. We are also working towards integration with other biodiversity 
+data portals to offer more holistic coverage of wetland biodiversity.
 
 
 \end{abstract}
