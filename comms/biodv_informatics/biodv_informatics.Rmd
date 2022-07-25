@@ -1,5 +1,5 @@
 ---
-title: "BIRDIE: A datapipeline to inform wetland and waterbird conservation at multiple scales"
+title: "BIRDIE: A data pipeline to inform wetland and waterbird conservation at multiple scales"
 runtitle: "BIRDIE Biodiversity Datapipeline"
 documentclass: frontiersSCNS  # or frontiersHLTH, or frontiersFPHY
 author:
