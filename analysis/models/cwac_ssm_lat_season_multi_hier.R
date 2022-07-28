@@ -19,8 +19,7 @@ model {
         lambda[s, 1] ~ dnorm(0, 1/10)             # prior for log summer to winter ratio
         stt_w[s, 1] = stt_s[s, 1] + lambda[s, 1]  # This is not a prior but inherits directly from two priors
 
-        mu.beta[s] ~ dnorm(0, 1)        # prior for mean log population rate of change over time (long-term trend)
-        phi[s] ~ dunif(0, 1)               # prior for mean-reverting parameter
+        phi[s] ~ dbeta(4, 2)               # prior for mean-reverting parameter
 
         tau.alpha[s] ~ dgamma(2, 0.5)
         tau.e[s] ~ dgamma(2, 0.5)
@@ -31,6 +30,13 @@ model {
         # Prior for season covariate coefficients
         for(k in 1:K){
             B[s, k] ~ dnorm(0, 1)
+        }
+
+        # Prior for expected population change coefficients
+        G[s, 1] ~ dnorm(0, 0.5)
+
+        for(m in 2:M){
+            G[s, m] ~ dnorm(0, 1)
         }
 
     }
@@ -74,7 +80,7 @@ model {
             eps[s, y+1] ~ dnorm(0, tau.eps[y+1])
 
             # Beta update
-            beta[s, y+1] = beta[s, y] + phi[s]*(mu.beta[s] - beta[s, y]) + zeta[s, y]       # summer population change
+            beta[s, y+1] = beta[s, y] + phi[s]*(mu.beta[s, y] - beta[s, y]) + zeta[s, y]       # summer population change
 
             # Lambda update
             lambda[s, y+2] = lambda[s, y+1] + eps[s, y+1]                      # winter to summer ratio
@@ -92,6 +98,14 @@ model {
 
         }
     }
+
+    # model for expected population change in each year
+    for(s in 1:nsites){
+        for(y in 1:(nyears-2)){ # Note that U[1, ] corresponds to year 2
+            mu.beta[s, y] = inprod(G[s, ], U[y, ])
+        }
+    }
+
 
     # model for summer/winter
     for(i in 1:N){
