@@ -14,14 +14,14 @@ for(i in 1:length(config$species)){
     # PREPARE SSM SPECIES DATA ------------------------------------------------
 
     # Read in catchment data. This should go as an argument
-    catchment <- sf::read_sf(file.path(config$data_dir, "catchmt_4.shp"))
+    catchment <- sf::read_sf(file.path(config$data_dir, "quinary_catchmt_22.shp"))
 
-    # Remove marine area around South Africa and also neighboring countries
-    # and simplify
+    # Re-project and simplify
     catchment <- catchment %>%
-        dplyr::filter(AREA < 150) %>%
-        dplyr::select(QUATERNARY, QUAT_CODE) %>%
-        sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000)
+        dplyr::select(QUATERNARY, Province, UNIT_ID) %>%
+        sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000) %>%
+        sf::st_transform(crs = sf::st_crs(4326))
+
 
     status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
                                      prep_data_steps = c("missing", "gee", "subset"),
