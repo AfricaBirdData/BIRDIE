@@ -15,11 +15,10 @@ model {
 
         # Priors for initial states
         stt_s[s, 1] ~ dnorm(0, 1/10)              # prior for initial log population size
-        beta[s, 1] ~ dnorm(0, 1)                  # prior for initial log growth rate
         lambda[s, 1] ~ dnorm(0, 1/10)             # prior for log summer to winter ratio
         stt_w[s, 1] = stt_s[s, 1] + lambda[s, 1]  # This is not a prior but inherits directly from two priors
 
-        phi[s] ~ dbeta(4, 2)               # prior for mean-reverting parameter
+        phi[s] ~ dbeta(4, 2)
 
         tau.alpha[s] ~ dgamma(2, 0.5)
         tau.e[s] ~ dgamma(2, 0.5)
@@ -38,53 +37,58 @@ model {
         for(m in 2:M){
             G[s, m] ~ dnorm(0, 1)
         }
-
     }
 
-    ### latent states ###
+    # Priors for stochastic summer population changes
+    for(y in 1:(nyears - 1)){
+        # tau.zeta[y] ~ dscaled.gamma(2, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 2 for sig.zeta!
+        tau.zeta[y] ~ dgamma(2, 1)
+        sig.zeta[y] = sqrt(1/tau.zeta[y])
+        for(s in 1:nsites){
+            zeta[s, y] ~ dnorm(0, tau.zeta[y])
+        }
+    }
 
-    # Update population changes. Note that we need more lambdas than betas. This
+    # Priors for changes in winter-to-summer abundance ratio
+    for(y in 1:(nyears-1)){
+        tau.eps[y] ~ dscaled.gamma(3, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 3 for sig.zeta!
+        # tau.zeta[y] ~ dgamma(1.8, 1)
+        sig.eps[y] = sqrt(1/tau.eps[y])
+        for(s in 1:nsites){
+            eps[s, y] ~ dnorm(0, tau.eps[y])
+        }
+    }
+
+    ### LATENT STATES ###
+
+    ## SUMMER ABUNDANCE
+
+    # Estimate covariate effects on abundance
+    for(y in 1:(nyears-1)){
+        for(s in 1:nsites){
+            eta[s, y] = inprod(G[s, ], U[y,,s])
+        }
+    }
+
+    # Summer abundance changes
+    for(s in 1:nsites){
+        beta[s, 1] = eta[s, 1] + zeta[s, 1]
+
+        for(y in 2:(nyears - 1)){
+            beta[s, y] = phi[s]*beta[s, y-1] + eta[s, y] + zeta[s, y]
+        }
+    }
+
+    ## WINTER ABUNDANCE
+
+    # Note that we need more lambdas than betas. This
     # because we need to estimate winter to summer proportion for every year, but
     # we don't estimate population change for the last year.
 
-    # For update lambda in the second year
-    tau.eps[1] ~ dscaled.gamma(2, 2)     # same as Student-t with 2 degrees of freedom and standard deviation 5 for sig.eps!
-    # tau.eps[y] ~ dgamma(1.8, 1)
-    sig.eps[1] = sqrt(1/tau.eps[1])
-
-    for(s in 1:nsites){
-
-        # Sample eps
-        eps[s, 1] ~ dnorm(0, tau.eps[1])
-
-        # Lambda update
-        lambda[s, 2] = lambda[s, 1] + eps[s, 1]                          # winter to summer ratio
-
-    }
-
-    # For the rest of population changes updates
-    for(y in 1:(nyears - 2)){
-
-        tau.zeta[y] ~ dscaled.gamma(3, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 5 for sig.zeta!
-        # tau.zeta[y] ~ dgamma(1.8, 1)
-        sig.zeta[y] = sqrt(1/tau.zeta[y])
-
-        tau.eps[y+1] ~ dscaled.gamma(3, 2)     # same as Student-t with 2 degrees of freedom and standard deviation 5 for sig.eps!
-        # tau.eps[y] ~ dgamma(1.8, 1)
-        sig.eps[y+1] = sqrt(1/tau.eps[y+1])
-
+    # Winter-to-summer abundance ratios
+    for(y in 1:(nyears - 1)){
         for(s in 1:nsites){
-
-            # Sample zeta and eps
-            zeta[s, y] ~ dnorm(0, tau.zeta[y])
-            eps[s, y+1] ~ dnorm(0, tau.eps[y+1])
-
-            # Beta update
-            beta[s, y+1] = beta[s, y] + phi[s]*(mu.beta[s, y] - beta[s, y]) + zeta[s, y]       # summer population change
-
-            # Lambda update
-            lambda[s, y+2] = lambda[s, y+1] + eps[s, y+1]                      # winter to summer ratio
-
+            lambda[s, y+1] = lambda[s, y] + eps[s, y]                          # winter to summer ratio
         }
     }
 
@@ -96,13 +100,6 @@ model {
             stt_s[s, y+1] = stt_s[s, y] + beta[s, y]# + w[s, y]
             stt_w[s, y+1] = stt_s[s, y+1] + lambda[s, y+1]
 
-        }
-    }
-
-    # model for expected population change in each year
-    for(s in 1:nsites){
-        for(y in 1:(nyears-2)){ # Note that U[1, ] corresponds to year 2
-            mu.beta[s, y] = inprod(G[s, ], U[y, ])
         }
     }
 
