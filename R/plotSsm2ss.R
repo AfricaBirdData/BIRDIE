@@ -95,9 +95,9 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         # Trend plot --------------------------------------------------------------
 
         # Create a data frame with the posterior trend
-        post_trd <- data.frame(beta_est = fit$mean$beta[i,],
-                               beta_lb = fit$q2.5$beta[i,],
-                               beta_ub = fit$q97.5$beta[i,],
+        post_trd <- data.frame(beta_est = c(fit$mean$beta[i,], NA),
+                               beta_lb = c(fit$q2.5$beta[i,], NA),
+                               beta_ub = c(fit$q97.5$beta[i,], NA),
                                prop_est = fit$mean$lambda[i,],
                                prop_lb = fit$q2.5$lambda[i,],
                                prop_ub = fit$q97.5$lambda[i,],
