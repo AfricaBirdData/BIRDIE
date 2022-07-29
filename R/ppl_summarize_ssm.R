@@ -16,9 +16,11 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
 
     fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
 
+    fit_stats <- BIRDIE:::processJAGSoutput(fit, DIC = FALSE, params.omit = NULL)
+
     # Plot
     pers_theme <- ggplot2::theme_bw()
-    p <- BIRDIE::plotSsm2ss(fit = fit, ssm_counts = counts, linear = TRUE,
+    p <- BIRDIE::plotSsm2ss(fit = fit_stats, ssm_counts = counts, linear = TRUE,
                             plot_options = list(pers_theme = pers_theme,
                                                 colors = c("#71BD5E", "#B590C7")))
 
