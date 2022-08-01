@@ -22,7 +22,7 @@ configPreambJAGS <- function(year, server){
         # Define data and output directories
         data_dir <- "/home/birdie/analysis/data"
         out_dir <- "/drv_birdie/birdie_ftp"
-        mod_file <- "/drv_birdie/Working/git/BIRDIE/analysis/models/cwac_ssm_lat_season.jags"
+        mod_file <- "/drv_birdie/Working/git/BIRDIE/analysis/models/cwac_ssm_lat_season_multi_hier.R"
 
         # Define years to fit
         dyear <- 24
@@ -35,7 +35,7 @@ configPreambJAGS <- function(year, server){
         # Define data and output directories
         data_dir <- "analysis/data"
         out_dir <- "analysis/out_nosync"
-        mod_file <- "analysis/models/cwac_ssm_lat_season.jags"
+        mod_file <- "analysis/models/cwac_ssm_lat_season_multi_hier.R"
 
         # Define years to fit
         dyear <- 24
