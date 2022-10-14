@@ -37,25 +37,28 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
                            mu_ub = fit$q97.5$mu_t,
                            year = ssm_counts$year,
                            season = ssm_counts$Season,
-                           site = ssm_counts$LocationCode,
-                           count = log(ssm_counts$count + 0.1)) %>%
-        dplyr::filter(season != "O") %>%
-        dplyr::mutate(season = ifelse(season == "S", 1, 2))
+                           season_id = ssm_counts$season_id,
+                           season_est = as.integer(fit$mean$summer < 0.5) + 1L,
+                           loc_code = ssm_counts$LocationCode,
+                           site_id = ssm_counts$site_id,
+                           count = log(ssm_counts$count + 0.1))
+        # dplyr::filter(season != "O") # We should show these somehow
 
     # There might be counts in more than one day per season and year, so
     # we plot the mean for the season
     post_stt <- post_stt %>%
-        dplyr::group_by(year, season, site) %>%
-        dplyr::summarize(count = mean(count),
-                         mu_est = mean(mu_est),
-                         mu_lb = mean(mu_lb),
-                         mu_ub = mean(mu_ub)) %>%
+        dplyr::group_by(site_id, year, season_est, loc_code) %>%
+        dplyr::summarize(count = log(mean(exp(count) - 0.1)),
+                         mu_est = log(mean(exp(mu_est))),
+                         mu_lb = log(mean(exp(mu_lb))),
+                         mu_ub = log(mean(exp(mu_ub)))) %>%
         dplyr::ungroup()
 
     if(linear){
         post_stt <- post_stt %>%
-            dplyr::mutate(dplyr::across(.cols = -c(year, season, site),
-                                        .fns = ~exp(.x) - 0.1))
+            dplyr::mutate(dplyr::across(.cols = -c(site_id, year, season_est, loc_code),
+                                        .fns = ~exp(.x))) %>%
+            dplyr::mutate(count = count - 0.1)
         abund_label <- "Abundance"
 
         # Cut axis when values are larger than 10 times the max count
@@ -69,25 +72,30 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
     }
 
 
-    site_plot_data <- vector("list", length(unique(post_stt$site)))
+    site_plot_data <- vector("list", dplyr::n_distinct(post_stt$loc_code))
 
 
     for(i in seq_along(site_plot_data)){
 
+        loc_code_sel <- post_stt %>%
+            dplyr::filter(site_id == i) %>%
+            dplyr::distinct(loc_code) %>%
+            dplyr::pull(loc_code)
+
         # Abundance by season -----------------------------------------------------
 
         stt_plot <- post_stt %>%
-            dplyr::filter(site == unique(post_stt$site)[i]) %>%
+            dplyr::filter(site_id == i) %>%
             tidyr::pivot_longer(cols = c(mu_est, mu_lb, mu_ub),
                                 names_to = "quantile") %>%
             ggplot() +
             geom_path(aes(x = year, y = value, linetype = quantile)) +
-            geom_point(aes(x = year, y = count, col = factor(season)), show.legend = FALSE) +
+            geom_point(aes(x = year, y = count, col = factor(season_est)), show.legend = FALSE) +
             scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
             scale_colour_manual(values = plot_options$colors) +
             # coord_cartesian(ylim = ylims) +
-            facet_wrap("season", ncol = 2,
-                       labeller = labeller(season = c("1" = "Summer", "2" = "Winter"))) +
+            facet_wrap("season_est", ncol = 2,
+                       labeller = labeller(season_est = c("1" = "Summer", "2" = "Winter"))) +
             xlab("Year") + ylab(abund_label) +
             plot_options$pers_theme
 
@@ -152,7 +160,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
                                   "Multiple species",
                                   unique(ssm_counts$spp)),
                            "at site",
-                           unique(ssm_counts$LocationCode)[i])
+                           loc_code_sel)
 
         # To prevent opening multiple devices
         pfile <- tempfile()
@@ -165,11 +173,12 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
         site_plot_data[[i]] <- list(plot = p,
                                     data = list(post_stt %>%
-                                                    dplyr::filter(site == unique(post_stt$site)[i]), post_trd))
+                                                    dplyr::filter(site_id == i),
+                                                post_trd))
+
+        names(site_plot_data)[[i]] <- loc_code_sel
 
     }
-
-    names(site_plot_data) <- unique(ssm_counts$LocationCode)
 
     return(site_plot_data)
 
