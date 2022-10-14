@@ -13,10 +13,10 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
 
     # Create a sequential 'site' variable
-    counts <- counts %>%
-        dplyr::group_by(LocationCode) %>%
-        dplyr::mutate(site = dplyr::cur_group_id()) %>%
-        dplyr::ungroup()
+    # counts <- counts %>%
+    #     dplyr::group_by(LocationCode) %>%
+    #     dplyr::mutate(site = dplyr::cur_group_id()) %>%
+    #     dplyr::ungroup()
 
     # Create covariate matrix for summer/winter
     covts_x <- counts %>%
@@ -27,62 +27,82 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
 
     # Create covariate matrix for mean population change
     covts_u <- counts %>%
-        dplyr::filter(Season == "S") %>%
+        dplyr::filter(season_id == 1) %>%
         dplyr::rename_with(~gsub("_mean||_count", "", .x), .cols = dplyr::everything()) %>%
-        dplyr::select(year, site, pdsi, watext, watrec) %>%
-        dplyr::group_by(year, site) %>%
-        dplyr::summarize(dplyr::across(dplyr::everything(), list(mean))) %>%
-        dplyr::rename_with(~gsub("_1", "", .x), .cols = dplyr::everything()) %>%
+        dplyr::select(site_id, year_id, pdsi, diff_pdsi, diff_watext, diff_watrec) %>%
+        dplyr::group_by(site_id) %>%
+        dplyr::mutate(log_diff_pdsi = c(diff(log(pdsi + 1000)), NA)) %>%
         dplyr::ungroup() %>%
-        # dplyr::mutate(intcp = 1) %>%
-        dplyr::group_by(site) %>%
-        dplyr::arrange(site, year) %>%
-        dplyr::mutate(dplyr::across(.cols = c(pdsi, watext, watrec), .fns = ~dplyr::lead(.x) - .x)) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(dplyr::across(.cols = c(pdsi, watext, watrec), .fns = ~scale(.x)))
+        dplyr::select(-c(pdsi, diff_pdsi)) %>%
+        dplyr::mutate(dplyr::across(.cols = c(log_diff_pdsi, diff_watext, diff_watrec), .fns = ~scale(.x)))
+
+    # add intercept
+    covts_u <- covts_u %>%
+        dplyr::mutate(intcp = 1) %>%
+        dplyr::select(intcp, dplyr::everything())
+
+    # There is one NA at the end of each time series of covariates because they
+    # are lagged variables. Make this zero - it won't affect the results
+    covts_u[is.na(covts_u)] <- 0
 
     # Convert to array of multiple sites
     U <- covts_u %>%
-        dplyr::select(-year) %>%
-        dplyr::nest_by(site) %>%
+        dplyr::select(-year_id) %>%
+        dplyr::nest_by(site_id) %>%
         dplyr::pull(data) %>%
         unlist() %>%
-        array(., dim = c(dplyr::n_distinct(counts$year),
+        array(., dim = c(dplyr::n_distinct(counts$year_id),
                          ncol(covts_u) - 2, # this removes year and site columns
-                         dplyr::n_distinct(counts$site)))
+                         dplyr::n_distinct(counts$site_id)))
+
+
+    # Expected (log) summer count for each site would be the mean count over the years
+    mean_mu <- counts %>%
+        dplyr::filter(season_id == 1) %>%
+        dplyr::group_by(site_id) %>%
+        dplyr::summarise(mean_count = log(mean(count + 1, na.rm = TRUE))) %>%  # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
+        dplyr::pull(mean_count)
+
+
+    # Priors for initial states. It shouldn't be much higher than the maximum count at the site
+    ini_ub <- counts %>%
+        dplyr::group_by(site_id) %>%
+        dplyr::summarise(max_count = max(count + 1, na.rm = TRUE)) %>%
+        dplyr::pull(max_count) %>%
+        log()
 
     # Prepare data
     data <- list(
         count = counts$count + 1, # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
-        summer = dplyr::case_when(counts$Season == "S"~ 1L,
-                                  counts$Season == "W" ~ 0L,
+        summer = dplyr::case_when(counts$season_id == 1 ~ 1L,
+                                  counts$season_id == 2 ~ 0L,
                                   TRUE ~ NA_integer_),
-        nyears = dplyr::n_distinct(counts$year),
-        nsites = dplyr::n_distinct(counts$site),
-        year = counts %>%
-            dplyr::group_by(year) %>%
-            dplyr::mutate(y = dplyr::cur_group_id()) %>%
-            dplyr::pull(y),
-        site = counts$site,
+        mean_mu = mean_mu,
+        ini_sd = ini_ub - mean_mu,
+        nyears = dplyr::n_distinct(counts$year_id),
+        nsites = dplyr::n_distinct(counts$site_id),
+        year = counts$year_id,
+        site = counts$site_id,
         N = nrow(counts),
         X = as.matrix(covts_x),
         U = U,
         K = ncol(covts_x),
         M = ncol(U))
 
-    param = c("phi", "beta", "lambda", "mu.beta", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t")
+    param = c("phi", "beta", "lambda", "mu.beta", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t", "summer")
 
     # param = c("beta", "mu.beta", "B", "G", "mu_t")
 
     # Set initial values
     inits <- function(){
-        list(phi = runif(data$nsites, 0, 1),
-             tau.alpha = rgamma(data$nsites, 2, 2),
-             tau.e = rgamma(data$nsites, 2, 2),
-             B = matrix(rnorm(data$K * data$nsites, 0, 2), ncol = data$K),
-             G = matrix(rnorm(data$M * data$nsites, 0, 2), ncol = data$M),
-             tau.eps = rexp(data$nyears-1, 0.5),
-             tau.zeta = rexp(data$nyears-1, 0.5))
+        list(ini_s = rnorm(data$nsites, data$mean_mu, data$ini_sd*1.5),
+             phi = runif(data$nsites, 0.1, 0.9),
+             tau.alpha = rgamma(data$nsites, 3, 2),
+             tau.e = rgamma(data$nsites, 3, 2),
+             B = matrix(rnorm(data$K * data$nsites, 0, 1), ncol = data$K),
+             G = matrix(rnorm(data$M * data$nsites, 0, 1), ncol = data$M),
+             tau.eps = rexp(data$nyears-1, 1),
+             tau.zeta = rexp(data$nyears-1, 1))
     }
 
     print(paste("Fitting state-space JAGS model at", Sys.time()))
@@ -92,7 +112,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
                               parameters.to.save = param,
                               model.file = "analysis/models/cwac_ssm_lat_season_multi_hier.R",
                               inits = inits,
-                              n.chains = 3, n.iter = 15000, n.burnin = 10000,
+                              n.chains = 3, n.iter = 10000, n.burnin = 5000,
                               modules = c('glm', 'dic'), parallel = TRUE,
                               n.cores = 3, DIC = TRUE, verbose = TRUE)
 
