@@ -9,6 +9,8 @@
 #' determined by a join in GEE.
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambJAGS}
+#' @param monitor Logical. If TRUE (default) monitoring printed messages produced
+#' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
 #' @param upload_catchment If TRUE catchment will be uploaded to GEE. FALSE is
 #' an option because catchment info might have been already uploaded to GEE.
 #' Defaults to FALSE.
@@ -19,7 +21,7 @@
 #' @export
 #'
 #' @examples
-prepGEESpCountData <- function(counts, sp_code, catchment, config,
+prepGEESpCountData <- function(counts, sp_code, catchment, config, monitor = TRUE,
                                upload_catchment = FALSE, force_gee = FALSE){
 
     rgee::ee_check()
@@ -38,11 +40,10 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quin_catchm')
 
     if(upload_catchment){
-        suppressMessages(
-            catchment %>%
-                CWAC::uploadCountsToEE(asset_id = eeCatchm_id,
-                                       load = FALSE)
-        )
+        catchment %>%
+            ABDtools::uploadFeaturesToEE(asset_id = eeCatchm_id,
+                                         load = FALSE,
+                                         monitor = monitor)
     }
 
     # Find nearest catchment to site counts. Nearest because some sites are on the
@@ -61,7 +62,7 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     # Upload to GEE -----------------------------------------------------------
 
     # Set a name for the asset
-    eeCounts_id <- file.path(rgee::ee_get_assethome(), 'cwac_counts')
+    eeCounts_id <- file.path(rgee::ee_get_assethome(), 'birdie_cwac_counts')
 
     # Upload to EE (if not done already). Delete first
     assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
@@ -70,15 +71,14 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         rgee::ee_manage_delete(eeCounts_id, quiet = FALSE, strict = TRUE)
     }
 
-    suppressMessages(
-        counts %>%
-            dplyr::rename(Date = StartDate) %>%
-            dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
-            dplyr::mutate(Date = as.character(Date)) %>%
-            dplyr::select(id_count, Date, UNIT_ID) %>%
-            CWAC::uploadCountsToEE(asset_id = eeCounts_id,
-                                   load = FALSE)
-    )
+    counts %>%
+        dplyr::rename(Date = StartDate) %>%
+        dplyr::mutate(Date = lubridate::floor_date(Date, "month")) %>%
+        dplyr::mutate(Date = as.character(Date)) %>%
+        dplyr::select(id_count, Date, UNIT_ID) %>%
+        ABDtools::uploadFeaturesToEE(asset_id = eeCounts_id,
+                                     load = FALSE,
+                                     monitor = monitor)
 
     eeCounts <- rgee::ee$FeatureCollection(eeCounts_id)
 
@@ -122,13 +122,12 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     f <- function(band){
 
         # Annotate with GEE TerraClimate
-        suppressMessages(
-            visit_env <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
+        visit_env <- ABDtools::addVarEEclosestImage(ee_feats = new_pols,
                                                     collection = "IDAHO_EPSCOR/TERRACLIMATE",
                                                     reducer = "mean",
                                                     maxdiff = 15,
-                                                    bands = band)
-        )
+                                                    bands = band,
+                                                    monitor = monitor)
 
         # Fix names and variables
         visit_env <- visit_env %>%
@@ -174,13 +173,12 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
     visit_water <- vector("list", length = 2)
 
     # Number of pixels with water each year
-    suppressMessages(
-        visit_water[[1]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
+    visit_water[[1]] <- ABDtools::addVarEEclosestImage(ee_feats = new_pols,
                                                        collection = "JRC/GSW1_3/YearlyHistory",
                                                        reducer = "count",
                                                        maxdiff = 1000,
-                                                       bands = "waterClass")
-    )
+                                                       bands = "waterClass",
+                                                       monitor = monitor)
 
     # Fix names and variables
     visit_water[[1]] <- visit_water[[1]] %>%
@@ -189,13 +187,12 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config,
         sf::st_drop_geometry()
 
     # Recurrence of pixels with water each year
-    suppressMessages(
-        visit_water[[2]] <- CWAC::addVarEEclosestImage(ee_counts = new_pols,
+    visit_water[[2]] <- ABDtools::addVarEEclosestImage(ee_feats = new_pols,
                                                        collection = "JRC/GSW1_3/YearlyHistory",
                                                        reducer = "mean",
                                                        maxdiff = 1000,
-                                                       bands = "waterClass")
-    )
+                                                       bands = "waterClass",
+                                                       monitor = monitor)
 
     # Fix names and variables
     visit_water[[2]] <- visit_water[[2]] %>%
