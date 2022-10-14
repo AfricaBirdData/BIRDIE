@@ -6,9 +6,11 @@
 #' reference area considered for the covariates associated with CWAC sites.
 #' @param steps A character vector expressing the processing steps for the CWAC
 #' data. It can be one or more of: "missing" - add missing counts as missing
-#' data, "gee" - annotate data with covariates from Google Earth Engine, and
+#' data, "gee" - annotate data with covariates from Google Earth Engine,
 #' "subset" - subset data to those sites with presence of the species and
-#' a coverage of at least 10 years from 1993 to 2021. It defaults to all steps.
+#' a coverage of at least 10 years from 1993 to 2021, and "model" prepare data
+#' for model fitting by adding some aux variables and ordering the data.
+#' It defaults to all steps.
 #' @param ... Other arguments passed on to \link{prepGEESpCountData}
 #'
 #' @return
@@ -16,7 +18,8 @@
 #'
 #' @examples
 ppl_create_data_ssm <- function(sp_code, year, catchment, config,
-                                steps = c("missing", "gee", "subset"), ...){
+                                steps = c("missing", "gee", "subset", "model"),
+                                ...){
 
 
     # Load species CWAC data
@@ -28,11 +31,34 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         sp_data <- CWAC::getCwacSppCounts(sp_code)
 
         sp_data <- sp_data %>%
-            dplyr::select(LocationCode, LocationName, Province, Country, Year, StartDate, Season, SppRef, WetIntCode, Species, Common_group, Common_species, Count, X, Y)
+            dplyr::select(LocationCode, LocationName, Province, Country, Year,
+                          StartDate, Season, SppRef, WetIntCode, Species,
+                          Common_group, Common_species, Count, X, Y)
+
+        # Make sure that seasons are correctly entered
+        sp_data <- sp_data %>%
+            dplyr::mutate(year_day = lubridate::yday(StartDate),
+                          month = lubridate::month(StartDate))
+
+        if(any((sp_data$year_day > 14 & sp_data$year_day < 47) & (sp_data$Season != "S"))){
+            message("Changing mid-Jan to mid-Feb counts to summer season")
+        }
+
+        if(any((sp_data$month == 7) & (sp_data$Season != "W"))){
+            message("Changing July counts to winter season")
+        }
+
+        sp_data <- sp_data %>%
+            dplyr::mutate(Season = dplyr::case_when((year_day > 14 & year_day < 47) ~ "S",
+                                                    month == 7 ~ "W",
+                                                    TRUE ~ "O")) %>%
+            dplyr::select(-c(year_day, month))
 
         # Add DuToit's Doug's extra data
         dutoit <- utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv")) %>%
-            dplyr::select(LocationCode, LocationName, Province, Country, Year, StartDate, Season, SppRef, WetIntCode, Species, Common_group, Common_species, Count, X, Y)
+            dplyr::select(LocationCode, LocationName, Province, Country, Year,
+                          StartDate, Season, SppRef, WetIntCode, Species,
+                          Common_group, Common_species, Count, X, Y)
 
         # Transfer column types and bind data frames (the below comes from the CWAC package)
         dutoit <- dutoit %>%
@@ -219,9 +245,60 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         counts <- counts %>%
             dplyr::filter(LocationCode %in% sites_good)
 
+        # Save to disk at temporary location
+        saveRDS(counts, file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds")))
+
+        # Save to disk permanently?
+        # saveRDS(counts, file.path("analysis/out_nosync", sp_code, paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds")))
+
+    }
+
+
+    if("model" %in% steps){
+
+        outfile <- file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds"))
+
+        if(!exists("counts") & file.exists(outfile)){
+            counts <- readRDS(outfile)
+        } else if(!exists("counts") & !file.exists(outfile)){
+            stop("No dataset with subset counts found. Perhaps you need to run the 'subset' step?")
+        }
+
+        counts_mod <- counts %>%
+            dplyr::mutate(season_id = dplyr::case_when(Season == "S" ~ 1,
+                                                       Season == "W" ~ 2,
+                                                       Season == "O" ~ 3),
+                          date = lubridate::date(StartDate)) %>%
+            dplyr::group_by(LocationCode) %>%
+            dplyr::mutate(site_id = dplyr::cur_group_id()) %>%
+            dplyr::ungroup() %>%
+            dplyr::group_by(year) %>%
+            dplyr::mutate(year_id = dplyr::cur_group_id()) %>%
+            dplyr::ungroup() %>%
+            dplyr::group_by(site_id, year_id, season_id) %>%
+            dplyr::arrange(date) %>%
+            dplyr::mutate(visit_id = dplyr::row_number()) %>%
+            dplyr::ungroup() %>%
+            dplyr::arrange(site_id, year_id, season_id, visit_id)
+
+        # Create variables that are change in covariates
+        counts_mod <- counts_mod %>%
+            dplyr::group_by(site_id, year_id, season_id) %>%
+            dplyr::mutate(dplyr::across(.cols = c(pdsi_mean, watext_count, watrec_mean),
+                                        .fns = mean, .names = "mean_{.col}")) %>%
+            dplyr::group_by(site_id, season_id) %>%
+            dplyr::mutate(dplyr::across(.cols = c(mean_pdsi_mean, mean_watext_count, mean_watrec_mean),
+                                        .fns = ~c(diff(.x), NA), .names = "diff_{.col}")) %>%
+            dplyr::rename_with(~gsub("_mean_", "_", .x), .cols = dplyr::everything()) %>%
+            dplyr::ungroup()
+
+        # counts_mod <- counts_mod %>%
+        #     dplyr::select(year, Season, StartDate, LocationCode, year_id, season_id, site_id, visit_id, id_count) %>%
+        #     dplyr::arrange(site_id, year_id, season_id, visit_id)
+
         outfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
 
-        utils::write.csv(counts, outfile, row.names = FALSE)
+        utils::write.csv(counts_mod, outfile, row.names = FALSE)
 
         message(paste("Final counts dataset saved at", outfile))
 
