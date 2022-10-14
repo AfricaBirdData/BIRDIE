@@ -79,7 +79,7 @@ model {
         for(y in 2:(nyears - 1)){
             # mu_beta[s, y-1] = mean_mu[s] - stt_s[s, y]
             # beta[s, y] = phi[s]*(mu_beta[s, y-1] - beta[s, y-1]) + eta[s, y] + zeta[s, y]
-            beta[s, y] = eta[s, y] + zeta[s, y]
+            beta[s, y] = phi[s]*(eta[s, y] + zeta[s, y]) # phi gives some smoothness and controls uncertainty when no observations
         }
     }
 
@@ -101,8 +101,9 @@ model {
         for(s in 1:nsites){
 
             # State update
-            # stt_s[s, y+1] = phi[s]*mean_mu[s] + (1-phi[s])*(stt_s[s, y] +  eta[s, y]) + zeta[s, y]#stt_s[s, y] + beta[s, y]# + w[s, y]
-            stt_s[s, y+1] = stt_s[s, y] + phi[s]*beta[s, y]#stt_s[s, y] + beta[s, y]# + w[s, y]
+            stt_s[s, y+1] = stt_s[s, y] + beta[s, y]
+            # Note this is equivalent:
+            # stt_s[s, y+1] = (1 - phi[s])*stt_s[s, y] + phi[s]*(stt_s[s, y] + beta[s, y]/phi[s])
             stt_w[s, y+1] = stt_s[s, y+1] + lambda[s, y+1]
 
         }
