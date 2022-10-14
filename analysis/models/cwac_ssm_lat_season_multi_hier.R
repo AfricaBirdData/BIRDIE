@@ -14,11 +14,12 @@ model {
     for(s in 1:nsites){
 
         # Priors for initial states
-        stt_s[s, 1] ~ dnorm(0, 1/10)              # prior for initial log population size
-        lambda[s, 1] ~ dnorm(0, 1/10)             # prior for log summer to winter ratio
+        ini_s[s] ~ dnorm(mean_mu[s], 1/ini_sd[s]^2)              # prior for initial log population size (creating this aux variable to provide initial values)
+        stt_s[s, 1] = ini_s[s]
+        lambda[s, 1] ~ dnorm(0, 1)             # prior for log summer to winter ratio
         stt_w[s, 1] = stt_s[s, 1] + lambda[s, 1]  # This is not a prior but inherits directly from two priors
 
-        phi[s] ~ dbeta(4, 2)
+        phi[s] ~ dbeta(2, 2)
 
         tau.alpha[s] ~ dgamma(2, 0.5)
         tau.e[s] ~ dgamma(2, 0.5)
@@ -32,17 +33,17 @@ model {
         }
 
         # Prior for expected population change coefficients
-        G[s, 1] ~ dnorm(0, 0.5)
+        # G[s, 1] ~ dnorm(0, 0.5)
 
-        for(m in 2:M){
+        for(m in 1:M){
             G[s, m] ~ dnorm(0, 1)
         }
     }
 
     # Priors for stochastic summer population changes
     for(y in 1:(nyears - 1)){
-        # tau.zeta[y] ~ dscaled.gamma(2, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 2 for sig.zeta!
-        tau.zeta[y] ~ dgamma(2, 1)
+        tau.zeta[y] ~ dscaled.gamma(2, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 2 for sig.zeta!
+        # tau.zeta[y] ~ dgamma(2, 1)
         sig.zeta[y] = sqrt(1/tau.zeta[y])
         for(s in 1:nsites){
             zeta[s, y] ~ dnorm(0, tau.zeta[y])
@@ -51,7 +52,7 @@ model {
 
     # Priors for changes in winter-to-summer abundance ratio
     for(y in 1:(nyears-1)){
-        tau.eps[y] ~ dscaled.gamma(3, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 3 for sig.zeta!
+        tau.eps[y] ~ dscaled.gamma(1, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 1 for sig.eps!
         # tau.zeta[y] ~ dgamma(1.8, 1)
         sig.eps[y] = sqrt(1/tau.eps[y])
         for(s in 1:nsites){
@@ -72,10 +73,13 @@ model {
 
     # Summer abundance changes
     for(s in 1:nsites){
+        # mu_beta[s, 1] = mean_mu[s] - stt_s[s, 1]
         beta[s, 1] = eta[s, 1] + zeta[s, 1]
 
         for(y in 2:(nyears - 1)){
-            beta[s, y] = phi[s]*beta[s, y-1] + eta[s, y] + zeta[s, y]
+            # mu_beta[s, y-1] = mean_mu[s] - stt_s[s, y]
+            # beta[s, y] = phi[s]*(mu_beta[s, y-1] - beta[s, y-1]) + eta[s, y] + zeta[s, y]
+            beta[s, y] = eta[s, y] + zeta[s, y]
         }
     }
 
@@ -97,7 +101,8 @@ model {
         for(s in 1:nsites){
 
             # State update
-            stt_s[s, y+1] = stt_s[s, y] + beta[s, y]# + w[s, y]
+            # stt_s[s, y+1] = phi[s]*mean_mu[s] + (1-phi[s])*(stt_s[s, y] +  eta[s, y]) + zeta[s, y]#stt_s[s, y] + beta[s, y]# + w[s, y]
+            stt_s[s, y+1] = stt_s[s, y] + phi[s]*beta[s, y]#stt_s[s, y] + beta[s, y]# + w[s, y]
             stt_w[s, y+1] = stt_s[s, y+1] + lambda[s, y+1]
 
         }
@@ -127,6 +132,9 @@ model {
 
     # Prepare mu_t_1 for export: SUBTRACT 1 BECAUSE WE ADDED 1 TO ALL COUNTS
     # BETAS AND LAMBDAS SHOULD BE UNAFFECTED BY THIS
-    mu_t = mu_t_1 - 1
+    for(i in 1:N){
+        mu_t[i] = log(max(0.1, exp(mu_t_1[i]) - 1))
+    }
+
 
 }
