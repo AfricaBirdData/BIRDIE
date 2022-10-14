@@ -18,6 +18,8 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
 
     fit_stats <- BIRDIE:::processJAGSoutput(fit, DIC = FALSE, params.omit = NULL)
 
+    message("Generating plots and tables")
+
     # Plot
     pers_theme <- ggplot2::theme_bw()
     p <- BIRDIE::plotSsm2ss(fit = fit_stats, ssm_counts = counts, linear = TRUE,
@@ -29,7 +31,7 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
 
     out_all_sites <- vector("list", length(unique(counts$LocationCode)))
 
-    for(i in seq_along(unique(counts$LocationCode))){
+    for(i in seq_along(out_all_sites)){
 
         site_sel <- names(p)[[i]]
 
@@ -44,11 +46,11 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
         stt_df <- plotdata[[1]]
 
         stt_dfw <- cbind(stt_df %>%
-                             dplyr::filter(season == 1) %>%
-                             dplyr::select(-season),
+                             dplyr::filter(season_est == 1) %>%
+                             dplyr::select(-c(site_id, season_est)),
                          stt_df %>%
-                             dplyr::filter(season == 2) %>%
-                             dplyr::select(-c(year, season, site)))
+                             dplyr::filter(season_est == 2) %>%
+                             dplyr::select(-c(site_id, year, season_est, loc_code)))
 
         names(stt_dfw) <- c("year", "site", "summer.count", "summer.est", "summer.ci.lower", "summer.ci.upper",
                             "winter.count", "winter.est", "winter.ci.lower", "winter.ci.upper")
