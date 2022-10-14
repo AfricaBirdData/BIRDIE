@@ -9,7 +9,7 @@ ppl_create_data_ssm(
   year,
   catchment,
   config,
-  steps = c("missing", "gee", "subset"),
+  steps = c("missing", "gee", "subset", "model"),
   ...
 )
 }
@@ -24,9 +24,11 @@ See \link{configPreambJAGS}}
 
 \item{steps}{A character vector expressing the processing steps for the CWAC
 data. It can be one or more of: "missing" - add missing counts as missing
-data, "gee" - annotate data with covariates from Google Earth Engine, and
+data, "gee" - annotate data with covariates from Google Earth Engine,
 "subset" - subset data to those sites with presence of the species and
-a coverage of at least 10 years from 1993 to 2021. It defaults to all steps.}
+a coverage of at least 10 years from 1993 to 2021, and "model" prepare data
+for model fitting by adding some aux variables and ordering the data.
+It defaults to all steps.}
 
 \item{...}{Other arguments passed on to \link{prepGEESpCountData}}
 }

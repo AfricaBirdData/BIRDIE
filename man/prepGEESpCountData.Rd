@@ -9,6 +9,7 @@ prepGEESpCountData(
   sp_code,
   catchment,
   config,
+  monitor = TRUE,
   upload_catchment = FALSE,
   force_gee = FALSE
 )
@@ -26,6 +27,9 @@ determined by a join in GEE.}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
+
+\item{monitor}{Logical. If TRUE (default) monitoring printed messages produced
+by \code{rgee} will displayed. If FALSE, only high-level messages will be displayed.}
 
 \item{upload_catchment}{If TRUE catchment will be uploaded to GEE. FALSE is
 an option because catchment info might have been already uploaded to GEE.
