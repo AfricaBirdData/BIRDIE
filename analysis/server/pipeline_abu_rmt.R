@@ -24,7 +24,7 @@ for(i in 1:length(config$species)){
 
 
     status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
-                                     prep_data_steps = c("missing", "gee", "subset"),
+                                     prep_data_steps = c("missing", "gee", "subset", "model"),
                                      catchment = catchment,
                                      upload_catchment = FALSE, force_gee = TRUE)
 

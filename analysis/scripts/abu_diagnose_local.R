@@ -9,11 +9,11 @@ config <- BIRDIE::configPreambJAGS(2017, server = FALSE)
 
 rhat_df <- data.frame()
 
-for(i in 1:length(config$species)){
+for(s in 1:length(config$species)){
 
-    sp_code <- config$species[i]
+    sp_code <- config$species[s]
 
-    print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+    print(paste0("Working on species ", sp_code, " (", s, " of ", length(config$species), ")"))
 
     # Skip species if less than 5 suitable sites were detected during fitting model fitting
     error_file <- setSpOutFilePath("Less_5_sites", config, sp_code, ".txt")
@@ -68,21 +68,23 @@ source("beta/diagnoseJAGSrhat.R")
 diagnoseJAGSrhat(fit_stats, param = "beta")
 diagnoseJAGSrhat(fit_stats, param = "G")
 diagnoseJAGSrhat(fit_stats, param = "phi")
-diagnoseJAGSrhat(fit_stats, param = "sig.alpha")
+diagnoseJAGSrhat(fit_stats, param = "sig.eps")
 
 # Plot mixing for those specific sites/years
 mcmc_trace(fit, pars = vars(contains("beta[46,")))
-mcmc_trace(fit, pars = vars(contains("sig.alpha[28]")))
+mcmc_trace(fit, pars = vars(contains("sig.e[31]")))
 mcmc_trace(fit, pars = vars(contains("phi[28]")))
-mcmc_trace(fit, pars = vars(matches("phi\\[52\\]")))
+mcmc_trace(fit, pars = vars(matches("phi\\[41\\]")))
 mcmc_trace(fit, pars = vars(matches("mu.beta\\[2\\,.*\\]")))
 mcmc_trace(fit, pars = vars(matches("G\\[4.*\\,1\\]")))
+mcmc_trace(fit, pars = vars(matches(".*\\[33\\]")))
+mcmc_trace(fit, pars = vars(matches("lambda\\[33")))
 
-mcmc_intervals(fit, pars = vars(contains("sig.eps[14]")))
+mcmc_intervals(fit, pars = vars(contains("sig.zeta")))
 mcmc_intervals(fit, pars = vars(contains("phi")))
-
+mcmc_intervals(fit, pars = vars(matches("G\\[4.*\\,3\\]")))
 mcmc_intervals(fit, pars = vars(matches("beta\\[.*\\,1\\]")))
-mcmc_intervals(fit, pars = vars(matches("beta\\[46\\,.*\\]")))
+mcmc_intervals(fit, pars = vars(matches("beta\\[34\\,.*\\]")))
 mcmc_intervals(fit, pars = vars(matches("mu_beta\\[2\\,.*\\]")))
 
 mcmc_intervals(fit, pars = vars(matches("mu_beta")))
@@ -97,10 +99,13 @@ p <- BIRDIE::plotSsm2ss(fit = fit_stats, ssm_counts = counts, linear = TRUE,
                         plot_options = list(pers_theme = pers_theme,
                                             colors = c("#71BD5E", "#B590C7")))
 
-p_sel <- p[as.character(unique(counts$LocationCode)[c(46, 59)])]
+which(names(p) == 25452752)
 
-plot(p_sel[[1]]$plot)
-print(p_sel[[1]]$data[[1]], n = Inf)
+p_sel <- p[[34]] # check 15 at least, also check 20 and 10 for blown-up uncertainty in final years, 34 for spikes at the beginning
+
+plot(p_sel$plot)
+print(p_sel$data[[1]], n = Inf)
+print(p_sel$data[[2]], n = Inf)
 
 plot(p_sel[[2]]$plot)
 print(p_sel[[2]]$data[[1]], n = Inf)
@@ -134,3 +139,26 @@ dd %>%
     print(n = Inf)
 
 which(unique(counts$LocationCode) == ss)
+
+
+names(p[[1]])
+
+sub_data <- do.call("rbind", lapply(p, function(x){
+    x$data[[1]][1:10,]
+}))
+
+sub_data %>%
+    filter(year == 1996, season == 1) %>%
+    filter(!is.na(count)) %>%
+    print(n = Inf)
+
+counts %>%
+    filter(LocationCode == 25452752, Season == "S") %>%
+    ggplot() +
+    geom_line(aes(x = year, y = pdsi_mean))
+
+
+counts %>%
+    dplyr::group_by(LocationCode) %>%
+    dplyr::mutate(site = dplyr::cur_group_id()) %>%
+    dplyr::ungroup()
