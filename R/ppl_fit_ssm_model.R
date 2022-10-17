@@ -29,12 +29,12 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     covts_u <- counts %>%
         dplyr::filter(season_id == 1) %>%
         dplyr::rename_with(~gsub("_mean||_count", "", .x), .cols = dplyr::everything()) %>%
-        dplyr::select(site_id, year_id, pdsi, diff_pdsi, diff_watext, diff_watrec) %>%
-        dplyr::group_by(site_id) %>%
-        dplyr::mutate(log_diff_pdsi = c(diff(log(pdsi + 1000)), NA)) %>%
-        dplyr::ungroup() %>%
-        dplyr::select(-c(pdsi, diff_pdsi)) %>%
-        dplyr::mutate(dplyr::across(.cols = c(log_diff_pdsi, diff_watext, diff_watrec), .fns = ~scale(.x)))
+        dplyr::select(site_id, year_id, pdsi, watext, watrec) %>%
+        # dplyr::group_by(site_id) %>%
+        # dplyr::mutate(log_diff_pdsi = c(diff(log(pdsi + 1000)), NA)) %>%
+        # dplyr::ungroup() %>%
+        # dplyr::select(-c(pdsi, diff_pdsi)) %>%
+        dplyr::mutate(dplyr::across(.cols = c(pdsi, watext, watrec), .fns = ~scale(.x)))
 
     # add intercept
     covts_u <- covts_u %>%

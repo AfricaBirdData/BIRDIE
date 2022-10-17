@@ -42,7 +42,7 @@ model {
 
     # Priors for stochastic summer population changes
     for(y in 1:(nyears - 1)){
-        tau.zeta[y] ~ dscaled.gamma(2, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 2 for sig.zeta!
+        tau.zeta[y] ~ dscaled.gamma(4, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 4 for sig.zeta!
         # tau.zeta[y] ~ dgamma(2, 1)
         sig.zeta[y] = sqrt(1/tau.zeta[y])
         for(s in 1:nsites){
@@ -52,7 +52,7 @@ model {
 
     # Priors for changes in winter-to-summer abundance ratio
     for(y in 1:(nyears-1)){
-        tau.eps[y] ~ dscaled.gamma(1, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 1 for sig.eps!
+        tau.eps[y] ~ dscaled.gamma(4, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 4 for sig.eps!
         # tau.zeta[y] ~ dgamma(1.8, 1)
         sig.eps[y] = sqrt(1/tau.eps[y])
         for(s in 1:nsites){
@@ -73,13 +73,13 @@ model {
 
     # Summer abundance changes
     for(s in 1:nsites){
-        # mu_beta[s, 1] = mean_mu[s] - stt_s[s, 1]
-        beta[s, 1] = eta[s, 1] + zeta[s, 1]
+        mu_beta[s, 1] = eta[s, 1] + zeta[s, 1]
+        # beta[s, 1] = eta[s, 1] + zeta[s, 1]
 
         for(y in 2:(nyears - 1)){
-            # mu_beta[s, y-1] = mean_mu[s] - stt_s[s, y]
+            mu_beta[s, y] = eta[s, y] + zeta[s, y]
             # beta[s, y] = phi[s]*(mu_beta[s, y-1] - beta[s, y-1]) + eta[s, y] + zeta[s, y]
-            beta[s, y] = phi[s]*(eta[s, y] + zeta[s, y]) # phi gives some smoothness and controls uncertainty when no observations
+            # beta[s, y] = phi[s]*(eta[s, y] + zeta[s, y]) # phi gives some smoothness and controls uncertainty when no observations
         }
     }
 
@@ -101,10 +101,12 @@ model {
         for(s in 1:nsites){
 
             # State update
-            stt_s[s, y+1] = stt_s[s, y] + beta[s, y]
+            stt_s[s, y+1] = phi[s]*stt_s[s, y] + (1-phi[s])*mu_beta[s, y]
             # Note this is equivalent:
             # stt_s[s, y+1] = (1 - phi[s])*stt_s[s, y] + phi[s]*(stt_s[s, y] + beta[s, y]/phi[s])
             stt_w[s, y+1] = stt_s[s, y+1] + lambda[s, y+1]
+
+            beta[s, y] = stt_s[s, y+1] - stt_s[s, y]
 
         }
     }
