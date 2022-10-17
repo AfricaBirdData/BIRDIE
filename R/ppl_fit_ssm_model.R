@@ -110,7 +110,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     # Fit 2-season dynamic trend model
     fit <- jagsUI::jags.basic(data = data,
                               parameters.to.save = param,
-                              model.file = "analysis/models/cwac_ssm_lat_season_multi_hier.R",
+                              model.file = file.path(config$mod_dir, "cwac_ssm_lat_season_multi_hier.R"),
                               inits = inits,
                               n.chains = 3, n.iter = 10000, n.burnin = 5000,
                               modules = c('glm', 'dic'), parallel = TRUE,
