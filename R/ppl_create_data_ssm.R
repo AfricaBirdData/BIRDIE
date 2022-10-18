@@ -224,11 +224,25 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         message("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
 
         # Find those sites that have a coverage of at least 10 years between 1993-2021
+        # Sites must have counts in both summer and winter. And both summer and winter
+        # must have been counted at least 5 times each
         sites_good <- sp_data %>%
+            # Counted at least 5 times in summer or 5 times in winter
             dplyr::filter(!is.na(Season),
-                          Season != "O") %>%
-            dplyr::count(LocationCode) %>%
-            dplyr::filter(n > 10) %>%
+                          Season != "O",
+                          !is.na(Count)) %>%
+            dplyr::count(LocationCode, Season) %>%
+            dplyr::filter(n > 4) %>%
+            # Counted in both seasons
+            dplyr::group_by(LocationCode) %>%
+            dplyr::mutate(n_seasons = dplyr::n()) %>%
+            dplyr::ungroup() %>%
+            dplyr::filter(n_seasons > 1) %>%
+            # Counted at least 10 times throughout the period 1993-2021
+            dplyr::group_by(LocationCode) %>%
+            dplyr::summarise(coverage = sum(n)) %>%
+            dplyr::ungroup() %>%
+            dplyr::filter(coverage > 9) %>%
             dplyr::pull(LocationCode)
 
         # If less than 5 sites create notification, because we might need a different model
