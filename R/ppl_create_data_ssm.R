@@ -35,24 +35,24 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                           StartDate, Season, SppRef, WetIntCode, Species,
                           Common_group, Common_species, Count, X, Y)
 
-        # Make sure that seasons are correctly entered
-        sp_data <- sp_data %>%
-            dplyr::mutate(year_day = lubridate::yday(StartDate),
-                          month = lubridate::month(StartDate))
-
-        if(any((sp_data$year_day > 14 & sp_data$year_day < 47) & (sp_data$Season != "S"))){
-            message("Changing mid-Jan to mid-Feb counts to summer season")
-        }
-
-        if(any((sp_data$month == 7) & (sp_data$Season != "W"))){
-            message("Changing July counts to winter season")
-        }
-
-        sp_data <- sp_data %>%
-            dplyr::mutate(Season = dplyr::case_when((year_day > 14 & year_day < 47) ~ "S",
-                                                    month == 7 ~ "W",
-                                                    TRUE ~ "O")) %>%
-            dplyr::select(-c(year_day, month))
+        # # Make sure that seasons are correctly entered
+        # sp_data <- sp_data %>%
+        #     dplyr::mutate(year_day = lubridate::yday(StartDate),
+        #                   month = lubridate::month(StartDate))
+        #
+        # if(any((sp_data$year_day > 14 & sp_data$year_day < 47) & (sp_data$Season != "S"))){
+        #     message("Changing mid-Jan to mid-Feb counts to summer season")
+        # }
+        #
+        # if(any((sp_data$month == 7) & (sp_data$Season != "W"))){
+        #     message("Changing July counts to winter season")
+        # }
+        #
+        # sp_data <- sp_data %>%
+        #     dplyr::mutate(Season = dplyr::case_when((year_day > 14 & year_day < 47) ~ "S",
+        #                                             month == 7 ~ "W",
+        #                                             TRUE ~ "O")) %>%
+        #     dplyr::select(-c(year_day, month))
 
         # Add DuToit's Doug's extra data
         dutoit <- utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv")) %>%
@@ -97,21 +97,81 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
     }
 
 
+    # Subset sites ------------------------------------------------------------
+
+    if("subset" %in% steps){
+
+        message("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
+
+        # Find those sites that have a coverage of at least 10 years between 1993-2021
+        # Sites must have counts in both summer and winter. And both summer and winter
+        # must have been counted at least 5 times each
+        sites_good <- sp_data %>%
+            # Counted at least 5 times in summer or 5 times in winter
+            dplyr::filter(Season %in% c("S", "W"),
+                          !is.na(Count),
+                          Year %in% 1993:2021) %>%
+            dplyr::count(LocationCode, Year, Season) %>%
+            dplyr::count(LocationCode, Season) %>%
+            dplyr::filter(n > 4) %>%
+            # Counted in both seasons (if counted in both and at least 5 in each, then at least 10 in total as well)
+            dplyr::count(LocationCode) %>%
+            dplyr::filter(n > 1) %>%
+            dplyr::pull(LocationCode)
+
+        # If less than 5 sites create notification, because we might need a different model
+        if(length(sites_good) < 5){
+
+            sink(setSpOutFilePath("Less_5_sites", config, sp_code, ".txt"))
+            message(paste("Less than 5 sites for species", sp_code, "on year", config$year))
+            sink()
+
+            return(1)
+
+        }
+
+        sp_data_sel <- sp_data %>%
+            dplyr::filter(LocationCode %in% sites_good)
+
+        # Save to disk at temporary location
+        tmp_sp_data_sel <- file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds"))
+        saveRDS(sp_data_sel, tmp_sp_data_sel)
+
+        # Save to disk permanently?
+        # saveRDS(counts, file.path("analysis/out_nosync", sp_code, paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds")))
+
+    }
+
+
+
     # Add missing counts ------------------------------------------------------
+
+    message("Adding missing counts to all sites. This might take a while...")
+
 
     if("missing" %in% steps){
 
+        tmp_sp_data_sel <- file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds"))
+
+        if(!exists("sp_data_sel")){
+
+            if(file.exists(tmp_sp_data_sel)){
+                sp_data_sel <- readRDS(tmp_sp_data_sel)
+                message("Using cached subset of suitable sites")
+            } else {
+                message("CAUTION: adding missing counts to species data without subsetting suitable sites!")
+                sp_data_sel <- sp_data
+            }
+
+        }
+
         # In what South African sites was the species present?
-        sp_sites <- sp_data %>%
+        sp_sites <- sp_data_sel %>%
             dplyr::filter(Country == "South Africa",
                           Year %in% config$years) %>%
             dplyr::pull(LocationCode) %>%
             unique()
 
-
-        # Add missing counts ------------------------------------------------------
-
-        message("Adding missing counts to all sites. This might take a while...")
 
         # List to store data from multiple sites
         counts <- vector("list", length = length(sp_sites))
@@ -213,59 +273,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
     }
 
 
-    # Subset sites ------------------------------------------------------------
 
-    if("subset" %in% steps){
-
-        if(!exists("counts") || !isTRUE(attr(counts, "gee"))){
-            counts <- utils::read.csv(setSpOutFilePath("abu_gee_data", config, sp_code, ".csv"))
-        }
-
-        message("Finding suitable CWAC sites (>= 10 year coverage from 1993 to 2021)")
-
-        # Find those sites that have a coverage of at least 10 years between 1993-2021
-        # Sites must have counts in both summer and winter. And both summer and winter
-        # must have been counted at least 5 times each
-        sites_good <- sp_data %>%
-            # Counted at least 5 times in summer or 5 times in winter
-            dplyr::filter(!is.na(Season),
-                          Season != "O",
-                          !is.na(Count)) %>%
-            dplyr::count(LocationCode, Season) %>%
-            dplyr::filter(n > 4) %>%
-            # Counted in both seasons
-            dplyr::group_by(LocationCode) %>%
-            dplyr::mutate(n_seasons = dplyr::n()) %>%
-            dplyr::ungroup() %>%
-            dplyr::filter(n_seasons > 1) %>%
-            # Counted at least 10 times throughout the period 1993-2021
-            dplyr::group_by(LocationCode) %>%
-            dplyr::summarise(coverage = sum(n)) %>%
-            dplyr::ungroup() %>%
-            dplyr::filter(coverage > 9) %>%
-            dplyr::pull(LocationCode)
-
-        # If less than 5 sites create notification, because we might need a different model
-        if(length(sites_good) < 5){
-
-            sink(setSpOutFilePath("Less_5_sites", config, sp_code, ".txt"))
-            message(paste("Less than 5 sites for species", sp_code, "on year", config$year))
-            sink()
-
-            return(1)
-
-        }
-
-        counts <- counts %>%
-            dplyr::filter(LocationCode %in% sites_good)
-
-        # Save to disk at temporary location
-        saveRDS(counts, file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds")))
-
-        # Save to disk permanently?
-        # saveRDS(counts, file.path("analysis/out_nosync", sp_code, paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds")))
-
-    }
+    # Prepare data for modelling ----------------------------------------------
 
 
     if("model" %in% steps){
@@ -281,7 +290,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         counts_mod <- counts %>%
             dplyr::mutate(season_id = dplyr::case_when(Season == "S" ~ 1,
                                                        Season == "W" ~ 2,
-                                                       Season == "O" ~ 3),
+                                                       TRUE ~ 3),
                           date = lubridate::date(StartDate)) %>%
             dplyr::group_by(LocationCode) %>%
             dplyr::mutate(site_id = dplyr::cur_group_id()) %>%
