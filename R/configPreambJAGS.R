@@ -25,7 +25,7 @@ configPreambJAGS <- function(year, server){
         mod_dir <- "/drv_birdie/Working/git/BIRDIE/analysis/models"
 
         # Define years to fit
-        dyear <- 24
+        dyear <- 28
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
@@ -38,7 +38,7 @@ configPreambJAGS <- function(year, server){
         mod_dir <- "analysis/models"
 
         # Define years to fit
-        dyear <- 24
+        dyear <- 28
 
         # Define species to fit models to
         species <- c(4, 6, 41, 235, 240)
