@@ -2,7 +2,7 @@ library(BIRDIE)
 
 rm(list = ls())
 
-config <- BIRDIE::configPreambJAGS(2017, server = FALSE)
+config <- BIRDIE::configPreambJAGS(2021, server = FALSE)
 
 for(i in 1:length(config$species)){
 
@@ -25,7 +25,7 @@ for(i in 1:length(config$species)){
 
     # Run abudance pipeline module 1
     status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
-                                     prep_data_steps = c("missing", "gee", "subset", "model"),
+                                     prep_data_steps = c("subset", "missing", "gee", "model"),
                                      catchment = catchment,
                                      upload_catchment = FALSE, force_gee = TRUE,
                                      monitor = FALSE)

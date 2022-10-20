@@ -2,7 +2,7 @@ library(BIRDIE)
 
 rm(list = ls())
 
-config <- BIRDIE::configPreambJAGS(2017, server = TRUE)
+config <- BIRDIE::configPreambJAGS(2021, server = TRUE)
 
 for(i in 1:length(config$species)){
 
