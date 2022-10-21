@@ -3,6 +3,7 @@
 export("%>%")
 export(configPreambJAGS)
 export(configPreambOccuR)
+export(createCombinedExportFile)
 export(createOccuRData)
 export(estimateAoo)
 export(findNextIndex)
