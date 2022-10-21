@@ -58,13 +58,8 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
             sp_code <- config$species[i]
 
-            for(y in 1:length(config$years)){
-
-                yr <- config$years[y]
-                dst_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", yr, ".csv"))
-                dst_out <- rbind(dst_out, read.csv(dst_file))
-
-            }
+            dst_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year, ".csv"))
+            dst_out <- rbind(dst_out, read.csv(dst_file))
 
         }
 
