@@ -26,7 +26,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
         }
 
-        utils::write.csv(abu_out, file.path(config$out_dir, paste0("ssm_pred_", config$years_ch, "_all_all.csv")),
+        utils::write.csv(abu_out, file.path(config$out_dir, "export", paste0("ssm_pred_", config$years_ch, "_all_all.csv")),
                          row.names = FALSE)
     }
 
@@ -48,7 +48,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
         }
 
-        utils::write.csv(dst_out, file.path(config$out_dir, paste0("occur_pred_", config$years_ch, "_all.csv")),
+        utils::write.csv(dst_out, file.path(config$out_dir, "export", paste0("occur_pred_", config$years_ch, "_all.csv")),
                          row.names = FALSE)
     }
 
@@ -65,7 +65,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
         }
 
-        utils::write.csv(dst_out, file.path(config$out_dir, paste0("indtr_dst_all_", config$years_ch, ".csv")),
+        utils::write.csv(dst_out, file.path(config$out_dir, "export", paste0("indtr_dst_all_", config$years_ch, ".csv")),
                          row.names = FALSE)
     }
 
