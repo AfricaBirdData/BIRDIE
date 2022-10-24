@@ -61,7 +61,12 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
             sp_code <- config$species[i]
 
             dst_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year, ".csv"))
-            dst_out <- rbind(dst_out, read.csv(dst_file))
+
+            if(file.exists(dst_file)){
+                dst_out <- rbind(dst_out, read.csv(dst_file))
+            } else {
+                dst_out <- dst_out
+            }
 
         }
 
