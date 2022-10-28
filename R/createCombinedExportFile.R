@@ -22,9 +22,8 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
             abu_file <- file.path(config$out_dir, sp_code, paste0("ssm_pred_", config$years_ch, "_", sp_code, "_all.csv"))
 
-            abu_out <- rbind(abu_out, read.csv(abu_file))
             if(file.exists(abu_file)){
-                abu_out <- rbind(abu_out, read.csv(abu_file))
+                abu_out <- rbind(abu_out, utils::read.csv(abu_file))
             } else {
                 abu_out <- abu_out
             }
@@ -49,7 +48,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
                 dst_file <- file.path(config$out_dir, sp_code, paste0("occur_pred_", yr, "_", sp_code, ".csv"))
 
                 if(file.exists(dst_file)){
-                    dst_out <- rbind(dst_out, read.csv(dst_file))
+                    dst_out <- rbind(dst_out, utils::read.csv(dst_file))
                 } else {
                     dst_out <- dst_out
                 }
@@ -73,7 +72,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
             dst_file <- file.path(config$out_dir, sp_code, paste0("indtr_dst_", sp_code, "_", config$year, ".csv"))
 
             if(file.exists(dst_file)){
-                dst_out <- rbind(dst_out, read.csv(dst_file))
+                dst_out <- rbind(dst_out, utils::read.csv(dst_file))
             } else {
                 dst_out <- dst_out
             }
