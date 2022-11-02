@@ -39,11 +39,11 @@ ppl_create_site_visit <- function(sp_code, year, force_gee_dwld = FALSE,
     }
 
     if(!file.exists(sitefile) | force_gee_dwld){
-        prepGEESiteData(config)
+        prepGEESiteData(config, monitor = varargs$monitor)
     }
 
     if(!file.exists(visitfile) | force_gee_dwld){
-        prepGEEVisitData(config)
+        prepGEEVisitData(config, monitor = varargs$monitor)
     }
 
     # Load data and subset years

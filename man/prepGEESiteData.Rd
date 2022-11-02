@@ -4,11 +4,14 @@
 \alias{prepGEESiteData}
 \title{Prepare Google Earth Engine site data}
 \usage{
-prepGEESiteData(config)
+prepGEESiteData(config, monitor = TRUE)
 }
 \arguments{
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccuR}}
+
+\item{monitor}{Logical. If TRUE (default) monitoring printed messages produced
+by \code{rgee} will displayed. If FALSE, only high-level messages will be displayed.}
 }
 \description{
 Prepare Google Earth Engine site data

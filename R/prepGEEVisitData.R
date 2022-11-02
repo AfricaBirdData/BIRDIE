@@ -2,12 +2,14 @@
 #'
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambOccuR}
+#' @param monitor Logical. If TRUE (default) monitoring printed messages produced
+#' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-prepGEEVisitData <- function(config){
+prepGEEVisitData <- function(config, monitor){
 
     # Initialize Earth Engine
     rgee::ee_check()
@@ -50,19 +52,20 @@ prepGEEVisitData <- function(config){
             dplyr::select(-c(StartDate, TotalHours)) %>%
             rgee::sf_as_ee(via = "getInfo")
 
-        # Annotate with GEE TerraClimate
-        visit_new <- ABAP::addVarEEclosestImage(ee_pentads = ee_visit,
-                                                collection = "MODIS/006/MOD13A2",
-                                                reducer = "mean",                          # We only need spatial reducer
-                                                maxdiff = 15,                              # This is the maximum time difference that GEE checks
-                                                bands = c("NDVI"))
+        # Annotate with GEE NDVI
+        visit_new <- ABDtools::addVarEEclosestImage(ee_feats = ee_visit,
+                                                    collection = "MODIS/006/MOD13A2",
+                                                    reducer = "mean",                          # We only need spatial reducer
+                                                    maxdiff = 15,                              # This is the maximum time difference that GEE checks
+                                                    bands = c("NDVI"),
+                                                    monitor = monitor)
 
         visit <- visit %>%
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_new %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, val) %>%
-                                 dplyr::rename(ndvi = val),
+                                 dplyr::select(CardNo, NDVI_mean) %>%
+                                 dplyr::rename(ndvi = NDVI_mean),
                              by = c("CardNo"))
 
         # Update
@@ -83,9 +86,11 @@ prepGEEVisitData <- function(config){
                       month = lubridate::month(Date),
                       ndvi = ndvi/1e4)
 
-    utils::write.csv(visitdata,
-              file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv")),
-              row.names = FALSE)
+    outfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
+
+    utils::write.csv(visitdata, outfile, row.names = FALSE)
+
+    message(paste("Visits data with GEE covts saved at", outfile))
 
     return(visitdata)
 

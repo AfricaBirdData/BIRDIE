@@ -2,12 +2,14 @@
 #'
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambOccuR}
+#' @param monitor Logical. If TRUE (default) monitoring printed messages produced
+#' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-prepGEESiteData <- function(config){
+prepGEESiteData <- function(config, monitor = TRUE){
 
     # Initialize Earth Engine
     rgee::ee_check()
@@ -20,18 +22,13 @@ prepGEESiteData <- function(config){
     pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa") # HARD CODED
 
     # Set a name for the asset
-    eeid <- file.path(rgee::ee_get_assethome(), 'pentads')
+    eeid <- file.path(rgee::ee_get_assethome(), 'birdie_pentads_sa')
 
-    # Upload to EE (if not done already). Delete first
-    # assets <- rgee::ee_manage_assetlist(rgee::ee_get_assethome())
-    #
-    # if(eeid %in% assets$ID){
-    #     rgee::ee_manage_delete(eeid, quiet = FALSE, strict = TRUE)
-    # }
-
-    # ABAP::uploadPentadsToEE(pentads = dplyr::select(pentads_sa, Name),
-                            # asset_id = eeid,
-                            # load = FALSE)
+    # Upload to EE (if not done already)
+    # ee_pentads <- pentads_sa %>%
+    #     ABDtools::uploadFeaturesToEE(asset_id = eeid,
+    #                                  load = TRUE,
+    #                                  monitor = monitor)
 
     # Load pentads from GEE
     ee_pentads <- rgee::ee$FeatureCollection(eeid)
@@ -39,31 +36,30 @@ prepGEESiteData <- function(config){
 
     # Annotate with TerraClimate ----------------------------------------------
 
+    message("Annotating ABAP site data with TerraClimate")
+
     # Define bands
     bands <- c("pr", "tmmn", "tmmx")
 
     # Define function
-    f <- function(band, years, .ee_pentads, .config){
+    f <- function(band, years, .ee_pentads, .config, .monitor){
 
-        stackCollection <- ABAP::EEcollectionToMultiband(collection = "IDAHO_EPSCOR/TERRACLIMATE",
-                                                         dates = paste0(.config$year_range + c(0,1), "-01-01"),
-                                                         band = band,
-                                                         group_type = "year",
-                                                         groups = years,
-                                                         reducer = "mean",
-                                                         unmask = FALSE)
+        stackCollection <- ABDtools::EEcollectionToMultiband(collection = "IDAHO_EPSCOR/TERRACLIMATE",
+                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                             band = band,
+                                                             group_type = "year",
+                                                             groups = years,
+                                                             reducer = "mean",
+                                                             unmask = FALSE)
 
         # Extract values from all bands of the image
-        out <- ABAP::addVarEEimage(.ee_pentads, stackCollection, "mean")
-
-        out <- out %>%
-            dplyr::rename_with(~gsub("X", band, .x), .cols = dplyr::starts_with("X"))
+        out <- ABDtools::addVarEEimage(.ee_pentads, stackCollection, "mean", monitor = .monitor)
 
         return(out)
 
     }
 
-    pentad_vars <- purrr::map(bands, ~f(.x, config$years, ee_pentads, config))
+    pentad_vars <- purrr::map(bands, ~f(.x, config$years, ee_pentads, config, monitor))
 
     sitedata <- Reduce("cbind", pentad_vars)
 
@@ -72,12 +68,8 @@ prepGEESiteData <- function(config){
         dplyr::select(!contains(".")) %>%
         dplyr::select(Name, dplyr::everything()) %>%
         dplyr::select(-id) %>%
-        dplyr::rename_with(.fn =  ~gsub("pr", "prcp_", .x),
-                           .cols = dplyr::starts_with("pr")) %>%
-        dplyr::rename_with(.fn =  ~gsub("tmmn", "tmmn_", .x),
-                           .cols = dplyr::starts_with("tmmn")) %>%
-        dplyr::rename_with(.fn =  ~gsub("tmmx", "tmmx_", .x),
-                           .cols = dplyr::starts_with("tmmx")) %>%
+        dplyr::rename_with(.fn =  ~gsub("pr_", "prcp_", .x),
+                           .cols = dplyr::starts_with("pr_")) %>%
         dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("tmmn"),
                                     .fns = ~.x/10),
                       dplyr::across(.cols = dplyr::starts_with("tmmx"),
@@ -87,35 +79,36 @@ prepGEESiteData <- function(config){
 
     # Annotate with yearly surface water occurrence --------------------------------
 
+    message("Annotating ABAP site data with JRC surface water")
+
     # Number of pixels with water each year
     band <- "waterClass"
-    stackCollection <- ABAP::EEcollectionToMultiband(collection = "JRC/GSW1_3/YearlyHistory",
-                                                     dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                     band = band,
-                                                     group_type = "year",
-                                                     groups = config$years,
-                                                     unmask = FALSE)
+    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "JRC/GSW1_4/YearlyHistory",
+                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                         band = band,
+                                                         group_type = "year",
+                                                         groups = config$years,
+                                                         reducer = "mean",
+                                                         unmask = FALSE)
 
-    out <- ABAP::addVarEEimage(ee_pentads, stackCollection, "count")
+    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
 
     # Fix covariates
     out <- out %>%
-        dplyr::select(Name, dplyr::everything()) %>%
-        dplyr::select(-id) %>%
-        dplyr::rename_with(~gsub("X", "watext_", .x), .cols = dplyr::starts_with("X")) %>%
+        dplyr::select(Name, dplyr::starts_with("waterClass")) %>%
+        dplyr::rename_with(~gsub("waterClass", "watext", .x), .cols = dplyr::starts_with("waterClass")) %>%
         sf::st_drop_geometry()
 
     sitedata <- sitedata %>%
         dplyr::left_join(out, by = "Name")
 
     # Recurrence of pixels with water each year
-    out <- ABAP::addVarEEimage(ee_pentads, stackCollection, "mean")
+    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
     # Fix covariates
     out <- out %>%
-        dplyr::select(Name, dplyr::everything()) %>%
-        dplyr::select(-id) %>%
-        dplyr::rename_with(~gsub("X", "watrec_", .x), .cols = dplyr::starts_with("X")) %>%
+        dplyr::select(Name, dplyr::starts_with("waterClass")) %>%
+        dplyr::rename_with(~gsub("waterClass", "watrec", .x), .cols = dplyr::starts_with("waterClass")) %>%
         dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("wat"),
                                     .fns = ~tidyr::replace_na(.x, 0))) %>%
         sf::st_drop_geometry()
@@ -126,19 +119,16 @@ prepGEESiteData <- function(config){
 
     # Annotate with overall surface water occurrence --------------------------
 
-    out <- ABAP::addVarEEimage(ee_pentads = ee_pentads,
-                               image = "JRC/GSW1_3/GlobalSurfaceWater",
-                               reducer = "mean",
-                               bands = "occurrence",
-                               unmask = TRUE)
+    out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                   image = "JRC/GSW1_4/GlobalSurfaceWater",
+                                   reducer = "mean",
+                                   bands = "occurrence",
+                                   unmask = TRUE,
+                                   monitor = monitor)
 
     # Fix covariates
     out <- out %>%
-        dplyr::select(Name, dplyr::everything()) %>%
-        dplyr::select(-id) %>%
-        dplyr::rename(water_occur = occurrence) %>%
-        dplyr::rename_with(.fn =  ~gsub("water_occur", "watocc_ever", .x),
-                           .cols = dplyr::starts_with("water_occur")) %>%
+        dplyr::select(Name, watocc_ever = occurrence_mean) %>%
         sf::st_drop_geometry()
 
     sitedata <- sitedata %>%
@@ -147,24 +137,25 @@ prepGEESiteData <- function(config){
 
     # Annotate with yearly NDVI -----------------------------------------------
 
+    message("Annotating ABAP site data with MODIS NDVI")
+
     # Find mean water presence for each pixel and year
     band <- "NDVI"
-    stackCollection <- ABAP::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
-                                                     dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                     band = band,
-                                                     group_type = "year",
-                                                     groups = config$years,
-                                                     reducer = "mean",
-                                                     unmask = FALSE)
+    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
+                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                         band = band,
+                                                         group_type = "year",
+                                                         groups = config$years,
+                                                         reducer = "mean",
+                                                         unmask = FALSE)
 
     # Find mean (mean) water presence for each pentad and year
-    out <- ABAP::addVarEEimage(ee_pentads, stackCollection, "mean")
+    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
     # Fix covariates
     out <- out %>%
-        dplyr::select(Name, dplyr::everything()) %>%
-        dplyr::select(-id) %>%
-        dplyr::rename_with(~gsub("X", "ndvi_", .x), .cols = dplyr::starts_with("X")) %>%
+        dplyr::select(Name, dplyr::starts_with("NDVI")) %>%
+        dplyr::rename_with(~gsub("NDVI", "ndvi", .x), .cols = dplyr::starts_with("NDVI")) %>%
         dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("ndvi"),
                                     .fns = ~.x/10000)) %>%
         sf::st_drop_geometry()
@@ -176,7 +167,8 @@ prepGEESiteData <- function(config){
     # Add geometries -----------------------------------------------------------
 
     sitedata <- sitedata %>%
-        dplyr::left_join(dplyr::select(pentads_sa, Name), by = "Name")
+        dplyr::left_join(dplyr::select(pentads_sa, Name), by = "Name") %>%
+        sf::st_sf()
 
     # Add centroids
     # sf::st_agr(sitedata) = "constant"
@@ -190,6 +182,8 @@ prepGEESiteData <- function(config){
 
 
     # Annotate with distance to coast -----------------------------------------
+
+    message("Annotating ABAP site data with distance to coast and elevation")
 
     # Create bounding box
     sabox <- sf::st_bbox(sitedata) + c(-1, -1, 3, 1)
@@ -206,24 +200,27 @@ prepGEESiteData <- function(config){
 
     # Annotate with elevation -------------------------------------------------
 
-    out <- ABAP::addVarEEimage(ee_pentads = ee_pentads,
-                               image = "MERIT/DEM/v1_0_3",
-                               reducer = "mean",
-                               bands = "dem",
-                               unmask = FALSE)
+    out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                   image = "MERIT/DEM/v1_0_3",
+                                   reducer = "mean",
+                                   bands = "dem",
+                                   unmask = FALSE,
+                                   monitor = monitor)
 
     # Fix covariates
     out <- out %>%
-        dplyr::select(Name, elev = dem) %>%
+        dplyr::select(Name, elev = dem_mean) %>%
         sf::st_drop_geometry()
 
     sitedata <- sitedata %>%
         sf::st_drop_geometry() %>%
         dplyr::left_join(out, by = "Name")
 
-    utils::write.csv(sitedata,
-              file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv")),
-              row.names = FALSE)
+    outfile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
+
+    utils::write.csv(sitedata, outfile, row.names = FALSE)
+
+    message(paste("Site data with GEE covts saved at", outfile))
 
     return(sitedata)
 
