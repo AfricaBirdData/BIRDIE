@@ -21,19 +21,19 @@ This document provides details on the statistical models and used in the data pi
 
 State-space models are used to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider a process of interest that evolves over time, and which we may observe at certain occasions,  although distorted by some imperfect observation process. For example, we might be interested in estimating the number of birds present at a certain site, but often field observers will miss some individuals. By counting repeatedly over time, and assuming that the process of interest evolves slowly compared to observation error, we can disentangle these two processes.
 
-Here, we are interested in estimating bird abundance using counts from the Coordinated Waterbird Counts (CWAC) project (see relevant section for details). CWAC provides data ($y_i$) on counts at a number of sites. We consider that the observed counts at time $i$, at any given site, arise from a Poisson($\lambda_i$) process.
+Here, we are interested in estimating bird abundance using counts from the Coordinated Waterbird Counts (CWAC) project (see relevant section for details). CWAC provides data on counts ($y_i$) at a number of sites. We consider that the observed counts at time $i$, at any given site, arise from a Poisson($\lambda_i$) process.
 
 $$y_i \sim \textrm{Poisson}(\lambda_i)$$
 
 We model the log of the intensity $\lambda_i$ as:
 
 $$\log{(\lambda_i)} \sim N(\mu_i, \sigma^2)$$
-where $\mu_i$ is the log mean abundance of waterbirds on site and $\sigma^2$ is the variance of the observer count error in the log scale. Therefore, the counts on sampling occasion $i$ depend both on the number of waterbirds, and on errors in the counts of these birds.
+where $\mu_i$ is the log mean abundance of waterbirds on site and $\sigma^2$ is the variance of the observer count error in the log scale. Therefore, the counts on sampling occasion $i$ depend both on the number of waterbirds present, and on errors in the counts of these birds.
 
-Waterbird abundance changes over the years. To model abundance dynamics on year $t$, we define $s_t$ as the summer abundance and $w_t$ as the winter abundance. Note that there might be multiple counts in a single year (counts were indexed by $i$), but abundance is considered to stay constant in any given year and season.
+To model changes in waterbird abundance between the two-seasons of year $t$, we define $s_t$ as the summer abundance and $w_t$ as the winter abundance. Note that there might be multiple counts in a single year and season, but the underlying true abundance is considered to stay constant in any given year and season (note also that counts were indexed by $i$, and year are indexed by $t$). Thus, the expected (log) abundance for any given count can be written as
 
 $$\mu_{i} = s_t \textrm{summer} + w_t \textrm{winter}$$
-where 'summer' is a dummy variables that takes on the value 1 in summer and 0 in winter, and 'winter' is the opposite.
+where 'summer' is a dummy variable that takes on the value 1 in summer and 0 in winter, and 'winter' is the opposite.
 
 We then define abundance dynamics as:
 
@@ -42,18 +42,18 @@ $$w_t = s_t + \xi_t$$
 
 where $\beta_t$ corresponds to the change in summer abundance from year $t-1$ to year $t$, and $\xi_t$ is the difference between summer and winter abundance, both in the log scale. If exponentiated, these parameters can be interpreted as the rate of change in the population and the winter-to-summer ratio of the population, respectively.
 
-We impose relatively smooth changes in abundance by defining autocorrelation in $\beta_t$ and $\xi_t$ terms over time, such that:
+We impose relatively smooth changes in abundance by defining autocorrelation in $\beta_t$ and $\xi_t$ terms over time. In addition, we define relationships between the rate of change in the population $\beta_t$ and environmental covariates. These relationships facilitate the estimation of abundance for those years in which counts are missing, and it is particularly useful to contain uncertainty in long periods with missing data between counts. Thus, we set
 
-$$\beta_{t+1} = \beta_t + \zeta_t$$
+$$\beta_{t+1} = \phi\beta_t + \eta_t + \zeta_t$$
 $$\xi_{t+1} = \xi_t + \epsilon_t$$
 
-where $\zeta_t$ and $\epsilon_t$ are random variables that represent change in abundance change, and change in winter to summer ratio, respectively.
+where $\phi$ lies between zero and one, and it defines an autoregressive term on $\beta_{t-1}$; $\eta_t$ captures the effect of covariates in the expected change in abundance, and can be expanded to $\gamma^{\intercal}\mathrm{U}$, where $\mathrm{U}$ is a matrix of covariate values and $\gamma$ a vector of coefficients; $\zeta_t$ and $\epsilon_t$ are random variables that represent change in abundance change, and change in winter to summer ratio, respectively.
 
-We mentioned at the beginning that this model applies to each monitored site. However, we have multiple sites, and counts are often missing for some seasons or even full years. To facilitate the estimation of abundance in seasons with missing data, we borrow some information from sites with counts, by defining a hierarchical structure such that:
+We mentioned at the beginning that this model applies to each monitored site. However, we have multiple sites, and counts are often missing for some seasons or even full years. To facilitate the estimation of abundance with missing data, we borrow information from sites with counts, by defining a hierarchical structure such that:
 
 $$\zeta_{tj} \sim N(0, \sigma^2_{\zeta t})$$
 $$\epsilon_{tj} \sim N(0, \sigma^2_{\epsilon t})$$
-changes at any site $j$ and year $t$ come from a common distribution of changes across all sites for that year. These distributions are normal with variances $\sigma^2_{\zeta t}$ and $\sigma^2_{\epsilon t}$ for changes in abundance and winter to summer ratio, respectively.
+so that random changes at any site $j$ and year $t$ come from a common distribution of changes across all sites for that year. These distributions are normal with variances $\sigma^2_{\zeta t}$ and $\sigma^2_{\epsilon t}$ for changes in abundance and winter to summer ratio, respectively.
 
 ### Implementation:
 
@@ -110,39 +110,37 @@ BIRDIE::loopSsmAllSpp(barberspan, data_outdir = "analysis/out_nosync/",
 
 ## Occupancy modelling
 
-Occupancy models are fitted to detection/non-detection data from the Southern Africa Bird Atlas Project (SABAP) to delineate the distribution of waterbird species and its dynamics over time.  Within the SABAP framework observers visit pentads and make a list of the bird species detected during the visit. Detection data is assumed to work perfectly (i.e., there are no identification errors), but non-detections may be caused by either the species not being present in the pentad or by the observers not being able to detect it, although it was present. Therefore, occupancy models describe two processes simultaneously: i) the underlying occupancy of the sites (pentads), and ii) the observation process whereby species present might or might not be observed.
+Occupancy models are fitted to detection/non-detection data from the Southern Africa Bird Atlas Project (SABAP) to delineate the distribution of waterbird species and its dynamics over time.  Within the SABAP2 framework, observers visit pentads and make a list of the bird species detected during the visit.We assume that observers don’t misidentify species or otherwise list species that were not actually detected (the rigorous vetting process of SABAP2 data justifies this assumption), but non-detections may be caused by either the species not being present in the pentad or by the observers not being able to detect it, although it was present. Therefore, occupancy models describe two processes simultaneously: i) the underlying occupancy of the sites (pentads), and ii) the observation process whereby species present might or might not be observed.
 
-More precisely, we define $z_{it}$ to be the true occupancy of site $i$ in year $t$, which can be 1 (if species present) or 0 (if species absent) and has distribution:
+More precisely, we define $z_{jt}$ to be the true occupancy of site $j$ in year $t$, which can be 1 (if species present) or 0 (if species absent) and has distribution:
 
-\begin{equation}
-	z_{it}|\psi_{it} \sim \textrm{Bernoulli}(\psi_{it}),
-\end{equation}
+$$z_{jt}|\psi_{jt} \sim \textrm{Bernoulli}(\psi_{jt})$$,
 
-where $\psi_{it}$ is the occupancy probability at site $i$ and year $t$. The logit transformation of $\psi_{it}$ can be modelled as a linear combination of covariates and smooth functions of covariates, such that:
+where $\psi_{jt}$ is the occupancy probability at site $j$ and year $t$. The logit transformation of $\psi_{jt}$ can be modelled as a linear combination of covariates and smooth functions of covariates, such that:
 
-\begin{equation}
-	\textrm{logit}(\psi_{it}) = \boldsymbol{x}_{it}^\intercal \boldsymbol{\beta} + \sum_{k=1}^K f_k(u_{ik})\\
-\end{equation}
+$$\textrm{logit}(\psi_{jt}) = \boldsymbol{x}_{jt}^\intercal \boldsymbol{\beta} + \sum_{k=1}^K f_k(u_{jk})$$
 
-where $u_{ik}$ is a smooth function of the covariate $u_k$, which is defined as
+where $u_{jk}$ is a smooth function of the covariate $u_k$, which is defined as
 
-\begin{equation}
-	f_k(u_{ik}) = \sum_{j=1}^J \textrm{B}_j(u_{ijk})\gamma_{ijk}
-\end{equation}
+$$f_k(u_{jk}) = \sum_{l=1}^L \textrm{B}_l(u_{jkl})\gamma_{jkl}$$
 
-where the smooth function $f$ is represented by a set of basis functions $\textrm{B}_j$ evaluated at the value of the covariates associated with site $i$ at time $t$. A notable case for the use of such functions is to incorporate temporal and spatial effects.
+where the smooth function $f$ is represented by a set of $L$ basis functions $\textrm{B}_l$ evaluated at the value of the covariates associated with site $j$ at year $t$.
 
-Then, the probability of detection of a species that is present in site $i$ on visit $j$ is denoted by $p_{ij}$. Following the same logic as for the probability of occupancy, the logit transformation of $p$ is modelled as a linear combination of covariates and smooth functions:
+Then, the probability of detection of a species that is present in site $j$ on visit $i$ is denoted by $p_{ij}$. Following the same logic as for the probability of occupancy, the logit transformation of $p$ is modelled as a linear combination of covariates and smooth functions:
 
-\begin{equation}
-	\textrm{logit}(p_{ij})= \boldsymbol{w}_{ij}^\intercal \boldsymbol{\alpha} + \sum_{h=1}^H f_h(v_{ih})\\,
-\end{equation}
+$$\textrm{logit}(p_{ij})= \boldsymbol{w}_{ij}^\intercal \boldsymbol{\alpha} + \sum_{h=1}^H f_h(v_{ih})$$,
 
 Finally, the likelihood of observation $y_{ij}$ can be written as:
 
-\begin{equation}
-	y_{ij}|z_{it},p_{ij} \sim \textrm{Bernoulli}(z_{it}p_{ij})
-\end{equation}
+$$y_{ij}|z_{jt},p_{ij} \sim \textrm{Bernoulli}(z_{jt}p_{ij})$$
+
+Spatial, spatio-temporal, and unstructured random effects can be specified for either occupancy or detection probabilities to account for variation across sites, observers and visits, not accounted for by the covariates incorporated in the models.
+
+Each checklist is treated as an independent survey, but occupancy is assessed on a yearly basis. This means that if a species is detected in any one survey it is considered present that year. Therefore, missing a species because it left the site is considered part of the observation process and not the occupancy process.
+
+At the moment, we are fitting models to three years of SABAP2 data, and using spatio-temporal random effects for the occupancy probability of pentads with an exponential decay function. With this procedure indicators for any one year are estimated several times, due to several 3-year windows overlapping the same year. We keep the estimate from the model that has the year of interest in the centre of the window, because it should be the most precise. We also incorporate random effects to account for pentad- and observer-specific detection probabilities. However, these modelling details may differ among species and may be updated in the future.
+
+
 
 ## Implementation
 
