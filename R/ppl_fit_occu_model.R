@@ -1,6 +1,6 @@
-#' Fit occuR model
+#' Fit occupancy model
 #'
-#' @inheritParams ppl_run_pipe_distr
+#' @inheritParams ppl_run_pipe_dst1
 #'
 #' @return
 #' @import occuR
@@ -8,20 +8,20 @@
 #' @export
 #'
 #' @examples
-ppl_fit_occur_model <- function(sp_code, year, config, ...){
+ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
     varargs <- list(...)
 
     # Prepare data ------------------------------------------------------------
 
-    occuRdata <- prepOccuRData(sp_code, year, config, ...)
+    occu_data <- prepSpOccuData(sp_code, year, config, ...)
 
     # Stop if there are no detections
-    if(is.numeric(occuRdata) && occuRdata == 1){
+    if(is.numeric(occu_data) && occu_data == 1){
         return(1)
     }
 
-    if(is.numeric(occuRdata) && occuRdata == 2){
+    if(is.numeric(occu_data) && occu_data == 2){
         return(2)
     }
 
@@ -51,8 +51,8 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
     # simplest model for occupancy probabilities
     fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
                                         reformulate(site_mods[[3]], response = "psi")),
-                           visit_data = occuRdata$visit,
-                           site_data = occuRdata$site,
+                           visit_data = occu_data$visit,
+                           site_data = occu_data$site,
                            print = varargs$print_fitting)
 
     # Calculate degrees of freedom
@@ -87,8 +87,8 @@ ppl_fit_occur_model <- function(sp_code, year, config, ...){
 
             fit <- occuR::fit_occu(forms = list(reformulate(visit_mod, response = "p"),
                                                 reformulate(site_mod, response = "psi")),
-                                   visit_data = occuRdata$visit,
-                                   site_data = occuRdata$site,
+                                   visit_data = occu_data$visit,
+                                   site_data = occu_data$site,
                                    print = varargs$print_fitting)
 
             # Check if degrees of freedom can be calculated
