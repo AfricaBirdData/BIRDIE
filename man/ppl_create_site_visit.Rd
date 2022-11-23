@@ -4,7 +4,15 @@
 \alias{ppl_create_site_visit}
 \title{Create site and visit occupancy files}
 \usage{
-ppl_create_site_visit(sp_code, year, force_gee_dwld = FALSE, config, ...)
+ppl_create_site_visit(
+  sp_code,
+  year,
+  force_gee_dwld = FALSE,
+  save_occu_data = TRUE,
+  overwrite_occu_data = NULL,
+  config,
+  ...
+)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
@@ -15,8 +23,16 @@ ppl_create_site_visit(sp_code, year, force_gee_dwld = FALSE, config, ...)
 downloaded, even if a file with covariates is already present on disk.
 Defaults to FALSE.}
 
+\item{save_occu_data}{If TRUE data is saved to disc, but see 'overwrite_occu_data'.}
+
+\item{overwrite_occu_data}{A character vector with the data that should be overwritten in
+case it is already present on disc. It can be any combination of
+c("site", "visit", "det"), with site referring to site data, visit to visit data
+and det to detection data. Site and visit data are typically common for
+multiple species and we might not want to save it all the time.}
+
 \item{config}{A list with pipeline configuration parameters.
-See \link{configPreambOccuR}}
+See \link{configPreambOccu}}
 
 \item{...}{Other arguments passed on to other functions}
 }
@@ -24,14 +40,15 @@ See \link{configPreambOccuR}}
 The first part of the function creates two data frames (in .csv format)
 that will be saved to disk: GEE annotated ABAP site data and GEE annotated ABAP
 visit data. The second part of the functions creates three data frames that will
-be saved to disk: occuR-formatted site, visit and species detection data frames,
+be saved to disk: site, visit and species detection data frames,
 all in .csv format.
 }
 \description{
 This function prepares site and visit occupancy data to fit an
-occuR model from ABAP data. It has two parts: the first part downloads ABAP
+occupancy model from ABAP data. It has two parts: the first part downloads ABAP
 data and annotates them with covariates from Google Earth Engine using the
 functions \code{\link{prepGEESiteData()}} and \code{\link{prepGEEVisitData()}},
-the second part uses the function \code{\link{createOccuRData}} to format the
-data for the \code{occuR} package.
+the second part uses the function \code{\link{createOccuData}} to format the
+data. Other changes might be necessary to fit into different occupancy modelling
+packages
 }
