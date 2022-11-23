@@ -1,10 +1,11 @@
-#' Prepare server or local preamble
+#' Prepare server or local occupancy modelling preamble
 #'
 #' @description Set basic variables to run BIRDIE scripts locally or remotely.
 #' @param year Year of interest.
 #' @param dur Temporal coverage of the analysis in years. `year` will be the last year
 #' covered by the analysis.
-#' @param dim_grid An integer giving the dimension of the grid used for spatial effects.
+#' @param dim_grid This was for occuR and it is not doing anything at the moment.
+#' An integer giving the dimension of the grid used for spatial effects.
 #' This dimension gives the number `k` see \code{\link[mgcv]{choose.k}}.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
@@ -18,8 +19,8 @@
 #' @export
 #'
 #' @examples
-#' configPreambOccuR(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
-configPreambOccuR <- function(year, dur, dim_grid, server){
+#' configPreambOccu(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
+configPreambOccu <- function(year, dur, dim_grid, server){
 
     if(server){
 
