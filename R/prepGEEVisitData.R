@@ -45,7 +45,7 @@ prepGEEVisitData <- function(config, monitor){
             sf::st_sf() %>%
             dplyr::filter(!sf::st_is_empty(.)) %>%     # Remove rows without geometry
             dplyr::mutate(Date = as.character(StartDate)) %>%   # GEE doesn't like dates
-            dplyr::select(CardNo, StartDate, Date, Pentad, TotalHours)
+            dplyr::select(CardNo, StartDate, Date, Pentad, TotalHours, ObserverNo)
 
         # Upload to GEE
         ee_visit <- visit %>%
