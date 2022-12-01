@@ -33,12 +33,14 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         if(fit_status == 1){
             sink(file.path(config$out_dir, sp_code,paste0("no_detections_", config$years_ch,"_", sp_code, ".txt")))
             sink()
-            # warning(paste("There are no detections for species", sp_code))
             return(1)
         } else if(fit_status == 2){
             sink(file.path(config$out_dir, sp_code,paste0("less_than_5_pentads_", config$years_ch,"_", sp_code, ".txt")))
             sink()
-            # warning(paste("Species", sp_code, "detected in less than 5 pentads"))
+            return(1)
+        } else if(fit_status == 3){
+            sink(file.path(config$out_dir, sp_code,paste0("model_fit_failed_", config$years_ch,"_", sp_code, ".txt")))
+            sink()
             return(1)
         } else {
             # set pipeline status
