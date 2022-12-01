@@ -28,7 +28,10 @@ addSpOccDetCovt <- function(spOcc_data, covt_data, seasons = NULL){
 
         max_visits <- dim(spOcc_data$y)[2]
         n_seasons <- 1
-        season_vec <- NULL
+        season_vec <- 1
+
+        covt_data <- covt_data %>%
+            dplyr::mutate(season = as.character(1))
 
     } else {
 
@@ -53,10 +56,6 @@ addSpOccDetCovt <- function(spOcc_data, covt_data, seasons = NULL){
 
     }
 
-    ## Create empty array
-    covt_out <-  array(NA, dim = c(n_sites, n_seasons, max_visits),
-                       dimnames = list(pentad_id, season_vec, seq_len(max_visits)))
-
     # Aux padding vector
     vpad <- rep(NA, max_visits)
 
@@ -64,34 +63,50 @@ addSpOccDetCovt <- function(spOcc_data, covt_data, seasons = NULL){
     pentad_col <- data.frame(Pentad = pentad_id)
 
     # Extract variable name
-    var_name <- names(covt_data)[which(!names(covt_data) %in% c("Pentad", "StartDate", "season", seasons))]
+    var_names <- names(covt_data)[which(!names(covt_data) %in% c("Pentad", "StartDate", "season", seasons))]
 
-    for(k in seq_along(season_vec)){
+    for(v in seq_along(var_names)){
 
-        ## Create dataframe to format
-        season_data <- covt_data %>%
-            dplyr::filter(season == season_vec[k]) %>%
-            # dplyr::select(Pentad, Spp, TotalHours, StartDate) %>%
-            # dplyr::mutate(Spp = ifelse(Spp == "-", 0L, 1L),
-            #               julian_day = lubridate::yday(StartDate)) %>%
-            dplyr::right_join(pentad_col, by = "Pentad") %>%      # Join in Pentads missing for the year
-            dplyr::nest_by(Pentad) %>%
-            dplyr::arrange(Pentad) %>%
-            dplyr::mutate(varpad = list(head(c(data[, var_name, drop = TRUE], vpad), max_visits)))
+        var_name <- var_names[v]
 
-        ## Extract total hours
-        covt_out[,k,] <- do.call("rbind", season_data$varpad)
+        ## Create empty array
+        covt_out <-  array(NA, dim = c(n_sites, n_seasons, max_visits),
+                           dimnames = list(pentad_id, season_vec, seq_len(max_visits)))
 
+        for(k in seq_along(season_vec)){
+
+            ## Create dataframe to format
+            season_data <- covt_data %>%
+                dplyr::filter(season == season_vec[k]) %>%
+                # dplyr::select(Pentad, Spp, TotalHours, StartDate) %>%
+                # dplyr::mutate(Spp = ifelse(Spp == "-", 0L, 1L),
+                #               julian_day = lubridate::yday(StartDate)) %>%
+                dplyr::right_join(pentad_col, by = "Pentad") %>%      # Join in Pentads missing for the year
+                dplyr::nest_by(Pentad) %>%
+                dplyr::arrange(Pentad) %>%
+                dplyr::mutate(varpad = list(head(c(data[, var_name, drop = TRUE], vpad), max_visits)))
+
+            ## Extract total hours
+            covt_out[,k,] <- do.call("rbind", season_data$varpad)
+
+        }
+
+        # If there are no seasons then return a matrix
+        if(length(season_vec) == 1){
+
+            covt_out <- as.matrix(covt_out[, 1, ])
+
+        }
+
+
+        # Make data list
+        if(is.null(spOcc_data$det.covs)) {
+            spOcc_data$det.covs <- covt_out
+        } else {
+            spOcc_data$det.covs <- c(spOcc_data$det.covs, list(covt_out))
+            names(spOcc_data$det.covs)[length(spOcc_data$det.covs)] <- var_name
+        }
     }
-
-    # Make data list
-    if(is.null(spOcc_data$det.covs)) {
-        spOcc_data$det.covs <- covt_out
-    } else {
-        spOcc_data$det.covs <- c(spOcc_data$det.covs, list(covt_out))
-        names(spOcc_data$det.covs)[length(spOcc_data$det.covs)] <- var_name
-    }
-
     return(spOcc_data)
 
 }
