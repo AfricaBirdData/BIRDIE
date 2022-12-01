@@ -22,24 +22,44 @@ scaleSpOccVars <- function(spOcc_data, var_type, scale_vars){
 
     if(var_type == "occ"){
 
-        f <- function(x){
-            scl <- stats::sd(c(x), na.rm = TRUE)
-            cnt <- mean(c(x), na.rm = TRUE)
+        if(is.list(spOcc_data$occ.covs)){
 
-            out_scl <- apply(x, 2, FUN = scale, center = cnt, scale = scl)
-            dimnames(out_scl) <- dimnames(x)
-            attr(out_scl, "scaled:scale") <- scl
-            attr(out_scl, "scaled:center") <- cnt
-            out_scl
+            f <- function(x){
+                scl <- stats::sd(c(x), na.rm = TRUE)
+                cnt <- mean(c(x), na.rm = TRUE)
+
+                out_scl <- apply(x, 2, FUN = scale, center = cnt, scale = scl)
+                dimnames(out_scl) <- dimnames(x)
+                attr(out_scl, "scaled:scale") <- scl
+                attr(out_scl, "scaled:center") <- cnt
+                out_scl
+            }
+
+            covts <- spOcc_data$occ.covs[scale_vars]
+
+            covts <- lapply(covts, f)
+
+            spOcc_data$occ.covs[scale_vars] <- covts
+
+        } else if(is.matrix(spOcc_data$occ.covs)){
+
+            covt_sel <- spOcc_data$occ.covs[,scale_vars]
+
+            scl <- apply(covt_sel, 2, sd, na.rm = TRUE)
+            cnt <- apply(covt_sel, 2, mean, na.rm = TRUE)
+
+            # make temporary object to presenve attributes
+            covt_sel <- scale(covt_sel, center = cnt, scale = scl)
+
+            spOcc_data$occ.covs[,scale_vars] <- covt_sel
+            attr(spOcc_data$occ.covs, 'scaled:center') <- attr(covt_sel, 'scaled:center')
+            attr(spOcc_data$occ.covs, 'scaled:scale') <- attr(covt_sel, 'scaled:scale')
+
         }
 
-        covts <- spOcc_data$occ.covs[scale_vars]
-
-        covts <- lapply(covts, f)
-
-        spOcc_data$occ.covs[scale_vars] <- covts
-
         } else if(var_type == "det"){
+
+            if(is.list(spOcc_data$det.covs)){
 
             f <- function(x){
                 scl <- stats::sd(c(x), na.rm = TRUE)
@@ -57,6 +77,22 @@ scaleSpOccVars <- function(spOcc_data, var_type, scale_vars){
             covts <- lapply(covts, f)
 
             spOcc_data$det.covs[scale_vars] <- covts
+
+            } else if(is.matrix(spOcc_data$det.covs)){
+
+                covt_sel <- spOcc_data$det.covs[,scale_vars]
+
+                scl <- apply(covt_sel, 2, sd, na.rm = TRUE)
+                cnt <- apply(covt_sel, 2, mean, na.rm = TRUE)
+
+                # make temporary object to presenve attributes
+                covt_sel <- scale(covt_sel, center = cnt, scale = scl)
+
+                spOcc_data$det.covs[,scale_vars] <- covt_sel
+                attr(spOcc_data$det.covs, 'scaled:center') <- attr(covt_sel, 'scaled:center')
+                attr(spOcc_data$det.covs, 'scaled:scale') <- attr(covt_sel, 'scaled:scale')
+
+            }
 
         }
 
