@@ -209,7 +209,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
         # Save fit and return 0 if success
         if(success){
-            saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occu_fit_", config$years_ch, "_", sp_code, ".rds")))
+            saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occu_fit_", year_sel, "_", sp_code, ".rds")))
             return(0)
         } else {
             return(3)
