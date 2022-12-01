@@ -1,4 +1,4 @@
-#' Prepare spOccupancy data for model fitting
+#' Prepare spOccupancy data for multi-season model fitting
 #'
 #' @inheritParams ppl_run_pipe_dst1
 #' @param spatial Logical, indicating whether spatial random effects should be
@@ -8,7 +8,7 @@
 #' @export
 #'
 #' @examples
-prepSpOccuData <- function(sp_code, year, config, spatial = FALSE, ...){
+prepSpOccuData_multi <- function(sp_code, year, config, spatial = FALSE, ...){
 
     varargs <- list(...)
 
