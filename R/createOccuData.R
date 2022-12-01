@@ -108,6 +108,12 @@ createOccuData <- function(sp_code, years,
         dplyr::mutate(cwac = sapply(cwac_intsc, length) != 0) %>%
         sf::st_drop_geometry()
 
+    # Add cwac to visit data
+    visit_data <- visit_data %>%
+        dplyr::left_join(site_data %>%
+                             dplyr::select(Name, cwac),
+                         by = c("Pentad" = "Name"))
+
     # Create other variables
     site_data <- site_data %>%
         dplyr::mutate(tdiff = tmmx - tmmn,
