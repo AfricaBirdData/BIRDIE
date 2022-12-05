@@ -59,6 +59,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
             dplyr::filter(year == year_sel)
 
         # Prepare for spOccupancy
+        message(paste("Fitting occupancy model to species", sp_code, "for year", year_sel, Sys.time()))
         occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config)
 
 
@@ -78,7 +79,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
         # For single season models
         # Number of samples
-        n_samples <- 2e5
+        n_samples <- 2e4
         batch_length <- 25
         n_batch  <- n_samples/batch_length
 
