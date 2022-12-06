@@ -130,7 +130,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
             out <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
                                       det.formula = reformulate(visit_mod),
                                       data = occu_data, inits = inits, priors = priors,
-                                      n.samples = n_samples, n.omp.threads = 10,
+                                      n.samples = n_samples, n.omp.threads = 6,
                                       n.thin = 20, n.chains = 3,
                                       verbose = TRUE, n.report = 5000)
 
