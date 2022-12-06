@@ -111,7 +111,8 @@ createOccuData <- function(sp_code, years,
     # Add cwac to visit data
     visit_data <- visit_data %>%
         dplyr::left_join(site_data %>%
-                             dplyr::select(Name, cwac),
+                             dplyr::select(Name, cwac) %>%
+                             dplyr::distinct(),
                          by = c("Pentad" = "Name"))
 
     # Create other variables
@@ -120,6 +121,9 @@ createOccuData <- function(sp_code, years,
                       log_dist_coast = log(dist_coast + 1),
                       log_watext = log(watext + 1),
                       log_watrec = log(watrec + 1))
+
+    visit_data <- visit_data %>%
+        dplyr::mutate(tdiff = tmmx - tmmn)
 
 
     # Save to disc ------------------------------------------------------------
