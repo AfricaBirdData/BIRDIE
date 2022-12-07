@@ -104,7 +104,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
                            phi.unif = c(3/(1000*min(dist_sites)), 3/(min(dist_sites))))
 
             # Run model
-            out <- spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+            fit <- spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
                            det.formula = reformulate(visit_mod),
                            cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
                            data = occu_data, inits = inits, priors = priors,
@@ -127,7 +127,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
 
             # Run model
-            out <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+            fit <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
                                       det.formula = reformulate(visit_mod),
                                       data = occu_data, inits = inits, priors = priors,
                                       n.samples = n_samples, n.omp.threads = 6,
@@ -162,7 +162,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
         #
         #     # Run model
         #     ptm <- proc.time()
-        #     out <- spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+        #     fit <- spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
         #                    det.formula = reformulate(visit_mod),
         #                    cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
         #                    data = occu_data, inits = inits, priors = priors,
@@ -193,7 +193,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
         #
         #     # Run model
         #     ptm <- proc.time()
-        #     out <- tPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+        #     fit <- tPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
         #                   det.formula = reformulate(visit_mod),
         #                   ar1 = FALSE,
         #                   data = occu_data, inits = inits, priors = priors,
