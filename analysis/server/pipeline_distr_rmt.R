@@ -4,12 +4,12 @@ rm(list = ls())
 
 test_years <- 2012:2019
 
-run_modules <- c(1, 2)
+run_modules <- 1
 
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 40, server = TRUE)
+    config <- configPreambOccu(year = year, dur = 3, dim_grid = 40, server = TRUE)
 
     for(i in seq_along(config$species)){
 
@@ -31,15 +31,16 @@ for(y in seq_along(test_years)){
                                           sp_name = sp_name,
                                           year = year,
                                           config = config,
-                                          steps = c("data", "fit", "summ"),
-                                          force_gee_dwld = FALSE,
+                                          steps = c("data", "fit"),
+                                          force_gee_dwld = ifelse(i == 1, TRUE, FALSE),
                                           force_abap_dwld = FALSE,
                                           save_occu_data = TRUE,
                                           overwrite_occu_data = c("site", "visit", "det"),
                                           scale_vars_occur = list(visit = NULL,
                                                                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                           print_fitting = FALSE,
-                                          verbose = TRUE)
+                                          verbose = TRUE,
+                                          monitor = FALSE)
 
             message(paste("Pipeline DST1 status =", out_dst1))
 

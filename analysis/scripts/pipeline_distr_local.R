@@ -6,7 +6,7 @@ rm(list = ls())
 
 test_years <- c(2012, 2013, 2014, 2015)
 
-run_modules <- c(1, 2)
+run_modules <- 1
 
 for(y in seq_along(test_years)){
 
@@ -33,7 +33,7 @@ for(y in seq_along(test_years)){
                                           sp_name = sp_name,
                                           year = year,
                                           config = config,
-                                          steps = c("fit"),
+                                          steps = c("data", "fit"),
                                           force_gee_dwld = FALSE,
                                           force_abap_dwld = FALSE,
                                           save_occu_data = TRUE,
@@ -41,7 +41,8 @@ for(y in seq_along(test_years)){
                                           scale_vars_occur = list(visit = NULL,
                                                                   site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                           print_fitting = FALSE,
-                                          verbose = TRUE)
+                                          verbose = TRUE,
+                                          monitor = TRUE)
 
             message(paste("Pipeline DST1 status =", out_dst1))
 
