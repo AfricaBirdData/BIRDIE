@@ -4,7 +4,7 @@
 \alias{prepGEEVisitData}
 \title{Prepare Google Earth Engine visit data}
 \usage{
-prepGEEVisitData(config, monitor)
+prepGEEVisitData(config, monitor = TRUE)
 }
 \arguments{
 \item{config}{A list with pipeline configuration parameters.
