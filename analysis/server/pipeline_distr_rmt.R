@@ -4,7 +4,7 @@ rm(list = ls())
 
 test_years <- 2012:2019
 
-run_branches <- c(1, 2)
+run_modules <- c(1, 2)
 
 for(y in seq_along(test_years)){
 
@@ -25,7 +25,7 @@ for(y in seq_along(test_years)){
 
         message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-        if(1 %in% run_branches){
+        if(1 %in% run_modules){
 
             out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                           sp_name = sp_name,
@@ -50,7 +50,7 @@ for(y in seq_along(test_years)){
         }
 
 
-        if(2 %in% run_branches){
+        if(2 %in% run_modules){
 
             out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
                                           config = config,

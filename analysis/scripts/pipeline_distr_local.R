@@ -6,11 +6,12 @@ rm(list = ls())
 
 test_years <- c(2012, 2013, 2014, 2015)
 
-run_branches <- c(1, 2)
+run_modules <- c(1, 2)
 
 for(y in seq_along(test_years)){
+
     year <- test_years[y]
-    config <- configPreambOccuR(year = year, dur = 3, dim_grid = 10, server = FALSE)
+    config <- configPreambOccu(year = year, dur = 3, dim_grid = 10, server = FALSE)
 
     for(i in seq_along(config$species)){
 
@@ -24,15 +25,15 @@ for(y in seq_along(test_years)){
             dplyr::pull(name) %>%
             unique()
 
-        print(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+        message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
 
-        if(1 %in% run_branches){
+        if(1 %in% run_modules){
 
             out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                           sp_name = sp_name,
                                           year = year,
                                           config = config,
-                                          steps = c("data", "fit", "summ"),
+                                          steps = c("fit"),
                                           force_gee_dwld = FALSE,
                                           force_abap_dwld = FALSE,
                                           save_occu_data = TRUE,
@@ -51,7 +52,7 @@ for(y in seq_along(test_years)){
         }
 
 
-        if(2 %in% run_branches){
+        if(2 %in% run_modules){
 
             out_dst2 <- ppl_run_pipe_dst2(sp_code = sp_code,
                                           config = config,

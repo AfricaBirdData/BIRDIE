@@ -37,6 +37,7 @@ Imports:
     rgee,
     rgeos,
     sf,
+    stats,
     tidyr,
     TMB,
     utils

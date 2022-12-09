@@ -22,7 +22,7 @@ necessary for plots and summaries.}
 \item{year}{Year to run to the pipeline for}
 
 \item{config}{A list with pipeline configuration parameters.
-See \link{configPreambOccuR}}
+See \link{configPreambOccu}}
 
 \item{steps}{A character vector containing the steps of the pipeline to run.
 Can contain: "data", "fit", "summ". Defaults to all of them.}
