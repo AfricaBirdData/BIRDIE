@@ -127,26 +127,42 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
 
             # Run model
-            fit <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
-                                      det.formula = reformulate(visit_mod),
-                                      data = occu_data, inits = inits, priors = priors,
-                                      n.samples = n_samples, n.omp.threads = 6,
-                                      n.thin = 20, n.chains = 3,
-                                      verbose = TRUE, n.report = 5000)
+
+            fit <- tryCatch({
+                out <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+                                   det.formula = reformulate(visit_mod),
+                                   data = occu_data, inits = inits, priors = priors,
+                                   n.samples = n_samples, n.omp.threads = 6,
+                                   n.thin = 20, n.chains = 3,
+                                   verbose = TRUE, n.report = 5000)
+
+                out
+
+            },
+            error = function(cond) {
+                sink(file.path(config$out_dir, sp_code, paste0("error_occu_fit_", year_sel, "_", sp_code, ".rds")),
+                     split = TRUE)
+                print(cond)
+                sink()
+                return(NULL)
+            },
+            warning = function(cond) {
+                sink(file.path(config$out_dir, sp_code, paste0("warning_occu_fit_", year_sel, "_", sp_code, ".rds")),
+                     split = TRUE)
+                print(cond)
+                sink()
+                return(out)
+            })
 
         }
 
-
-        # Diagnostics should go here. For now
-        success <- TRUE
 
         # Save fit and return 0 if success
-        if(success){
+        if(!is.null(fit)){
             saveRDS(fit, file.path(config$out_dir, sp_code, paste0("occu_fit_", year_sel, "_", sp_code, ".rds")))
-            return(0)
-        } else {
-            return(3)
         }
-
     }
+
+    return(0)
+
 }
