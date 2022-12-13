@@ -124,7 +124,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
                            data = occu_data, inits = inits, priors = priors,
                            batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
                            accept.rate = 0.43, tuning = list(phi = 4),
-                           n.omp.threads = 6, n.thin = 20, n.chains = 3,
+                           n.omp.threads = 3, n.thin = 20, n.chains = 3,
                            verbose = TRUE, n.report = 200)
 
         } else {
@@ -146,7 +146,7 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
                 out <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
                                    det.formula = reformulate(visit_mod),
                                    data = occu_data, inits = inits, priors = priors,
-                                   n.samples = n_samples, n.omp.threads = 6,
+                                   n.samples = n_samples, n.omp.threads = 1,
                                    n.thin = 20, n.chains = 3,
                                    verbose = TRUE, n.report = 5000)
 
