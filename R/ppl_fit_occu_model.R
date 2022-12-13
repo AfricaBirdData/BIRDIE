@@ -85,8 +85,22 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
         if(spatial){
 
+            # Add site coordinates to data
+            pentads <- ABAP::getRegionPentads("country", "South Africa") %>%
+                dplyr::filter(Name %in% unique(site_data_year$Name))
+
+            sf::st_agr(pentads) = "constant"
+            aeaproj <- "+proj=aea +lat_1=20 +lat_2=-23 +lat_0=0 +lon_0=25 +x_0=0 +y_0=0 +datum=WGS84 +units=m +no_defs"
+
+            pentads <- sf::st_transform(pentads, aeaproj)
+
+            occu_data$coords <- pentads %>%
+                dplyr::arrange(pentad) %>%
+                sf::st_centroid() %>%
+                sf::st_coordinates()
+
             # Pair-wise distances between all sites
-            dist_sites <- dist(occu_data$coords)/1000
+            dist_sites <- stats::dist(occu_data$coords)/1000
 
             # Specify list of inits
             inits <- list(alpha = 0,
@@ -140,14 +154,14 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
             },
             error = function(cond) {
-                sink(file.path(config$out_dir, sp_code, paste0("error_occu_fit_", year_sel, "_", sp_code, ".rds")),
+                sink(file.path(config$out_dir, paste0("reports/error_occu_fit_", year_sel, "_", sp_code, ".rds")),
                      split = TRUE)
                 print(cond)
                 sink()
                 return(NULL)
             },
             warning = function(cond) {
-                sink(file.path(config$out_dir, sp_code, paste0("warning_occu_fit_", year_sel, "_", sp_code, ".rds")),
+                sink(file.path(config$out_dir, paste0("reports/warning_occu_fit_", year_sel, "_", sp_code, ".rds")),
                      split = TRUE)
                 print(cond)
                 sink()
