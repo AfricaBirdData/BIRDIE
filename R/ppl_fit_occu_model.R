@@ -118,14 +118,14 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
                            phi.unif = c(3/(1000*min(dist_sites)), 3/(min(dist_sites))))
 
             # Run model
-            fit <- spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
-                           det.formula = reformulate(visit_mod),
-                           cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
-                           data = occu_data, inits = inits, priors = priors,
-                           batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
-                           accept.rate = 0.43, tuning = list(phi = 4),
-                           n.omp.threads = 3, n.thin = 20, n.chains = 3,
-                           verbose = TRUE, n.report = 200)
+            fit <- spOccupancy::spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
+                                        det.formula = reformulate(visit_mod),
+                                        cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
+                                        data = occu_data, inits = inits, priors = priors,
+                                        batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
+                                        accept.rate = 0.43, tuning = list(phi = 4),
+                                        n.omp.threads = 3, n.thin = 20, n.chains = 3,
+                                        verbose = TRUE, n.report = 200)
 
         } else {
 
