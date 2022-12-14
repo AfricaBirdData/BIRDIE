@@ -1,6 +1,7 @@
 #' Fit occupancy model
 #'
 #' @inheritParams ppl_run_pipe_dst1
+#' @param spatial Whether a spatial model should be fit. Defaults to FALSE.
 #'
 #' @return
 #' @import occuR
@@ -8,7 +9,7 @@
 #' @export
 #'
 #' @examples
-ppl_fit_occu_model <- function(sp_code, year, config, ...){
+ppl_fit_occu_model <- function(sp_code, year, config, spatial = FALSE, ...){
 
     varargs <- list(...)
 
@@ -64,8 +65,6 @@ ppl_fit_occu_model <- function(sp_code, year, config, ...){
 
 
         # Define models -----------------------------------------------------------
-
-        spatial <- ifelse(t == 2, TRUE, FALSE)
 
         # Detection covariates
         visit_mod <- c("(1|obs_id)", "(1|site_id)", "log(hours+1)", "prcp", "tdiff", "cwac")
