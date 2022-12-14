@@ -6,7 +6,6 @@
 \usage{
 ppl_create_site_visit(
   sp_code,
-  year,
   force_gee_dwld = FALSE,
   save_occu_data = TRUE,
   overwrite_occu_data = NULL,
@@ -16,8 +15,6 @@ ppl_create_site_visit(
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
-
-\item{year}{Year to run to the pipeline for}
 
 \item{force_gee_dwld}{Whether covariates from Google Earth Engine should be
 downloaded, even if a file with covariates is already present on disk.

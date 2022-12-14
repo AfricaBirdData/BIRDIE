@@ -26,7 +26,7 @@
 #' @export
 #'
 #' @examples
-ppl_create_site_visit <- function(sp_code, year, force_gee_dwld = FALSE,
+ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
                                   save_occu_data = TRUE,
                                   overwrite_occu_data = NULL, config, ...){
 

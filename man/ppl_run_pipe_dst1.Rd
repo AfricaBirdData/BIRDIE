@@ -9,7 +9,7 @@ ppl_run_pipe_dst1(
   sp_name,
   year,
   config,
-  steps = c("data", "fit", "summ"),
+  steps = c("data", "fit", "diagnose", "summary"),
   ...
 )
 }
@@ -25,7 +25,7 @@ necessary for plots and summaries.}
 See \link{configPreambOccu}}
 
 \item{steps}{A character vector containing the steps of the pipeline to run.
-Can contain: "data", "fit", "summ". Defaults to all of them.}
+Can contain: "data", "fit", "diagnose", "summary". Defaults to all of them.}
 
 \item{...}{Other arguments passed on to other functions}
 }

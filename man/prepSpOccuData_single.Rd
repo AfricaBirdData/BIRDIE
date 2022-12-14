@@ -4,7 +4,13 @@
 \alias{prepSpOccuData_single}
 \title{Prepare spOccupancy data for single-season model fitting}
 \usage{
-prepSpOccuData_single(site_data, visit_data, config, spatial = FALSE)
+prepSpOccuData_single(
+  site_data,
+  visit_data,
+  config,
+  spatial = FALSE,
+  sp_sites = NULL
+)
 }
 \arguments{
 \item{site_data}{A data frame containing information about covariates associated

@@ -58,7 +58,13 @@ for(y in seq_along(test_years)){
             future::plan("multisession", workers = ncores)
         }
 
-        furrr::future_map(sp_codes, ~pipe_prll_fit(.x, config))
+        for(t in seq_along(config$years)){
+
+            year_sel <- config$years[t]
+
+            furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config))
+
+        }
 
         if(parall){
             future::plan("sequential")

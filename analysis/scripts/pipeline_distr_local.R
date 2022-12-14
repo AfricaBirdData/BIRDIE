@@ -29,25 +29,32 @@ for(y in seq_along(test_years)){
 
         if(1 %in% run_modules){
 
-            out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
-                                          sp_name = sp_name,
-                                          year = year,
-                                          config = config,
-                                          steps = c("data", "fit"),
-                                          force_gee_dwld = FALSE,
-                                          force_abap_dwld = FALSE,
-                                          save_occu_data = TRUE,
-                                          overwrite_occu_data = c("site", "visit", "det"),
-                                          scale_vars_occur = list(visit = NULL,
-                                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                                          print_fitting = FALSE,
-                                          verbose = TRUE,
-                                          monitor = TRUE)
+            for(t in seq_along(config$years)){
 
-            message(paste("Pipeline DST1 status =", out_dst1))
+                year_sel <- config$years[t]
 
-            if(out_dst1 == 1){
-                next
+                out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                              sp_name = sp_name,
+                                              year = year_sel,
+                                              config = config,
+                                              steps = c("fit"),
+                                              force_gee_dwld = FALSE,
+                                              force_abap_dwld = FALSE,
+                                              save_occu_data = TRUE,
+                                              overwrite_occu_data = c("site", "visit", "det"),
+                                              scale_vars_occur = list(visit = NULL,
+                                                                      site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                                              spatial = TRUE,
+                                              print_fitting = FALSE,
+                                              verbose = TRUE,
+                                              monitor = TRUE)
+
+                message(paste("Pipeline DST1 status =", out_dst1))
+
+                if(out_dst1 == 1){
+                    next
+                }
+
             }
 
         }

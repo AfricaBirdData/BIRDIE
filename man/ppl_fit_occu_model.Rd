@@ -4,15 +4,17 @@
 \alias{ppl_fit_occu_model}
 \title{Fit occupancy model}
 \usage{
-ppl_fit_occu_model(sp_code, year, config, ...)
+ppl_fit_occu_model(sp_code, year_sel, config, spatial = FALSE, ...)
 }
 \arguments{
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
 
-\item{year}{Year to run to the pipeline for}
+\item{year_sel}{Year in data to run model for.}
 
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambOccu}}
+
+\item{spatial}{Whether a spatial model should be fit. Defaults to FALSE.}
 
 \item{...}{Other arguments passed on to other functions}
 }

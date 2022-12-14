@@ -8,12 +8,13 @@
 #' of interest must also be included in this data frame.
 #' @param spatial Logical, indicating whether spatial random effects should be
 #' included in the model. Defaults to FALSE.
+#' @sp_sites Spatial object with the sites to be used for fitting spatial models
 #'
 #' @return
 #' @export
 #'
 #' @examples
-prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE){
+prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE, sp_sites = NULL){
 
 
     # Prepare spOccupancy data list -------------------------------------------
@@ -22,7 +23,7 @@ prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE
     if(spatial){
         # Add coordinates to the data
         spocc_data <- ABAP::abapToSpOcc_single(visit_data,
-                                          pentads = sa_pentads %>%
+                                          pentads = sp_sites %>%
                                               dplyr::filter(Name %in% unique(site_data$Name)))
     } else {
         spocc_data <- ABAP::abapToSpOcc_single(visit_data)

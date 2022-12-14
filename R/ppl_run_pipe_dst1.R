@@ -11,7 +11,7 @@
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambOccu}
 #' @param steps A character vector containing the steps of the pipeline to run.
-#' Can contain: "data", "fit", "summ". Defaults to all of them.
+#' Can contain: "data", "fit", "diagnose", "summary". Defaults to all of them.
 #' @param ... Other arguments passed on to other functions
 #'
 #' @return
@@ -19,15 +19,15 @@
 #'
 #' @examples
 ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
-                              steps = c("data", "fit", "summ"), ...){
+                              steps = c("data", "fit", "diagnose", "summary"), ...){
 
     if("data" %in% steps){
-        ppl_create_site_visit(sp_code, year, config, ...)
+        ppl_create_site_visit(sp_code, config, ...)
     }
 
     if("fit" %in% steps){
 
-        fit_status <- ppl_fit_occu_model(sp_code, year, config, ...)
+        fit_status <- ppl_fit_occu_model(sp_code, year_sel = year, config, ...)
 
         # Stop if there are no detections
         if(fit_status == 1){
@@ -48,7 +48,11 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         }
     }
 
-    if("summ" %in% steps){
+    if("diagnose" %in% steps){
+        diagnoseSpOccu()
+    }
+
+    if("summary" %in% steps){
         ppl_summarize_occur(sp_code, sp_name, year, config, ...)
     }
 
