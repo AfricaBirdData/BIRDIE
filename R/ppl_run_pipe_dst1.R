@@ -29,27 +29,43 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
         fit_status <- ppl_fit_occu_model(sp_code, year_sel = year, config, ...)
 
-        # Stop if there are no detections
+        # Generate reports
         if(fit_status == 1){
-            sink(file.path(config$out_dir, sp_code,paste0("no_detections_", config$years_ch,"_", sp_code, ".txt")))
+            conv_file <- file.path(config$out_dir, reports, paste0("no_detections_", year,"_", sp_code, ".txt"))
+            sink(conv_file)
+            print(paste("no detections", year, sp_code))
             sink()
-            return(1)
+            message(paste("no detections", year, sp_code)) # to console
         } else if(fit_status == 2){
-            sink(file.path(config$out_dir, sp_code,paste0("less_than_5_pentads_", config$years_ch,"_", sp_code, ".txt")))
+            conv_file <- file.path(config$out_dir, reports, paste0("less_than_5_pentads_", year,"_", sp_code, ".txt"))
+            sink(conv_file)
+            print(paste("less than 5 pentads", year, sp_code))
             sink()
-            return(1)
+            message(paste("less than 5 pentads", year, sp_code)) # to console
         } else if(fit_status == 3){
-            sink(file.path(config$out_dir, sp_code,paste0("model_fit_failed_", config$years_ch,"_", sp_code, ".txt")))
+            conv_file <- file.path(config$out_dir, reports, paste0("model_fit_failed_", year,"_", sp_code, ".txt"))
+            sink(conv_file)
+            print(paste("model fit failed", year, sp_code))
             sink()
-            return(1)
+            message(paste("model fit failed", year, sp_code)) # to console
         } else {
-            # set pipeline status
-            ppl_status <- fit_status
+            saveRDS(fit_status, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+            fit_status <- 0
         }
+
+        # set pipeline status
+        ppl_status <- fit_status
+
     }
 
     if("diagnose" %in% steps){
-        diagnoseSpOccu()
+
+        fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+
+        saveRDS(
+            diagnoseSpOccu(fit, sp_code, config, year_sel),
+            file.path(config$out_dir, sp_code, paste0("occu_ppc_", year, "_", sp_code, ".rds"))
+        )
     }
 
     if("summary" %in% steps){
