@@ -18,6 +18,11 @@ See \link{configPreambOccu}}
 
 \item{...}{Other arguments passed on to other functions}
 }
+\value{
+It can return either a number correspoding to the status of the fitting
+process: 1 - No detections, 2 - too few detections, 3 - model fitting failed
+(inherited from \code{\link{fitSpOccu}})
+}
 \description{
 Fit occupancy model
 }
