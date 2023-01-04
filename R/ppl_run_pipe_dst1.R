@@ -63,12 +63,14 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
 
         saveRDS(
-            diagnoseSpOccu(fit, sp_code, config, year_sel),
+            diagnoseSpOccu(fit, sp_code, config, year),
             file.path(config$out_dir, sp_code, paste0("occu_ppc_", year, "_", sp_code, ".rds"))
         )
     }
 
     if("summary" %in% steps){
+        year <- year_sel
+        fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
         ppl_summarize_occur(sp_code, sp_name, year, config, ...)
     }
 

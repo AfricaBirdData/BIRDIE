@@ -8,10 +8,17 @@ test_years <- c(2012, 2013, 2014, 2015)
 
 run_modules <- 1
 
+y=1; i=1; t=1
+
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccu(year = year, dur = 3, dim_grid = 10, server = FALSE)
+    config <- configPreambOccu(year = year, dur = 3,
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
+                                            "prcp", "tdiff", "watext:watrec"),
+                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               server = FALSE)
 
     for(i in seq_along(config$species)){
 
@@ -37,14 +44,14 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("fit"),
+                                              steps = c("data", "fit"),
                                               force_gee_dwld = FALSE,
                                               force_abap_dwld = FALSE,
                                               save_occu_data = TRUE,
                                               overwrite_occu_data = c("site", "visit", "det"),
                                               scale_vars_occur = list(visit = NULL,
                                                                       site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                                              spatial = TRUE,
+                                              spatial = FALSE,
                                               print_fitting = FALSE,
                                               verbose = TRUE,
                                               monitor = TRUE)

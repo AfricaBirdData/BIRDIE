@@ -4,23 +4,30 @@
 #' @param year Year of interest.
 #' @param dur Temporal coverage of the analysis in years. `year` will be the last year
 #' covered by the analysis.
+#' @param occ_mod A character vector with the names of the variables to include in the occupancy
+#' process in the occupancy model. Random effects and interactions are specified as in
+#' \code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment
+#' (i.e., interactions of two variables).
+#' @param det_mod A character vector with the names of the variables to include in the detection
+#' process in the occupancy model. Random effects and interactions are specified as in
+#' \code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment.
+#' (i.e., interactions of two variables).
+#' @param fixed_vars A character vector with the names of the variables included in the
+#' occupancy model that don't change over time.
 #' @param dim_grid This was for occuR and it is not doing anything at the moment.
 #' An integer giving the dimension of the grid used for spatial effects.
-#' This dimension gives the number `k` see \code{\link[mgcv]{choose.k}}.
+#' This dimension gives the number `k` see \code{\link[mgcv]{choose.k}}. Defaults
+#' to 10.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
 #'
-#' @return A list with:
-#'   - data_dir: directory where data is retrieved from.
-#'   - fit_dir: directory where fitted model and other output is saved to.
-#'   - dyear: number of years before and after the year of interest.
-#'   - sptemp: spatio-temporal effect of the occupancy model.
-#'   - species: species models will be fitted to.
+#' @return A list of elements to configure the pipeline to process occupancy models
 #' @export
 #'
 #' @examples
 #' configPreambOccu(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
-configPreambOccu <- function(year, dur, dim_grid, server){
+configPreambOccu <- function(year, dur, occ_mod, det_mod, fixed_vars, server,
+                             dim_grid = 10){
 
     if(server){
 
@@ -51,6 +58,7 @@ configPreambOccu <- function(year, dur, dim_grid, server){
     years <- year_range[1]:year_range[2]
 
     list(server=server, data_dir=data_dir, out_dir=out_dir, species=species, dim_grid=dim_grid,
-         year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years)
+         year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years,
+         occ_mod=occ_mod, det_mod=det_mod, fixed_vars=fixed_vars)
 
 }

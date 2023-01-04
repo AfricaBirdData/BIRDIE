@@ -4,7 +4,15 @@
 \alias{configPreambOccu}
 \title{Prepare server or local occupancy modelling preamble}
 \usage{
-configPreambOccu(year, dur, dim_grid, server)
+configPreambOccu(
+  year,
+  dur,
+  occ_mod,
+  det_mod,
+  fixed_vars,
+  server,
+  dim_grid = 10
+)
 }
 \arguments{
 \item{year}{Year of interest.}
@@ -12,22 +20,29 @@ configPreambOccu(year, dur, dim_grid, server)
 \item{dur}{Temporal coverage of the analysis in years. \code{year} will be the last year
 covered by the analysis.}
 
-\item{dim_grid}{This was for occuR and it is not doing anything at the moment.
-An integer giving the dimension of the grid used for spatial effects.
-This dimension gives the number \code{k} see \code{\link[mgcv]{choose.k}}.}
+\item{occ_mod}{A character vector with the names of the variables to include in the occupancy
+process in the occupancy model. Random effects and interactions are specified as in
+\code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment
+(i.e., interactions of two variables).}
+
+\item{det_mod}{A character vector with the names of the variables to include in the detection
+process in the occupancy model. Random effects and interactions are specified as in
+\code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment.
+(i.e., interactions of two variables).}
+
+\item{fixed_vars}{A character vector with the names of the variables included in the
+occupancy model that don't change over time.}
 
 \item{server}{Logical. If TRUE the preamble is prepared to run remotely,
 otherwise it is prepared to run locally.}
+
+\item{dim_grid}{This was for occuR and it is not doing anything at the moment.
+An integer giving the dimension of the grid used for spatial effects.
+This dimension gives the number \code{k} see \code{\link[mgcv]{choose.k}}. Defaults
+to 10.}
 }
 \value{
-A list with:
-\itemize{
-\item data_dir: directory where data is retrieved from.
-\item fit_dir: directory where fitted model and other output is saved to.
-\item dyear: number of years before and after the year of interest.
-\item sptemp: spatio-temporal effect of the occupancy model.
-\item species: species models will be fitted to.
-}
+A list of elements to configure the pipeline to process occupancy models
 }
 \description{
 Set basic variables to run BIRDIE scripts locally or remotely.

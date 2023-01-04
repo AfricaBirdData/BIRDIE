@@ -25,6 +25,7 @@ createOccuData <- function(sp_code, years,
                            site_data, visit_data,
                            force_abap_dwld = FALSE, config){
 
+    # Download detection data -------------------------------------------------
 
     # Cache file name
     cachefile <- file.path(tempdir(), paste(c(sp_code, years, ".rds"), collapse = "_"))
@@ -49,14 +50,45 @@ createOccuData <- function(sp_code, years,
 
     }
 
-    # Other variables and remove those rows with NA values
+
+    # Configure site covariates -----------------------------------------------
+
+    # Expand time-varying covariates and remove those rows with NA values
     site_data <- site_data %>%
-        dplyr::select(Pentad = Name, lon, lat, watocc_ever, dist_coast, elev, dplyr::ends_with(match = as.character(config$years))) %>%
+        dplyr::rename(Pentad = Name) %>%
+        dplyr::select(dplyr::all_of(config$fixed_vars),
+                      dplyr::ends_with(match = as.character(years))) %>%
+        BIRDIE::gatherYearFromVars(vars = setdiff(names(.), config$fixed_vars), sep = "_") %>%
         tidyr::drop_na()   # I'M REMOVING SITES WITH NA DATA! MAKE SURE THIS MAKES SENSE
+
+    # Create other variables that could be necessary for the model
+    site_data <- site_data %>%
+        dplyr::arrange(Pentad) %>%
+        dplyr::group_by(Pentad) %>%
+        dplyr::mutate(tdiff = tmmx - tmmn,
+                      log_dist_coast = log(dist_coast + 1),
+                      log_watext = log(watext + 1),
+                      log_watrec = log(watrec + 1),
+                      site_id = dplyr::cur_group_id()) %>%
+        dplyr::ungroup()
+
+    # Include interaction terms if there are any
+    tt_occu <- stats::terms(stats::reformulate(config$occ_mod))
+
+    intrcs <- attr(tt_occu, "term.labels")[attr(tt_occu, "order") > 1]
+    intrcs_vars <- strsplit(intrcs, ":")
+
+    for(i in seq_along(intrcs)){
+        site_data <- site_data %>%
+            dplyr::mutate(!!intrcs[i] := !!rlang::sym(intrcs_vars[[i]][1]) * !!rlang::sym(intrcs_vars[[i]][2]))
+    }
+
+
+    # Configure visit covariates ----------------------------------------------
 
     # Subset visits that correspond to the years of interest
     visit_data <- visit_data %>%
-        dplyr::filter(year %in% config$years)
+        dplyr::filter(year %in% years)
 
     # Add detections to visit data
     visit_data <- visit_data %>%
@@ -66,22 +98,35 @@ createOccuData <- function(sp_code, years,
                              dplyr::mutate(obs = ifelse(obs == "-", 0, 1)),
                          by = c("CardNo", "StartDate", "Pentad"))
 
+    # Create additional detection variables
+    visit_data <- visit_data %>%
+        dplyr::mutate(StartMonth = lubridate::month(StartDate),
+                      obs_id = as.numeric(ObserverNo),
+                      tdiff = tmmx - tmmn,
+                      hours = TotalHours,
+                      log_hours = log(hours + 1)) %>%
+        dplyr::left_join(site_data %>%
+                             dplyr::select(Pentad, site_id) %>%
+                             dplyr::distinct(),
+                         by = "Pentad")
 
+    # Include interaction terms if there are any
+    tt_det <- stats::terms(stats::reformulate(config$det_mod))
+
+    intrcs <- attr(tt_det, "term.labels")[attr(tt_det, "order") > 1]
+    intrcs_vars <- strsplit(intrcs, ":")
+
+    for(i in seq_along(intrcs)){
+        visit_data <- visit_data %>%
+            dplyr::mutate(!!intrcs[i] := !!rlang::sym(intrcs_vars[[i]][1]) * !!rlang::sym(intrcs_vars[[i]][2]))
+    }
+
+    # Remove NA values in detection data
     if(any(is.na(visit_data$obs))){
         warning("NA found in detection data")
         visit_data <- visit_data %>%
             dplyr::filter(!is.na(obs))
     }
-
-
-    # Format site data --------------------------------------------------------
-
-    # First, long format for site variables and years
-    # HARD CODED! Check that these are the variables that don't change over time
-    fixed_vars <- c("Pentad", "lon", "lat", "site", "watocc_ever", "dist_coast", "elev")
-
-    site_data <- site_data %>%
-        BIRDIE::gatherYearFromVars(vars = setdiff(names(.), fixed_vars), sep = "_")
 
 
     # Create other covariates -------------------------------------------------
@@ -92,39 +137,45 @@ createOccuData <- function(sp_code, years,
     sa_pentads <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa")
 
     # Create a detection covariate for CWAC sites
-    cwac_sites <- CWAC::listCwacSites(.region_type = "country", .region = "South Africa") %>%
-        sf::st_as_sf(coords = c("X", "Y"), crs = 4326, remove = FALSE)
+    cwac_sites <- CWAC::listCwacSites(.region_type = "country",
+                                      .region = "South Africa") %>%
+        sf::st_as_sf(coords = c("X", "Y"), crs = 4326, remove = FALSE) %>%
+        suppressWarnings()
 
     # Make sites a spatial object
     site_data <- site_data %>%
-        dplyr::mutate(Name = Pentad) %>%
         dplyr::left_join(sa_pentads %>%
                              dplyr::select(Name),
-                         by = "Name") %>%
+                         by = c("Pentad" = "Name")) %>%
         sf::st_sf()
 
     cwac_intsc <- sf::st_intersects(site_data, cwac_sites)
     site_data <- site_data %>%
-        dplyr::mutate(cwac = sapply(cwac_intsc, length) != 0) %>%
+        dplyr::mutate(cwac = as.integer(sapply(cwac_intsc, length) != 0)) %>%
         sf::st_drop_geometry()
 
     # Add cwac to visit data
     visit_data <- visit_data %>%
         dplyr::left_join(site_data %>%
-                             dplyr::select(Name, cwac) %>%
+                             dplyr::select(Pentad, cwac) %>%
                              dplyr::distinct(),
-                         by = c("Pentad" = "Name"))
+                         by = "Pentad")
 
-    # Create other variables
+
+    # Keep only those variables that will be used in the models
+    occu_vars <- attr(tt_occu, "term.labels")
+    occu_vars <- gsub(".* \\| ", "", occu_vars)
+
     site_data <- site_data %>%
-        dplyr::mutate(tdiff = tmmx - tmmn,
-                      log_dist_coast = log(dist_coast + 1),
-                      log_watext = log(watext + 1),
-                      log_watrec = log(watrec + 1))
+        dplyr::select(Pentad, year, dplyr::all_of(config$occ_mod))
 
+
+    det_vars <- attr(tt_det, "term.labels")
+    det_vars <- gsub(".* \\| ", "", det_vars)
+
+    # We need to keep some extra variables of the visit data for other functions to work down the line
     visit_data <- visit_data %>%
-        dplyr::mutate(tdiff = tmmx - tmmn)
-
+        dplyr::select(CardNo, Pentad, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
 
     # Save to disc ------------------------------------------------------------
     return(list(site = site_data,

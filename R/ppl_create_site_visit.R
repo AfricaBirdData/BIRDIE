@@ -76,7 +76,7 @@ ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
     rm(occudata)
     gc()
 
-    # Define distinct pentad-year combinations
+    # Keep only pentads that appear in visit data
     site_data <- site_data %>%
         dplyr::filter(Pentad %in% unique(visit_data$Pentad))
 

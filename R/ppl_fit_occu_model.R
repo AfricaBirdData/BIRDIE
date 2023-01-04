@@ -22,9 +22,9 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
     detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
 
     # Read in site and visit data
-    site_data <- utils::read.csv(sitefile)
-    visit_data <- utils::read.csv(visitfile)
-    det_data <- utils::read.csv(detfile)
+    site_data <- utils::read.csv(sitefile, check.names = FALSE)
+    visit_data <- utils::read.csv(visitfile, check.names = FALSE)
+    det_data <- utils::read.csv(detfile, check.names = FALSE)
 
     # Stop if there are no detections
     if(!1 %in% unique(det_data$obs)){

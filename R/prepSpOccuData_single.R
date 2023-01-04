@@ -32,14 +32,14 @@ prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE
 
     # Add covariates to spOccupancy object -----------------------------------
 
-    # Keep only those sites that appear in visits
-    site_data <- site_data %>%
-        dplyr::filter(Pentad %in% unique(visit_data$Pentad))
+    # Select occupancy covariates and add to data list
+    tt_occ <- stats::terms(stats::reformulate(config$occ_mod))
 
-    # Select covariates and add to data list
+    occ_vars <- attr(tt_occ, "term.labels")
+    occ_vars <- gsub(".* \\| ", "", occ_vars)
+
     occ_cov_sel <- site_data %>%
-        dplyr::select(pentad = Pentad, dist_coast, prcp, tdiff, ndvi,
-                      watext, watrec, elev, log_dist_coast, log_watext)
+        dplyr::select(pentad = Pentad, dplyr::all_of(occ_vars))
 
     spocc_data <- spocc_data %>%
         ABAP::addEEtoSpOcc_single(ee_data = occ_cov_sel)
@@ -48,29 +48,18 @@ prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE
     spocc_data <- scaleSpOccVars(spocc_data, "occ", scale_vars = names(occ_cov_sel)[-1])
 
     # Add detection covariates
-    spocc_data <- spocc_data %>%
-        addSpOccDetCovt(visit_data %>%
-                            dplyr::mutate(StartMonth = lubridate::month(StartDate)) %>%
-                            dplyr::select(Pentad, StartDate, StartMonth))
+    tt_det <- stats::terms(stats::reformulate(config$det_mod))
 
+    det_vars <- attr(tt_det, "term.labels")
+    det_vars <- gsub(".* \\| ", "", det_vars)
 
-    # Add observer ID as covariate
-    spocc_data <- spocc_data %>%
-        addSpOccDetCovt(visit_data %>%
-                            dplyr::mutate(obs_id = as.numeric(ObserverNo)) %>%
-                            dplyr::select(Pentad, StartDate, obs_id))
+    det_cov_sel <- visit_data %>%
+        dplyr::select(Pentad, StartDate, dplyr::all_of(det_vars))
 
-    # Add temperature, precipitation, CWAC site presence and pentad as detection covariates
-    spocc_data <- spocc_data %>%
-        addSpOccDetCovt(visit_data %>%
-                            dplyr::group_by(Pentad) %>%
-                            dplyr::mutate(site_id = dplyr::cur_group_id(),
-                                          tdiff = tmmx - tmmn) %>%
-                            dplyr::ungroup() %>%
-                            dplyr::select(Pentad, StartDate, prcp, tdiff, cwac, site_id))
+    spocc_data <- addSpOccDetCovt(spocc_data, det_cov_sel)
 
     # Scale covariates
-    spocc_data <- scaleSpOccVars(spocc_data, "det", scale_vars = c("prcp", "tdiff"))
+    spocc_data <- scaleSpOccVars(spocc_data, "det", scale_vars = c("log_hours", "prcp", "tdiff"))
 
     # # Create a cyclic month variable
     # spocc_data$det.covs$month_sin <- sin(2*pi*spocc_data$det.covs$month/12)

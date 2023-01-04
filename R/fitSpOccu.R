@@ -23,13 +23,6 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
 
     # Define models -----------------------------------------------------------
 
-    # Detection covariates
-    visit_mod <- c("(1|obs_id)", "(1|site_id)", "log(hours+1)", "prcp", "tdiff", "cwac")
-
-    # Occupancy covariates
-    site_mod <- c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
-                  "prcp", "tdiff")
-
     # Priors and initial values
     # Note: we could use posterior of previous years models to define priors
 
@@ -52,7 +45,6 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
                       phi = 3 / mean(dist_sites),
                       w = rep(0, nrow(occu_data$y)))
 
-
         # Priors
         priors <- list(alpha.normal = list(mean = 0, var = 2.72),
                        beta.normal = list(mean = 0, var = 2.72),
@@ -60,8 +52,8 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
                        phi.unif = c(3/(1000*min(dist_sites)), 3/(min(dist_sites))))
 
         # Run model
-        fit <- spOccupancy::spPGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
-                                    det.formula = reformulate(visit_mod),
+        fit <- spOccupancy::spPGOcc(occ.formula = reformulate(config$site_mod),
+                                    det.formula = reformulate(config$visit_mod),
                                     cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
                                     data = occu_data, inits = inits, priors = priors,
                                     batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
@@ -76,17 +68,15 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
                       beta = 0,
                       z = apply(occu_data$y, 1, max, na.rm = TRUE))
 
-
         # Priors
         priors <- list(alpha.normal = list(mean = 0, var = 2.5),
                        beta.normal = list(mean = 0, var = 2.5))
 
-
         # Run model
 
         fit <- tryCatch({
-            out <- spOccupancy::PGOcc(occ.formula = reformulate(c(site_mod, "watrec*watext")),
-                                      det.formula = reformulate(visit_mod),
+            out <- spOccupancy::PGOcc(occ.formula = reformulate(config$occ_mod),
+                                      det.formula = reformulate(config$det_mod),
                                       data = occu_data, inits = inits, priors = priors,
                                       n.samples = n_samples, n.omp.threads = 1,
                                       n.thin = 20, n.chains = 3,
