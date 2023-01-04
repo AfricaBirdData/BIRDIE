@@ -9,6 +9,9 @@ analysis/out_nosync/*
 # And downloaded files
 analysis/downloads/*
 
+# And potentially large data files
+analysis/data/*
+
 # Ignore compiled models
 analysis/models/*.rds
 
