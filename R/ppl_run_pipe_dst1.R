@@ -21,8 +21,24 @@
 ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
                               steps = c("data", "fit", "diagnose", "summary"), ...){
 
+    # Find most recent log file
+    logfile <- file.info(list.files(file.path(config$out_dir, "reports"), full.names = TRUE)) %>%
+        dplyr::mutate(file = row.names(.)) %>%
+        dplyr::filter(grepl("pipe_log", file)) %>%
+        dplyr::arrange(desc(ctime)) %>%
+        dplyr::slice(1) %>%
+        dplyr::pull(file)
+
+    # Open log with current time
+    s <- Sys.time()
+    attr(s,"tzone") <- "Africa/Johannesburg"
+
+    ppl_log <- c(date_time = format(s), species = sp_code, model = "occ",
+                 data = NA, fit = NA, diagnose = NA, summary = NA, notes = NA)
+
     if("data" %in% steps){
         ppl_create_site_visit(sp_code, config, ...)
+        ppl_log["data"] <- 0
     }
 
     if("fit" %in% steps){
@@ -31,29 +47,52 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
         # Generate reports
         if(fit_status == 1){
+
             conv_file <- file.path(config$out_dir, reports, paste0("no_detections_", year,"_", sp_code, ".txt"))
             sink(conv_file)
             print(paste("no detections", year, sp_code))
             sink()
             message(paste("no detections", year, sp_code)) # to console
+
+            # Create log
+            ppl_log["fit"] <- fit_status
+            createLog(config, logfile, full_log = ppl_log)
+
             return(fit_status)
+
         } else if(fit_status == 2){
             conv_file <- file.path(config$out_dir, reports, paste0("less_than_5_pentads_", year,"_", sp_code, ".txt"))
             sink(conv_file)
             print(paste("less than 5 pentads", year, sp_code))
             sink()
             message(paste("less than 5 pentads", year, sp_code)) # to console
+
+            # Create log
+            ppl_log["fit"] <- fit_status
+            createLog(config, logfile, full_log = ppl_log)
+
             return(fit_status)
+
         } else if(fit_status == 3){
             conv_file <- file.path(config$out_dir, reports, paste0("model_fit_failed_", year,"_", sp_code, ".txt"))
             sink(conv_file)
             print(paste("model fit failed", year, sp_code))
             sink()
             message(paste("model fit failed", year, sp_code)) # to console
+
+            # Create log
+            ppl_log["fit"] <- fit_status
+            createLog(config, logfile, full_log = ppl_log)
+
             return(fit_status)
+
         } else {
             saveRDS(fit_status, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
             fit_status <- 0
+
+            # Create log
+            ppl_log["fit"] <- fit_status
+
         }
 
         # set pipeline status
@@ -65,10 +104,16 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
         fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
 
-        saveRDS(
-            diagnoseSpOccu(fit, sp_code, config, year),
-            file.path(config$out_dir, sp_code, paste0("occu_ppc_", year, "_", sp_code, ".rds"))
-        )
+        diag_out <- diagnoseSpOccu(fit, sp_code, config, year)
+
+        saveRDS(diag_out,
+            file.path(config$out_dir, sp_code, paste0("occu_ppc_", year, "_", sp_code, ".rds")))
+
+        # Create log
+        ppl_log["diagnose"] <- mean(diag_out$fit.y.rep > diag_out$fit.y) # Bayes p
+
+        rm(diag_out)
+
     }
 
     if("summary" %in% steps){
@@ -78,7 +123,13 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         }
         ppl_summarise_occu(fit, sp_code, sp_name, year, config)
 
+        # Create log
+        ppl_log["summary"] <- 0
+
     }
+
+    # Close log
+    createLog(config, logfile, full_log = ppl_log)
 
     if(exists("ppl_status") && ppl_status != 0){
         return(ppl_status)

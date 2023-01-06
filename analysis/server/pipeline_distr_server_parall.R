@@ -20,6 +20,9 @@ for(y in seq_along(test_years)){
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
                                server = TRUE)
 
+    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA, data = NA, fit = NA,
+              diagnose = NA, summary = NA, notes = "Log file created")
+
     # Create aux indices for parallel computing
     if(parall){
         seq_spp <- seq_along(config$species)

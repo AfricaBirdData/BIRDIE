@@ -20,6 +20,9 @@ for(y in seq_along(test_years)){
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
                                server = FALSE)
 
+    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA, data = NA, fit = NA,
+              diagnose = NA, summary = NA, notes = "Log file created")
+
     for(i in seq_along(config$species)){
 
         sp_code <- config$species[i]
