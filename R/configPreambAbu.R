@@ -14,8 +14,8 @@
 #' @export
 #'
 #' @examples
-#' configPreambJAGS(year = 2010, server = TRUE)
-configPreambJAGS <- function(year, server){
+#' configPreambAbu(year = 2010, server = TRUE)
+configPreambAbu <- function(year, server){
 
     if(server){
 

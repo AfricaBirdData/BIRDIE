@@ -2,9 +2,10 @@
 
 export("%>%")
 export(addSpOccDetCovt)
-export(configPreambJAGS)
+export(configPreambAbu)
 export(configPreambOccu)
 export(createCombinedExportFile)
+export(createLog)
 export(createOccuData)
 export(diagnoseSpOccu)
 export(estimateAoo)
