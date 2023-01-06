@@ -8,7 +8,7 @@ createOccuData(
   sp_code,
   years,
   site_data,
-  visit_data,
+  visit_data = NULL,
   force_abap_dwld = FALSE,
   config
 )
@@ -22,7 +22,7 @@ want data for. Ignored if download set to FALSE.}
 
 \item{site_data}{A dataframe with occupancy site data.}
 
-\item{visit_data}{A dataframe with occupancy visit data.}
+\item{visit_data}{Optional. A dataframe with occupancy visit data.}
 
 \item{force_abap_dwld}{Indicates whether ABAP data must be downloaded for the species
 and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
@@ -34,10 +34,11 @@ be downloaded regardless of the cached file.}
 }
 \value{
 A list containing two data frames: one with site data and one with
-visit data.
+visit data, if visit data is provided. The second element will be NULL if visit
+data not provided.
 }
 \description{
-This function takes generic occupancy visit and site data
-without species observations, adds detection data for a species in a given
+This function takes generic occupancy site data and, optionally,
+visit data without species observations, adds detection data for a species in a given
 year, runs some checks and formats the output.
 }

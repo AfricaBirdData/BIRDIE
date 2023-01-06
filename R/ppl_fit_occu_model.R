@@ -43,7 +43,7 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
         return(2)
     }
 
-    # Add detection info to visit data
+    # Add detection info to visit data (we need Spp variable for functions in the ABAP package)
     visit_data <- visit_data %>%
         dplyr::left_join(det_data,
                          by = c("CardNo", "StartDate", "year", "Pentad")) %>%

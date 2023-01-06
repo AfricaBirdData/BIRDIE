@@ -1,14 +1,14 @@
 #' Create data for fitting an occupancy model
 #'
-#' @description This function takes generic occupancy visit and site data
-#' without species observations, adds detection data for a species in a given
+#' @description This function takes generic occupancy site data and, optionally,
+#' visit data without species observations, adds detection data for a species in a given
 #' year, runs some checks and formats the output.
 #' @param sp_code SAFRING_No of the species of interest as extracted from ABAP.
 #' Ignored if download set to FALSE.
 #' @param years A numeric vector with elements corresponding to the years we
 #' want data for. Ignored if download set to FALSE.
 #' @param site_data A dataframe with occupancy site data.
-#' @param visit_data A dataframe with occupancy visit data.
+#' @param visit_data Optional. A dataframe with occupancy visit data.
 #' @param force_abap_dwld Indicates whether ABAP data must be downloaded for the species
 #' and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
 #' from ABAP once per session and cached in a temp file. After this the cached
@@ -17,39 +17,43 @@
 #' @param config A list of configuration parameters see \link{configPreambOccu}
 #'
 #' @return A list containing two data frames: one with site data and one with
-#' visit data.
+#' visit data, if visit data is provided. The second element will be NULL if visit
+#' data not provided.
 #' @export
 #'
 #' @examples
 createOccuData <- function(sp_code, years,
-                           site_data, visit_data,
+                           site_data, visit_data = NULL,
                            force_abap_dwld = FALSE, config){
 
     # Download detection data -------------------------------------------------
 
-    # Cache file name
-    cachefile <- file.path(tempdir(), paste(c(sp_code, years, ".rds"), collapse = "_"))
+    # Only needed if visit data is provided
+    if(!is.null(visit_data)){
 
-    if(!file.exists(cachefile) | force_abap_dwld){
+        # Cache file name
+        cachefile <- file.path(tempdir(), paste(c(sp_code, years, ".rds"), collapse = "_"))
 
-        # Download species detection
-        message("Downloading from SABAP")
+        if(!file.exists(cachefile) | force_abap_dwld){
 
-        sp_detect <- ABAP::getAbapData(.spp_code = sp_code,
-                                       .region_type = "country",
-                                       .region = "South Africa",
-                                       .years = years)
+            # Download species detection
+            message("Downloading from SABAP")
 
-        # Save to cache
-        saveRDS(sp_detect, cachefile)
+            sp_detect <- ABAP::getAbapData(.spp_code = sp_code,
+                                           .region_type = "country",
+                                           .region = "South Africa",
+                                           .years = years)
 
-    } else {
+            # Save to cache
+            saveRDS(sp_detect, cachefile)
 
-        message("Using cached file")
-        sp_detect <- readRDS(cachefile)
+        } else {
 
+            message("Using cached file")
+            sp_detect <- readRDS(cachefile)
+
+        }
     }
-
 
     # Configure site covariates -----------------------------------------------
 
@@ -84,50 +88,53 @@ createOccuData <- function(sp_code, years,
     }
 
 
-    # Configure visit covariates ----------------------------------------------
+    if(!is.null(visit_data)){
 
-    # Subset visits that correspond to the years of interest
-    visit_data <- visit_data %>%
-        dplyr::filter(year %in% years)
+        # Configure visit covariates ----------------------------------------------
 
-    # Add detections to visit data
-    visit_data <- visit_data %>%
-        dplyr::mutate(StartDate = as.Date(StartDate)) %>%
-        dplyr::left_join(sp_detect %>%
-                             dplyr::select(CardNo, StartDate, Pentad, obs = Spp) %>%
-                             dplyr::mutate(obs = ifelse(obs == "-", 0, 1)),
-                         by = c("CardNo", "StartDate", "Pentad"))
-
-    # Create additional detection variables
-    visit_data <- visit_data %>%
-        dplyr::mutate(StartMonth = lubridate::month(StartDate),
-                      obs_id = as.numeric(ObserverNo),
-                      tdiff = tmmx - tmmn,
-                      hours = TotalHours,
-                      log_hours = log(hours + 1)) %>%
-        dplyr::left_join(site_data %>%
-                             dplyr::select(Pentad, site_id) %>%
-                             dplyr::distinct(),
-                         by = "Pentad")
-
-    # Include interaction terms if there are any
-    tt_det <- stats::terms(stats::reformulate(config$det_mod))
-
-    intrcs <- attr(tt_det, "term.labels")[attr(tt_det, "order") > 1]
-    intrcs_vars <- strsplit(intrcs, ":")
-
-    for(i in seq_along(intrcs)){
+        # Subset visits that correspond to the years of interest
         visit_data <- visit_data %>%
-            dplyr::mutate(!!intrcs[i] := !!rlang::sym(intrcs_vars[[i]][1]) * !!rlang::sym(intrcs_vars[[i]][2]))
-    }
+            dplyr::filter(year %in% years)
 
-    # Remove NA values in detection data
-    if(any(is.na(visit_data$obs))){
-        warning("NA found in detection data")
+        # Add detections to visit data
         visit_data <- visit_data %>%
-            dplyr::filter(!is.na(obs))
-    }
+            dplyr::mutate(StartDate = as.Date(StartDate)) %>%
+            dplyr::left_join(sp_detect %>%
+                                 dplyr::select(CardNo, StartDate, Pentad, obs = Spp) %>%
+                                 dplyr::mutate(obs = ifelse(obs == "-", 0, 1)),
+                             by = c("CardNo", "StartDate", "Pentad"))
 
+        # Create additional detection variables
+        visit_data <- visit_data %>%
+            dplyr::mutate(StartMonth = lubridate::month(StartDate),
+                          obs_id = as.numeric(ObserverNo),
+                          tdiff = tmmx - tmmn,
+                          hours = TotalHours,
+                          log_hours = log(hours + 1)) %>%
+            dplyr::left_join(site_data %>%
+                                 dplyr::select(Pentad, site_id) %>%
+                                 dplyr::distinct(),
+                             by = "Pentad")
+
+        # Include interaction terms if there are any
+        tt_det <- stats::terms(stats::reformulate(config$det_mod))
+
+        intrcs <- attr(tt_det, "term.labels")[attr(tt_det, "order") > 1]
+        intrcs_vars <- strsplit(intrcs, ":")
+
+        for(i in seq_along(intrcs)){
+            visit_data <- visit_data %>%
+                dplyr::mutate(!!intrcs[i] := !!rlang::sym(intrcs_vars[[i]][1]) * !!rlang::sym(intrcs_vars[[i]][2]))
+        }
+
+        # Remove NA values in detection data
+        if(any(is.na(visit_data$obs))){
+            warning("NA found in detection data")
+            visit_data <- visit_data %>%
+                dplyr::filter(!is.na(obs))
+        }
+
+    }
 
     # Create other covariates -------------------------------------------------
 
@@ -154,13 +161,23 @@ createOccuData <- function(sp_code, years,
         dplyr::mutate(cwac = as.integer(sapply(cwac_intsc, length) != 0)) %>%
         sf::st_drop_geometry()
 
-    # Add cwac to visit data
-    visit_data <- visit_data %>%
-        dplyr::left_join(site_data %>%
-                             dplyr::select(Pentad, cwac) %>%
-                             dplyr::distinct(),
-                         by = "Pentad")
+    if(!is.null(visit_data)){
 
+        # Add cwac to visit data
+        visit_data <- visit_data %>%
+            dplyr::left_join(site_data %>%
+                                 dplyr::select(Pentad, cwac) %>%
+                                 dplyr::distinct(),
+                             by = "Pentad")
+
+        det_vars <- attr(tt_det, "term.labels")
+        det_vars <- gsub(".* \\| ", "", det_vars)
+
+        # We need to keep some extra variables of the visit data for other functions to work down the line
+        visit_data <- visit_data %>%
+            dplyr::select(CardNo, Pentad, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
+
+    }
 
     # Keep only those variables that will be used in the models
     occu_vars <- attr(tt_occu, "term.labels")
@@ -169,15 +186,6 @@ createOccuData <- function(sp_code, years,
     site_data <- site_data %>%
         dplyr::select(Pentad, year, dplyr::all_of(config$occ_mod))
 
-
-    det_vars <- attr(tt_det, "term.labels")
-    det_vars <- gsub(".* \\| ", "", det_vars)
-
-    # We need to keep some extra variables of the visit data for other functions to work down the line
-    visit_data <- visit_data %>%
-        dplyr::select(CardNo, Pentad, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
-
-    # Save to disc ------------------------------------------------------------
     return(list(site = site_data,
                 visit = visit_data))
 

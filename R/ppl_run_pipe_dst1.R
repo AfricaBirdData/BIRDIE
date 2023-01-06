@@ -36,18 +36,21 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
             print(paste("no detections", year, sp_code))
             sink()
             message(paste("no detections", year, sp_code)) # to console
+            return(fit_status)
         } else if(fit_status == 2){
             conv_file <- file.path(config$out_dir, reports, paste0("less_than_5_pentads_", year,"_", sp_code, ".txt"))
             sink(conv_file)
             print(paste("less than 5 pentads", year, sp_code))
             sink()
             message(paste("less than 5 pentads", year, sp_code)) # to console
+            return(fit_status)
         } else if(fit_status == 3){
             conv_file <- file.path(config$out_dir, reports, paste0("model_fit_failed_", year,"_", sp_code, ".txt"))
             sink(conv_file)
             print(paste("model fit failed", year, sp_code))
             sink()
             message(paste("model fit failed", year, sp_code)) # to console
+            return(fit_status)
         } else {
             saveRDS(fit_status, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
             fit_status <- 0
@@ -69,9 +72,12 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     }
 
     if("summary" %in% steps){
-        year <- year_sel
-        fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
-        ppl_summarize_occur(sp_code, sp_name, year, config, ...)
+
+        if(!exists("fit")){
+            fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+        }
+        ppl_summarise_occu(fit, sp_code, sp_name, year, config)
+
     }
 
     if(exists("ppl_status") && ppl_status != 0){

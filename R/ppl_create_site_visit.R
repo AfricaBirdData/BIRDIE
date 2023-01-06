@@ -54,7 +54,7 @@ ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
         prepGEEVisitData(config, monitor = varargs$monitor)
     }
 
-    # Load data and subset years
+    # Load data
     sitedata <- utils::read.csv(sitefile)
     visitdata <- utils::read.csv(visitfile)
 

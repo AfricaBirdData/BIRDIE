@@ -104,9 +104,21 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
 
     # Save fit and return 0 if success
     if(!is.null(fit)){
+
+        # Save covariate scaling factors
+        fit$det.scale <- list(scale = unlist(lapply(occu_data$det.covs, attr, "scaled:scale")),
+                              center = unlist(lapply(occu_data$det.covs, attr, "scaled:center")))
+
+        fit$occ.scale <- list(scale = attr(occu_data$occ.covs, "scaled:scale"),
+                              center = attr(occu_data$occ.covs, "scaled:center"))
+
+
         return(fit)
+
     } else {
+
         return(3)
+
     }
 
 }

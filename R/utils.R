@@ -1,7 +1,3 @@
-#' @export
-#' @example
-#' \dontrun{}
-#'
 #'
 #' Fit occupancy models in parallel
 #'
@@ -11,8 +7,11 @@
 #' @param .spatial Whether a spatial model should be fit. Defaults to FALSE.
 #' @param .config Config object from \link{configPreambOccu}
 #'
+#' @export
 #' @keywords internal
 #' @noRd
+#' @example
+#' \dontrun{}
 pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
 
     # Species name
@@ -28,11 +27,11 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
                                   sp_name = sp_name,
                                   year = .year,
                                   config = .config,
-                                  steps = c("data", "fit"),
+                                  steps = c("data", "fit", "diagnose", "summary"),
                                   force_gee_dwld = FALSE,
                                   force_abap_dwld = FALSE,
                                   save_occu_data = TRUE,
-                                  overwrite_occu_data = c("det"),
+                                  overwrite_occu_data = c("site", "visit", "det"),
                                   scale_vars_occur = list(visit = NULL,
                                                           site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                   spatial = .spatial,

@@ -1,4 +1,4 @@
-#' Summarize occuR predictions for sites
+#' Summarise occuR predictions for sites
 #'
 #' @description occuR produces estimates of detection probability for each
 #' visit and occupancy probabilities for each site. This functions takes these
@@ -15,7 +15,7 @@
 #' occuR model predictions.
 #' @param visit_data A data.frame/data.table with the visit data used to generate
 #' occuR model predictions.
-#' @param quants Quantiles to summarize predictions when bootstrap predictions
+#' @param quants Quantiles to summarise predictions when bootstrap predictions
 #' are supplied in pred_p and pred_psi. Passed as c("lower", "med", "upper").
 #'
 #' @return A tibble with estimates and/or quantiles for each pentad in site_data:
@@ -25,7 +25,7 @@
 #' @export
 #'
 #' @examples
-summarizeOccuRPred <- function(pred_p, pred_psi, pred_data, visit_data,
+summariseOccuRPred <- function(pred_p, pred_psi, pred_data, visit_data,
                                quants = NULL){
 
     if(is.vector(pred_p) & is.vector(pred_psi)){
@@ -34,7 +34,7 @@ summarizeOccuRPred <- function(pred_p, pred_psi, pred_data, visit_data,
         p_nondet <- visit_data %>%
             dplyr::mutate(p = as.vector(pred_p)) %>%
             dplyr::group_by(site, occasion) %>%
-            dplyr::summarize(q = prod(1-p),
+            dplyr::summarise(q = prod(1-p),
                              obs = max(obs))
 
         # From probability of non-detection calculate the conditional occupancy
@@ -70,7 +70,7 @@ summarizeOccuRPred <- function(pred_p, pred_psi, pred_data, visit_data,
             tidyr::pivot_longer(cols = c("ub", "lb", "med", "est"),
                                 names_to = "lim", values_to = "p") %>%
             dplyr::group_by(site, occasion, lim) %>%
-            dplyr::summarize(q = prod(1-p),
+            dplyr::summarise(q = prod(1-p),
                              obs = max(obs))
 
         # From probability of non-detection calculate the conditional occupancy probs

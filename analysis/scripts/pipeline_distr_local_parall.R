@@ -13,7 +13,12 @@ annotate <- FALSE
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccu(year = year, dur = 3, dim_grid = 10, server = FALSE)
+    config <- configPreambOccu(year = year, dur = 3,
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
+                                           "prcp", "tdiff", "watext:watrec"),
+                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               server = FALSE)
 
     # Create aux indices for parallel computing
     if(parall){

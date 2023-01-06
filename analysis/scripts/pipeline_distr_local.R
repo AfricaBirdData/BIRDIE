@@ -44,7 +44,7 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("data", "fit"),
+                                              steps = c("summary"),
                                               force_gee_dwld = FALSE,
                                               force_abap_dwld = FALSE,
                                               save_occu_data = TRUE,
