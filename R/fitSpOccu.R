@@ -80,7 +80,7 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
                                       data = occu_data, inits = inits, priors = priors,
                                       n.samples = n_samples, n.omp.threads = 1,
                                       n.thin = 20, n.chains = 3,
-                                      verbose = TRUE, n.report = 5000)
+                                      verbose = TRUE, n.report = n_samples)
 
             out
 
