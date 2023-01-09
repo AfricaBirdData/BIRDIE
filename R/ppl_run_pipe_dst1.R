@@ -43,56 +43,20 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     if("fit" %in% steps){
 
-        fit_status <- ppl_fit_occu_model(sp_code, year_sel = year, config, ...)
+        fit_out <- ppl_fit_occu_model(sp_code, year_sel = year, config, ...)
 
         # Generate reports
-        if(fit_status == 1){
+        fit_status <- logFitStatus(fit_out, year, sp_code, config)
 
-            conv_file <- file.path(config$out_dir, reports, paste0("no_detections_", year,"_", sp_code, ".txt"))
-            sink(conv_file)
-            print(paste("no detections", year, sp_code))
-            sink()
-            message(paste("no detections", year, sp_code)) # to console
+        # Create log
+        ppl_log["fit"] <- fit_status
+        createLog(config, logfile, full_log = ppl_log)
 
-            # Create log
-            ppl_log["fit"] <- fit_status
-            createLog(config, logfile, full_log = ppl_log)
-
-            return(fit_status)
-
-        } else if(fit_status == 2){
-            conv_file <- file.path(config$out_dir, reports, paste0("less_than_5_pentads_", year,"_", sp_code, ".txt"))
-            sink(conv_file)
-            print(paste("less than 5 pentads", year, sp_code))
-            sink()
-            message(paste("less than 5 pentads", year, sp_code)) # to console
-
-            # Create log
-            ppl_log["fit"] <- fit_status
-            createLog(config, logfile, full_log = ppl_log)
-
-            return(fit_status)
-
-        } else if(fit_status == 3){
-            conv_file <- file.path(config$out_dir, reports, paste0("model_fit_failed_", year,"_", sp_code, ".txt"))
-            sink(conv_file)
-            print(paste("model fit failed", year, sp_code))
-            sink()
-            message(paste("model fit failed", year, sp_code)) # to console
-
-            # Create log
-            ppl_log["fit"] <- fit_status
-            createLog(config, logfile, full_log = ppl_log)
-
-            return(fit_status)
-
+        # Save fit if the process was successful or return the status otherwise
+        if(fit_status == 0){
+            saveRDS(fit_out, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
         } else {
-            saveRDS(fit_status, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
-            fit_status <- 0
-
-            # Create log
-            ppl_log["fit"] <- fit_status
-
+            return(fit_status)
         }
 
         # set pipeline status
