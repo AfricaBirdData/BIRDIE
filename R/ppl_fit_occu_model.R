@@ -47,7 +47,7 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
     visit_data <- visit_data %>%
         dplyr::left_join(det_data,
                          by = c("CardNo", "StartDate", "year", "Pentad")) %>%
-        dplyr::mutate(Spp = ifelse(obs == 0, "-", 1))
+        dplyr::mutate(Spp = ifelse(obs == 0, "-", sp_code))
 
     # Subset data sets
     site_data_year <- site_data %>%
@@ -68,6 +68,11 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
     message(paste("Fitting occupancy model to species", sp_code, "for year", year_sel, Sys.time()))
 
     # Fit model
-    fitSpOccu(site_data_year, visit_data_year, config, spatial, sp_sites)
+    if(config$package == "spOccupancy"){
+        fitSpOccu(site_data_year, visit_data_year, config, spatial, sp_sites, sp_code, year_sel)
+    } else if(config$package == "occuR"){
+        fitOccuR(site_data_year, visit_data_year, config, spatial, sp_sites)
+    }
+
 
 }

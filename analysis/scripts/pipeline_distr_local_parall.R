@@ -18,10 +18,11 @@ for(y in seq_along(test_years)){
                                            "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               package = "spOccupancy",
                                server = FALSE)
 
     createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA, data = NA, fit = NA,
-              diagnose = NA, summary = NA, notes = "Log file created")
+              diagnose = NA, summary = NA, package = NA, notes = "Log file created")
 
     # Create aux indices for parallel computing
     if(parall){

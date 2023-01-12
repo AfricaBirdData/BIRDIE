@@ -9,6 +9,7 @@ configPreambOccu(
   dur,
   occ_mod,
   det_mod,
+  package = "spOccupancy",
   fixed_vars,
   server,
   dim_grid = 10
@@ -29,6 +30,9 @@ process in the occupancy model. Random effects and interactions are specified as
 process in the occupancy model. Random effects and interactions are specified as in
 \code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment.
 (i.e., interactions of two variables).}
+
+\item{package}{A character string with the name of the package that should be used for
+fitting occupancy models. Currently: "spOccupancy", "occuR".}
 
 \item{fixed_vars}{A character vector with the names of the variables included in the
 occupancy model that don't change over time.}

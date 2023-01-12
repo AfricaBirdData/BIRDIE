@@ -1,9 +1,9 @@
-#' Run distribution indicators pipeline branch 1
+#' Run distribution indicators pipeline module 1
 #'
-#' @description Branch 1 of the distribution indicators pipeline estimates
+#' @description Module 1 of the distribution indicators pipeline estimates
 #' occupancy probabilities in South Africa for a selected species. These
 #' occupancy probabilities form the basis for building more elaborated
-#' indicators in other pipeline branches.
+#' indicators in other pipeline modules.
 #' @param sp_code SAFRING code of the species to run the pipeline for
 #' @param sp_name Common name of the species to run the pipeline for. This is
 #' necessary for plots and summaries.
@@ -34,7 +34,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     attr(s,"tzone") <- "Africa/Johannesburg"
 
     ppl_log <- c(date_time = format(s), species = sp_code, model = "occ",
-                 data = NA, fit = NA, diagnose = NA, summary = NA, notes = NA)
+                 data = NA, fit = NA, diagnose = NA, summary = NA,
+                 package = config$package, notes = NA)
 
     if("data" %in% steps){
         ppl_create_site_visit(sp_code, config, ...)

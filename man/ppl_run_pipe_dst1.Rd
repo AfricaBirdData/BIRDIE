@@ -2,7 +2,7 @@
 % Please edit documentation in R/ppl_run_pipe_dst1.R
 \name{ppl_run_pipe_dst1}
 \alias{ppl_run_pipe_dst1}
-\title{Run distribution indicators pipeline branch 1}
+\title{Run distribution indicators pipeline module 1}
 \usage{
 ppl_run_pipe_dst1(
   sp_code,
@@ -30,8 +30,8 @@ Can contain: "data", "fit", "diagnose", "summary". Defaults to all of them.}
 \item{...}{Other arguments passed on to other functions}
 }
 \description{
-Branch 1 of the distribution indicators pipeline estimates
+Module 1 of the distribution indicators pipeline estimates
 occupancy probabilities in South Africa for a selected species. These
 occupancy probabilities form the basis for building more elaborated
-indicators in other pipeline branches.
+indicators in other pipeline modules.
 }

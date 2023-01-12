@@ -12,6 +12,8 @@
 #' process in the occupancy model. Random effects and interactions are specified as in
 #' \code{\link[lme4]{lmer}}. Note that only second order interactions are accepted at the moment.
 #' (i.e., interactions of two variables).
+#' @param package A character string with the name of the package that should be used for
+#' fitting occupancy models. Currently: "spOccupancy", "occuR".
 #' @param fixed_vars A character vector with the names of the variables included in the
 #' occupancy model that don't change over time.
 #' @param dim_grid This was for occuR and it is not doing anything at the moment.
@@ -26,8 +28,8 @@
 #'
 #' @examples
 #' configPreambOccu(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
-configPreambOccu <- function(year, dur, occ_mod, det_mod, fixed_vars, server,
-                             dim_grid = 10){
+configPreambOccu <- function(year, dur, occ_mod, det_mod, package = "spOccupancy",
+                             fixed_vars, server, dim_grid = 10){
 
     if(server){
 
@@ -59,6 +61,6 @@ configPreambOccu <- function(year, dur, occ_mod, det_mod, fixed_vars, server,
 
     list(server=server, data_dir=data_dir, out_dir=out_dir, species=species, dim_grid=dim_grid,
          year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years,
-         occ_mod=occ_mod, det_mod=det_mod, fixed_vars=fixed_vars)
+         occ_mod=occ_mod, det_mod=det_mod, package=package, fixed_vars=fixed_vars)
 
 }
