@@ -93,6 +93,7 @@ logFitStatus <- function(.fit_out, .year, .sp_code, .config){
 #' the time given by \code{\link{Sys.time()}}, formatted as SAST will be used.
 #' @param species SAFRING code of the species the log corresponds to.
 #' @param model Type of model being processed. Either "occ" or "ssm".
+#' @param year Year the model is fit for.
 #' @param data Data preparation status. Defaults to NA.
 #' @param fit model fitting status. Defaults to NA.
 #' @param diagnose Model diagnostics status. Defaults to NA.
@@ -111,7 +112,7 @@ logFitStatus <- function(.fit_out, .year, .sp_code, .config){
 #' @example
 #' \dontrun{}
 createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
-                      model = NULL, data = NA, fit = NA, diagnose = NA,
+                      model = NULL, year = NA, data = NA, fit = NA, diagnose = NA,
                       summary = NA, package = NA, notes = "", full_log = NULL){
 
     s <- Sys.time()
@@ -123,7 +124,7 @@ createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
     }
 
     if(is.null(full_log)){
-        new_log <- c(date_time, species, model, data, fit, diagnose, summary, package, notes)
+        new_log <- c(date_time, species, model, year, data, fit, diagnose, summary, package, notes)
     } else {
         new_log <- full_log
     }
@@ -134,6 +135,7 @@ createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
         log <- data.frame(date_time = character(),
                           species = numeric(),
                           model = character(),
+                          year = numeric(),
                           data = numeric(),
                           fit = numeric(),
                           diagnose = numeric(),

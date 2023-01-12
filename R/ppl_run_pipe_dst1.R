@@ -34,7 +34,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     attr(s,"tzone") <- "Africa/Johannesburg"
 
     ppl_log <- c(date_time = format(s), species = sp_code, model = "occ",
-                 data = NA, fit = NA, diagnose = NA, summary = NA,
+                 year = year, data = NA, fit = NA, diagnose = NA, summary = NA,
                  package = config$package, notes = NA)
 
     if("data" %in% steps){

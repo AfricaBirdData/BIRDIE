@@ -21,8 +21,9 @@ for(y in seq_along(test_years)){
                                package = "spOccupancy",
                                server = FALSE)
 
-    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA, data = NA, fit = NA,
-              diagnose = NA, summary = NA, package = NA, notes = "Log file created")
+    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA,
+              year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+              package = NA, notes = "Log file created")
 
     # Create aux indices for parallel computing
     if(parall){
