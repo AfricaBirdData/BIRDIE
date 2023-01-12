@@ -4,7 +4,14 @@
 \alias{fitSpOccu}
 \title{Fit spOccupancy model}
 \usage{
-fitSpOccu(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites)
+fitSpOccu(
+  site_data_year,
+  visit_data_year,
+  config,
+  spatial = FALSE,
+  sp_sites,
+  ...
+)
 }
 \arguments{
 \item{site_data_year}{Occupancy site data for a single year and species
@@ -20,6 +27,8 @@ fitSpOccu(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites)
 included in the model (TRUE) or not (FALSE, default)}
 
 \item{sp_sites}{Spatial object containing the pentads in \code{site_data_year}.}
+
+\item{...}{Other arguments that might be needed (e.g. for messages)}
 }
 \value{
 Either a spOccupancy model fit or the integer 3, indicating that model fit

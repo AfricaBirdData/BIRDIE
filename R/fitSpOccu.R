@@ -9,13 +9,14 @@
 #' @param spatial Logical, indicating whether spatial random effects should be
 #' included in the model (TRUE) or not (FALSE, default)
 #' @param sp_sites Spatial object containing the pentads in `site_data_year`.
+#' @param ... Other arguments that might be needed (e.g. for messages)
 #'
 #' @return Either a spOccupancy model fit or the integer 3, indicating that model fit
 #' failed.
 #' @export
 #'
 #' @examples
-fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites){
+fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, ...){
 
     # Prepare data for spOccupancy
     occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
