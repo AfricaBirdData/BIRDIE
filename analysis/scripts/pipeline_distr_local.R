@@ -17,8 +17,8 @@ for(y in seq_along(test_years)){
                                occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
                                             "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
-                               package = "spOccupancy",
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "log_dist_coast", "elev"),
+                               package = "occuR",
                                server = FALSE)
 
     createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA,
@@ -49,7 +49,7 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("summary"),
+                                              steps = c("data", "fit"),
                                               force_gee_dwld = FALSE,
                                               force_abap_dwld = FALSE,
                                               save_occu_data = TRUE,

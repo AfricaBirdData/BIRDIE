@@ -1,15 +1,27 @@
 library(BIRDIE)
+# library(dplyr)
+# library(occuR)
 
 rm(list = ls())
 
-test_years <- 2012:2019
+test_years <- c(2012, 2013, 2014, 2015)
 
 run_modules <- 1
 
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccu(year = year, dur = 3, dim_grid = 40, server = TRUE)
+    config <- configPreambOccu(year = year, dur = 3,
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
+                                            "prcp", "tdiff", "watext:watrec"),
+                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "log_dist_coast", "elev"),
+                               package = "occuR",
+                               server = TRUE)
+
+    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA,
+              year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+              package = NA, notes = "Log file created")
 
     for(i in seq_along(config$species)){
 
@@ -27,25 +39,32 @@ for(y in seq_along(test_years)){
 
         if(1 %in% run_modules){
 
-            out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
-                                          sp_name = sp_name,
-                                          year = year,
-                                          config = config,
-                                          steps = c("data", "fit"),
-                                          force_gee_dwld = ifelse(i == 1, TRUE, FALSE),
-                                          force_abap_dwld = FALSE,
-                                          save_occu_data = TRUE,
-                                          overwrite_occu_data = c("site", "visit", "det"),
-                                          scale_vars_occur = list(visit = NULL,
-                                                                  site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
-                                          print_fitting = FALSE,
-                                          verbose = TRUE,
-                                          monitor = FALSE)
+            for(t in seq_along(config$years)){
 
-            message(paste("Pipeline DST1 status =", out_dst1))
+                year_sel <- config$years[t]
 
-            if(out_dst1 == 1){
-                next
+                out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                              sp_name = sp_name,
+                                              year = year_sel,
+                                              config = config,
+                                              steps = c("data", "fit"),
+                                              force_gee_dwld = FALSE,
+                                              force_abap_dwld = FALSE,
+                                              save_occu_data = TRUE,
+                                              overwrite_occu_data = c("site", "visit", "det"),
+                                              scale_vars_occur = list(visit = NULL,
+                                                                      site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                                              spatial = FALSE,
+                                              print_fitting = FALSE,
+                                              verbose = TRUE,
+                                              monitor = TRUE)
+
+                message(paste("Pipeline DST1 status =", out_dst1))
+
+                if(out_dst1 == 1){
+                    next
+                }
+
             }
 
         }
@@ -69,6 +88,5 @@ for(y in seq_along(test_years)){
             }
 
         }
-
     }
 }

@@ -17,7 +17,7 @@ for(y in seq_along(test_years)){
                                occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
                                            "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "log_dist_coast", "elev"),
                                package = "spOccupancy",
                                server = FALSE)
 
