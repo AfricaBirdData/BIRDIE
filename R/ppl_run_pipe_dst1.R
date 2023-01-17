@@ -55,7 +55,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
         # Save fit if the process was successful or return the status otherwise
         if(fit_status == 0){
-            saveRDS(fit_out, file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+            filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
+            saveRDS(fit_out, file.path(config$out_dir, sp_code, filename))
         } else {
             return(fit_status)
         }
@@ -67,7 +68,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     if("diagnose" %in% steps){
 
-        fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+        filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
+        fit <- readRDS(file.path(config$out_dir, sp_code, filename))
 
         diag_out <- diagnoseSpOccu(fit, sp_code, config, year)
 
