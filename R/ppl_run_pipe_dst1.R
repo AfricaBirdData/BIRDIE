@@ -51,7 +51,6 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
         # Create log
         ppl_log["fit"] <- fit_status
-        createLog(config, logfile, full_log = ppl_log)
 
         # Save fit if the process was successful or return the status otherwise
         if(fit_status == 0){
