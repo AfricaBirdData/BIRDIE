@@ -21,9 +21,12 @@ for(y in seq_along(test_years)){
                                package = "spOccupancy",
                                server = TRUE)
 
-    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA,
-              year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
-              package = NA, notes = "Log file created")
+    if(y == 1){
+        createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+                  year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+                  package = NA, notes = "Log file created")
+    }
+
 
     # Create aux indices for parallel computing
     if(parall){
@@ -62,7 +65,7 @@ for(y in seq_along(test_years)){
                                   overwrite_occu_data = c("site", "visit", "det"),
                                   config = config,
                                   force_abap_dwld = TRUE,
-                                  monitor = TRUE)
+                                  monitor_gee = FALSE)
         }
 
         message(paste0("Working on species ", paste(sp_codes, collapse = ", "), " (", i, " of ", length(keep), ")"))

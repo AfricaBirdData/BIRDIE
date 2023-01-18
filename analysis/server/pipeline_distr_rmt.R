@@ -19,9 +19,11 @@ for(y in seq_along(test_years)){
                                package = "occuR",
                                server = TRUE)
 
-    createLog(config, logfile = NULL, date_time = NULL, species = NA, model = NA,
-              year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
-              package = NA, notes = "Log file created")
+    if(y == 1){
+        createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+                  year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+                  package = NA, notes = "Log file created")
+    }
 
     for(i in seq_along(config$species)){
 
@@ -47,17 +49,16 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("data", "fit"),
+                                              steps = c("fit"),
                                               force_gee_dwld = FALSE,
+                                              monitor_gee = TRUE,
                                               force_abap_dwld = FALSE,
                                               save_occu_data = TRUE,
                                               overwrite_occu_data = c("site", "visit", "det"),
                                               scale_vars_occur = list(visit = NULL,
                                                                       site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                               spatial = FALSE,
-                                              print_fitting = FALSE,
-                                              verbose = TRUE,
-                                              monitor = TRUE)
+                                              print_fitting = FALSE)
 
                 message(paste("Pipeline DST1 status =", out_dst1))
 

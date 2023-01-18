@@ -29,15 +29,14 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
                                   config = .config,
                                   steps = c("data", "fit", "diagnose", "summary"),
                                   force_gee_dwld = FALSE,
+                                  monitor_gee = FALSE,
                                   force_abap_dwld = FALSE,
                                   save_occu_data = TRUE,
                                   overwrite_occu_data = c("site", "visit", "det"),
                                   scale_vars_occur = list(visit = NULL,
                                                           site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                   spatial = .spatial,
-                                  print_fitting = FALSE,
-                                  verbose = TRUE,
-                                  monitor = FALSE)
+                                  print_fitting = FALSE)
 
     message(paste("Pipeline DST1 status =", out_dst1))
 
