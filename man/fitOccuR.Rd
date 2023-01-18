@@ -10,7 +10,7 @@ fitOccuR(
   config,
   spatial = FALSE,
   sp_sites,
-  ...
+  verbose
 )
 }
 \arguments{
@@ -28,7 +28,8 @@ included in the model (TRUE) or not (FALSE, default)}
 
 \item{sp_sites}{Spatial object containing the pentads in \code{site_data_year}.}
 
-\item{...}{Other arguments passed on to other functions}
+\item{verbose}{Logical indicating whether information should be printed
+during model fitting.}
 }
 \value{
 Either an occuR model fit or the integer 3, indicating that model fit

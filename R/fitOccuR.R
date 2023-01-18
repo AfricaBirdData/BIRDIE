@@ -9,14 +9,15 @@
 #' @param spatial Logical, indicating whether spatial random effects should be
 #' included in the model (TRUE) or not (FALSE, default)
 #' @param sp_sites Spatial object containing the pentads in `site_data_year`.
-#' @param ... Other arguments passed on to other functions
+#' @param verbose Logical indicating whether information should be printed
+#' during model fitting.
 #'
 #' @return Either an occuR model fit or the integer 3, indicating that model fit
 #' failed.
 #' @export
 #'
 #' @examples
-fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, ...){
+fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, verbose){
 
     # Prepare data for occuR
     occu_data <- prepOccuRData(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
@@ -31,30 +32,19 @@ fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, s
 
     # Run model
     fit <- tryCatch({
-        out <- occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
-                                            stats::reformulate(config$det_mod, response = "p")),
-                               visit_data = occu_data$visit,
-                               site_data = occu_data$site,
-                               print = verbose)
-
-        out
+        occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
+                                     stats::reformulate(config$det_mod, response = "p")),
+                        visit_data = occu_data$visit,
+                        site_data = occu_data$site,
+                        print = verbose)
 
     },
     error = function(cond) {
-        filename <- paste0("reports/error_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
+        filename <- paste0("reports/error_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt")
         sink(file.path(config$out_dir, filename))
         print(cond)
         sink()
         message(cond)
-        return(NULL)
-    },
-    warning = function(cond) {
-        filename <- paste0("reports/warning_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
-        sink(file.path(config$out_dir, filename))
-        print(cond)
-        sink()
-        message(cond)
-        return(out)
     })
 
     # Save fit and return 0 if success
