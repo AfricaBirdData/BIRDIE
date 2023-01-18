@@ -47,11 +47,11 @@ ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
     }
 
     if(!file.exists(sitefile) | force_gee_dwld){
-        prepGEESiteData(config, monitor = varargs$monitor)
+        prepGEESiteData(config, monitor = varargs$monitor_gee)
     }
 
     if(!file.exists(visitfile) | force_gee_dwld){
-        prepGEEVisitData(config, monitor = varargs$monitor)
+        prepGEEVisitData(config, monitor = varargs$monitor_gee)
     }
 
     # Load data
