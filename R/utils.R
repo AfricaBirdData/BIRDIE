@@ -87,7 +87,7 @@ logFitStatus <- function(.fit_out, .year, .sp_code, .config){
 #' preparation.
 #' @param config A list with pipeline configuration parameters.
 #' See \code{\link{configPreambOccu}} and \code{\link{configPreambAbu}}.
-#' @param logfile Optional. A character string with the path to the file that
+#' @param log_file Optional. A character string with the path to the file that
 #' should be updated. If NULL (default) a new log file will be created.
 #' @param date_time Optional. A character string with the log date. If NULL (default)
 #' the time given by \code{\link{Sys.time()}}, formatted as SAST will be used.
@@ -111,7 +111,7 @@ logFitStatus <- function(.fit_out, .year, .sp_code, .config){
 #' @noRd
 #' @example
 #' \dontrun{}
-createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
+createLog <- function(config, log_file = NULL, date_time = NULL, species = NULL,
                       model = NULL, year = NA, data = NA, fit = NA, diagnose = NA,
                       summary = NA, package = NA, notes = "", full_log = NULL){
 
@@ -130,8 +130,8 @@ createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
     }
 
 
-    if(is.null(logfile)){
-        logfile <- file.path(config$out_dir, "reports", paste0("pipe_log_", today,".csv"))
+    if(is.null(log_file)){
+        log_file <- file.path(config$out_dir, "reports", paste0("pipe_log_", today,".csv"))
         log <- data.frame(date_time = character(),
                           species = numeric(),
                           model = character(),
@@ -142,16 +142,16 @@ createLog <- function(config, logfile = NULL, date_time = NULL, species = NULL,
                           summary = numeric(),
                           package = character(),
                           notes = character())
-        utils::write.csv(log, logfile, row.names = FALSE)
-        message(paste("log file created:", logfile))
+        utils::write.csv(log, log_file, row.names = FALSE)
+        message(paste("log file created:", log_file))
     }
 
-    log <- utils::read.csv(logfile)
+    log <- utils::read.csv(log_file)
     new_row <- nrow(log) + 1
 
     log[new_row, ] <- new_log
 
-    utils::write.csv(log, logfile, row.names = FALSE)
+    utils::write.csv(log, log_file, row.names = FALSE)
 
 }
 
