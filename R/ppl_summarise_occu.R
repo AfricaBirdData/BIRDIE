@@ -31,7 +31,7 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
 
     # Save predictions
     summ_occu %>%
-        write.csv(file.path(config$out_dir, sp_code, paste0("occur_pred_", year_sel, "_", sp_code, ".csv")),
+        write.csv(file.path(config$out_dir, sp_code, paste0("occu_pred_", config$package, "_", year_sel, "_", sp_code, ".csv")),
                   row.names = FALSE)
 
     ## PLOTS

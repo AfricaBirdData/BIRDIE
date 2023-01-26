@@ -28,7 +28,7 @@ diagnoseSpOccu <- function(fit, sp_code, config, year_sel){
     fails <- sapply(fit$rhat, function(param) any(abs(param - 1) > 0.1))
 
     if(any(fails)){
-        conv_file <- file.path(config$out_dir, paste0("reports/no_converge_occu_fit_", year_sel, "_", sp_code, ".txt"))
+        conv_file <- file.path(config$out_dir, paste0("reports/no_converge_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt"))
         sink(conv_file)
         print(paste("non-convergence", paste(names(fails)[fails == TRUE], collapse = ", ")))
         sink()
@@ -44,7 +44,7 @@ diagnoseSpOccu <- function(fit, sp_code, config, year_sel){
     bayes_p <- mean(ppc_out$fit.y.rep > ppc_out$fit.y)
 
     if(bayes_p < 0.05){
-        sink(file.path(config$out_dir, paste0("reports/gof_occu_fit_", year_sel, "_", sp_code, ".txt")))
+        sink(file.path(config$out_dir, paste0("reports/gof_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt")))
         print(paste("Bayesian p-value =", round(bayes_p, 2)))
         sink()
         message(paste("Bayesian p-value =", round(bayes_p, 2)))
