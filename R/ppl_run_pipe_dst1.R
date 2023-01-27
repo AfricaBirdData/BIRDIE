@@ -70,7 +70,11 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
         fit <- readRDS(file.path(config$out_dir, sp_code, filename))
 
-        diag_out <- diagnoseSpOccu(fit, sp_code, config, year)
+        if(config$package == "spOccupancy"){
+            diag_out <- diagnoseSpOccu(fit, sp_code, config, year)
+        } else if(config$package == "occuR"){
+            diag_out <- diagnoseOccuR(fit, sp_code, config, year)
+        }
 
         saveRDS(diag_out,
             file.path(config$out_dir, sp_code, paste0("occu_ppc_", config$package, "_", year, "_", sp_code, ".rds")))
@@ -85,7 +89,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     if("summary" %in% steps){
 
         if(!exists("fit")){
-            fit <- readRDS(file.path(config$out_dir, sp_code, paste0("occu_fit_", year, "_", sp_code, ".rds")))
+            filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
+            fit <- readRDS(file.path(config$out_dir, sp_code, filename))
         }
         ppl_summarise_occu(fit, sp_code, sp_name, year, config)
 
