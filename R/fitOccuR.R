@@ -26,17 +26,55 @@ fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, s
     # Define models -----------------------------------------------------------
 
     # forms, visit_data, site_data, start = NULL, print = TRUE
+    occu_data$site <- occu_data$site %>%
+        dplyr::mutate(site_id = factor(site_id))
     occu_data$visit <- occu_data$visit %>%
-        dplyr::mutate(obs_id = factor(obs_id),
-                      site_id = factor(site_id))
+        dplyr::mutate(obs_id = factor(obs_id))
 
     # Run model
-    fit <- tryCatch({
-        occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
+    tryCatch({
+        fit <- occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
                                      stats::reformulate(config$det_mod, response = "p")),
                         visit_data = occu_data$visit,
                         site_data = occu_data$site,
                         print = verbose)
+
+        if(fit$fit$convergence != 0){
+            warning(paste(config$package, "model failed once to converge for species", sp_code, "and year", year_sel))
+            fp <- fit$res$par.fixed
+            rp <- fit$res$par.random
+            start_vals <- list(beta_psi = fp[names(fp) == "beta_psi"],
+                               beta_p = fp[names(fp) == "beta_p"],
+                               z_psi = rp[names(rp) == "z_psi"],
+                               z_p = rp[names(rp) == "z_p"],
+                               log_lambda_psi = fp[names(fp) == "log_lambda_psi"],
+                               log_lambda_p = fp[names(fp) == "log_lambda_p"],
+                               gamma_psi = rp[names(rp) == "gamma_psi"],
+                               gamma_p = rp[names(rp) == "gamma_p"],
+                               lsig_gamma_psi = fp[names(fp) == "lsig_gamma_psi"],
+                               lsig_gamma_p = fp[names(fp) == "lsig_gamma_p"])
+
+            start_vals[sapply(start_vals, function(x) length(x) == 0)] <- 0
+
+            fit <- occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
+                                                stats::reformulate(config$det_mod, response = "p")),
+                                   visit_data = occu_data$visit,
+                                   site_data = occu_data$site,
+                                   start = start_vals,
+                                   print = verbose)
+
+        }
+
+
+        # if(fit$fit$convergence != 0){
+        #     warning(paste(config$package, "model failed twice to converge for species", sp_code, "and year", year_sel))
+        #     fit <- occuR::fit_occu(forms = list(stats::reformulate(config$occ_mod, response = "psi"),
+        #                                         stats::reformulate(config$det_mod[-2], response = "p")),
+        #                            visit_data = occu_data$visit,
+        #                            site_data = occu_data$site,
+        #                            print = verbose)
+        #
+        # }
 
     },
     error = function(cond) {
