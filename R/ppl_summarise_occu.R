@@ -13,8 +13,15 @@
 ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
 
     # Predict from model
-    message(paste("Predicting from model", file.path(config$out_dir, sp_code, paste0("occu_fit_", year_sel, "_", sp_code, ".rds"))))
-    pred_occu <- predictSpOccu(fit, sp_code, year_sel, config)
+    modelfile <- paste0("occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
+    message(paste("Predicting from model", file.path(config$out_dir, sp_code, modelfile)))
+
+    if(config$package == "spOccupancy"){
+        pred_occu <- predictSpOccu(fit, sp_code, year_sel, config)
+    } else if(config$package == "occuR"){
+        pred_occu <- predictOccuR(fit, sp_code, year_sel, config)
+    }
+
 
     # summarise predictions
     message("Summarising predictions")
@@ -30,8 +37,9 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
         dplyr::select(species, everything())
 
     # Save predictions
+    summfile <- paste0("occu_pred_", config$package, "_", year_sel, "_", sp_code, ".csv")
     summ_occu %>%
-        write.csv(file.path(config$out_dir, sp_code, paste0("occu_pred_", config$package, "_", year_sel, "_", sp_code, ".csv")),
+        write.csv(file.path(config$out_dir, sp_code, summfile),
                   row.names = FALSE)
 
     ## PLOTS
@@ -77,8 +85,8 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
         ggtitle(paste(sp_name, year_sel)) +
         facet_wrap("lim")
 
-    ggsave(file.path(config$out_dir, sp_code, paste0("occur_psi_", year_sel, "_", sp_code, ".png")), psi)
-    ggsave(file.path(config$out_dir, sp_code, paste0("occur_p_", year_sel, "_", sp_code, ".png")), p)
-    ggsave(file.path(config$out_dir, sp_code, paste0("occur_occu_", year_sel, "_", sp_code, ".png")), occu)
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_psi_", config$package, "_", year_sel, "_", sp_code, ".png")), psi)
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_p_", config$package, "_", year_sel, "_", sp_code, ".png")), p)
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_occu_", config$package, "_", year_sel, "_", sp_code, ".png")), occu)
 
 }

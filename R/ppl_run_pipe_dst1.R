@@ -92,6 +92,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
             filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
             fit <- readRDS(file.path(config$out_dir, sp_code, filename))
         }
+
         ppl_summarise_occu(fit, sp_code, sp_name, year, config)
 
         # Create log
