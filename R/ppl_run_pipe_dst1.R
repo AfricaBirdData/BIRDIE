@@ -73,7 +73,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         diag_out <- diagnoseSpOccu(fit, sp_code, config, year)
 
         saveRDS(diag_out,
-            file.path(config$out_dir, sp_code, paste0("occu_ppc_", year, "_", sp_code, ".rds")))
+            file.path(config$out_dir, sp_code, paste0("occu_ppc_", config$package, "_", year, "_", sp_code, ".rds")))
 
         # Create log
         ppl_log["diagnose"] <- mean(diag_out$fit.y.rep > diag_out$fit.y) # Bayes p

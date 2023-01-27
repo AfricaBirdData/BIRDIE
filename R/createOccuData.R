@@ -184,7 +184,7 @@ createOccuData <- function(sp_code, years,
     occu_vars <- gsub(".* \\| ", "", occu_vars)
 
     site_data <- site_data %>%
-        dplyr::select(Pentad, year, dplyr::all_of(config$occ_mod))
+        dplyr::select(Pentad, year, dplyr::all_of(occu_vars))
 
     return(list(site = site_data,
                 visit = visit_data))
