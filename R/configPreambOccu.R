@@ -22,6 +22,11 @@
 #' to 10.
 #' @param server Logical. If TRUE the preamble is prepared to run remotely,
 #' otherwise it is prepared to run locally.
+#' @param data_dir Path to data directory. There are a few inputs to the pipeline
+#' that it doesn't generate itself, such as some environmental layers that are not
+#' on Google Earth Engine. Those would be stored here.
+#' @param out_dir Path to output directory. Pipeline outputs will be stored here,
+#' including intermediate outputs, so most what we need is here.
 #'
 #' @return A list of elements to configure the pipeline to process occupancy models
 #' @export
@@ -29,13 +34,19 @@
 #' @examples
 #' configPreambOccu(year = 2010, dur = 3, dim_grid = 20, server = TRUE)
 configPreambOccu <- function(year, dur, occ_mod, det_mod, package = "spOccupancy",
-                             fixed_vars, server, dim_grid = 10){
+                             fixed_vars, server, dim_grid = 10, data_dir = NULL,
+                             out_dir = NULL){
 
     if(server){
 
         # Define data and output directories
-        data_dir <- "/home/birdie/analysis/data"
-        out_dir <- "/drv_birdie/birdie_ftp"
+        if(is.null(data_dir)){
+            data_dir <- "/home/birdie/analysis/data"
+        }
+
+        if(is.null(out_dir)){
+            out_dir <- "/drv_birdie/birdie_ftp"
+        }
 
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
@@ -46,8 +57,12 @@ configPreambOccu <- function(year, dur, occ_mod, det_mod, package = "spOccupancy
     } else {
 
         # Define data and output directories
-        data_dir <- "analysis/data"
-        out_dir <- "analysis/out_nosync"
+        if(is.null(data_dir)){
+            data_dir <- "analysis/data"
+        }
+        if(is.null(out_dir)){
+            out_dir <- "analysis/out_nosync"
+        }
 
         # Define species to fit models to
         species <- c(4, 6, 41, 235, 240)

@@ -12,7 +12,9 @@ configPreambOccu(
   package = "spOccupancy",
   fixed_vars,
   server,
-  dim_grid = 10
+  dim_grid = 10,
+  data_dir = NULL,
+  out_dir = NULL
 )
 }
 \arguments{
@@ -44,6 +46,13 @@ otherwise it is prepared to run locally.}
 An integer giving the dimension of the grid used for spatial effects.
 This dimension gives the number \code{k} see \code{\link[mgcv]{choose.k}}. Defaults
 to 10.}
+
+\item{data_dir}{Path to data directory. There are a few inputs to the pipeline
+that it doesn't generate itself, such as some environmental layers that are not
+on Google Earth Engine. Those would be stored here.}
+
+\item{out_dir}{Path to output directory. Pipeline outputs will be stored here,
+including intermediate outputs, so most what we need is here.}
 }
 \value{
 A list of elements to configure the pipeline to process occupancy models
