@@ -15,6 +15,7 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
     # Predict from model
     modelfile <- paste0("occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
     message(paste("Predicting from model", file.path(config$out_dir, sp_code, modelfile)))
+    fit <- readRDS(file.path(config$out_dir, sp_code, modelfile)) # this is not necessary
 
     if(config$package == "spOccupancy"){
         pred_occu <- predictSpOccu(fit, sp_code, year_sel, config)
@@ -25,9 +26,16 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
 
     # summarise predictions
     message("Summarising predictions")
-    summ_occu <- summariseSpOcc(pred_psi = pred_occu$psi,
-                                pred_p = pred_occu$p,
-                                quants = c(0.025, 0.5, 0.975))
+    if(config$package == "spOccupancy"){
+        summ_occu <- summariseSpOcc(pred_psi = pred_occu$psi,
+                                    pred_p = pred_occu$p,
+                                    quants = c(0.025, 0.5, 0.975))
+    } else if(config$package == "occuR"){
+        summ_occu <- summariseOccuR(pred_psi = pred_occu$psiboot,
+                                    pred_p = pred_occu$pboot,
+                                    quants = c(0.025, 0.5, 0.975))
+    }
+
 
     # Save predictions
 

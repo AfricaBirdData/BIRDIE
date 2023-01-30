@@ -4,7 +4,15 @@
 \alias{prepOccuRData}
 \title{Prepare occuR data for model fitting}
 \usage{
-prepOccuRData(site_data, visit_data, config, spatial = FALSE, sp_sites = NULL)
+prepOccuRData(
+  site_data,
+  visit_data,
+  config,
+  spatial = FALSE,
+  sp_sites = NULL,
+  scale = FALSE,
+  keep_sites = TRUE
+)
 }
 \arguments{
 \item{site_data}{A data frame containing information about covariates associated
@@ -19,6 +27,15 @@ See \link{configPreambOccu}}
 
 \item{spatial}{Logical, indicating whether spatial random effects should be
 included in the model. Defaults to FALSE.}
+
+\item{sp_sites}{Spatial object with the sites to be used for fitting spatial models}
+
+\item{scale}{If TRUE covariates will be scaled. Scale factors will be provided
+as arguments to output. Defaults to FALSE.}
+
+\item{keep_sites}{If TRUE (default), all sites in \code{site_data} will be retained in the output.
+This is useful for predicting from a fitted model. If FALSE, then only those
+sites present in \code{visit_data} are retained, which is useful for fitting models.}
 }
 \description{
 Prepare occuR data for model fitting

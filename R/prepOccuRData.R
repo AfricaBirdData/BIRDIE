@@ -8,13 +8,19 @@
 #' of interest must also be included in this data frame.
 #' @param spatial Logical, indicating whether spatial random effects should be
 #' included in the model. Defaults to FALSE.
-#' @sp_sites Spatial object with the sites to be used for fitting spatial models
+#' @param sp_sites Spatial object with the sites to be used for fitting spatial models
+#' @param scale If TRUE covariates will be scaled. Scale factors will be provided
+#' as arguments to output. Defaults to FALSE.
+#' @param keep_sites If TRUE (default), all sites in `site_data` will be retained in the output.
+#' This is useful for predicting from a fitted model. If FALSE, then only those
+#' sites present in `visit_data` are retained, which is useful for fitting models.
 #'
 #' @return
 #' @export
 #'
 #' @examples
-prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE, sp_sites = NULL){
+prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE,
+                          sp_sites = NULL, scale = FALSE, keep_sites = TRUE){
 
 
     # Prepare occuR data list -------------------------------------------------
@@ -25,7 +31,7 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE, sp_sit
         occur_data <- ABAP::abapToOccuR(visit_data,
                                         occasion = "year",
                                         pentads = sp_sites %>%
-                                            dplyr::filter(Name %in% unique(site_data$Name)))
+                                            dplyr::filter(Name %in% unique(visit_data$Name)))
     } else {
         occur_data <- ABAP::abapToOccuR(visit_data,
                                         occasion = "year")
@@ -43,13 +49,27 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE, sp_sit
     occ_cov_sel <- site_data %>%
         dplyr::select(pentad = Pentad, year, dplyr::all_of(occ_vars))
 
-    occur_data$site <- occur_data$site %>%
-        dplyr::left_join(occ_cov_sel, by = c("pentad", "year"))
+    if(keep_sites){
+        occur_data$site <- occ_cov_sel %>%
+            dplyr::left_join(occur_data$site %>%
+                                 dplyr::select(pentad, site) %>%
+                                 dplyr::distinct(), by = "pentad") %>%
+            dplyr::left_join(occur_data$site %>%
+                                 dplyr::select(year, occasion) %>%
+                                 dplyr::distinct(), by = "year") %>%
+            data.table::as.data.table()
+    } else {
+        occur_data$site <- occur_data$site %>%
+            dplyr::left_join(occ_cov_sel, by = c("pentad", "year"))
+    }
 
-    # Scale covariates
-    occur_data$site <- occur_data$site %>%
-        dplyr::mutate(dplyr::across(-c(pentad, year, site, occasion),
-                                    ~ scale(.x)))
+
+    if(scale){
+        # Scale covariates
+        occur_data$site <- occur_data$site %>%
+            dplyr::mutate(dplyr::across(-c(pentad, year, site, occasion),
+                                        ~ scale(.x)))
+    }
 
     # Add detection covariates
     tt_det <- stats::terms(stats::reformulate(config$det_mod))
@@ -69,10 +89,13 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE, sp_sit
         stop("Occupancy visit data and covariate data have different number of rows")
     }
 
-    # Scale covariates
-    occur_data$visit <- occur_data$visit %>%
-        dplyr::mutate(dplyr::across(c(log_hours, prcp, tdiff),
-                                    ~ scale(.x)))
+    if(scale){
+        # Scale covariates
+        occur_data$visit <- occur_data$visit %>%
+            dplyr::mutate(dplyr::across(c(log_hours, prcp, tdiff),
+                                        ~ scale(.x)))
+    }
+
 
     # # Create a cyclic month variable
     # spocc_data$det.covs$month_sin <- sin(2*pi*spocc_data$det.covs$month/12)

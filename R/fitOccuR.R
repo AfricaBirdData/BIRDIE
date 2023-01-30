@@ -20,7 +20,8 @@
 fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, verbose){
 
     # Prepare data for occuR
-    occu_data <- prepOccuRData(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
+    occu_data <- prepOccuRData(site_data_year, visit_data_year, config, spatial = spatial,
+                               sp_sites, scale = TRUE, keep_sites = FALSE)
 
 
     # Define models -----------------------------------------------------------
