@@ -1,0 +1,547 @@
+---
+title: "Example of BIRDIE module DST1"
+author: "Pachi Cervantes"
+date: "2023-01-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+This document explains how the DST1 module of the BIRDIE pipeline works, and it provides instructions to run the code for an example species. This module is used for: 1) downloading and preparing ABAP data for fitting occupancy models, 2) fitting occupancy models, 3) running diagnostics on the models, and 4) summarising occurrence predictions for all South African pentads.
+
+The packages [ABAP](https://github.com/AfricaBirdData/ABAP), [ABDtools](https://github.com/AfricaBirdData/ABDtools) and [BIRDIE](https://github.com/AfricaBirdData/BIRDIE), together with their dependencies are necessary to run this module.
+
+At the moment the pipeline can use two different packages to fit occupancy models: 1) an adapted version of [occuR](https://github.com/patchcervan/occuR), and 2) [spOccupancy](https://github.com/doserjef/spOccupancy). occuR fits models under a frequentist framework using [TMB](https://github.com/kaskr/adcomp), and is fast, whereas spOccupancy works under a Bayesian framework which makes it slower. spOccupancy however offers some advantages, such as samples from the posterior distribution and some diagnostic tools. We have adapted occuR to fit similar (non-spatial) models and provide similar diagnostics as spOccupancy. In this way, we can run models quickly using occuR, when necessary, but also use spOccupancy if time allows. **At the moment only spOccupancy works and it might still be a bit buggy**.
+
+The structure of the `comms/example_dst1` directory is necessary for the pipeline to run for species 6 (SAFRING code). If we wanted to run the pipeline for another species, we should add another directory to `comms/example_dst1/output`, named with the SAFRING code of the corresponding species.
+
+Below, we explain how to run the main function controlling the module, and afterwards we will look inside of this function and explain how each component of the module works.
+
+
+## The main control script
+
+This is an example of the main script that is used to configure the pipeline and run the main function `ppl_run_pipe_dst1()`. By running this script we would go through all steps of pipeline: data preparation, model fitting, diagnostics and summary. We could also skip some of these steps removing them from the `steps` argument of `ppl_run_pipe_dst1()`.
+
+```{r, eval=FALSE}
+library(BIRDIE)
+
+rm(list = ls())
+
+# Configuration parameters
+year <- 2012   # Year to estimate occupancy for
+sp_code <- 6   # SAFRING code of the species we want to run the pipeline for
+# The species name will be used in some of the plots. It can be obtained like so
+sp_name <- BIRDIE::barberspan %>%
+    dplyr::filter(SppRef == sp_code) %>%
+    dplyr::mutate(name = paste(Common_species, Common_group)) %>%
+    dplyr::mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
+    dplyr::pull(name) %>%
+    unique()
+
+# There is an important function that is used for configuring the pipeline
+# and create an object 'config' that is used by many of the functions. This config
+# object contains the year the pipeline runs for, the variables included in the
+# occupancy and detectio models, the package used for fitting the models and some
+# other elements. See ?configPreamOccu for more details.
+config <- configPreambOccu(year = year, dur = 3,
+                           occ_mod = c("(1|site_id)", "log_dist_coast", "watext", "log_watext",
+                                       "watrec", "ndvi", "elev", "prcp", "tdiff", "watext:watrec"),
+                           det_mod = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                           fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                           package = "spOccupancy",
+                           server = FALSE,
+                           data_dir = "comms/example_dst1/data",
+                           out_dir = "comms/example_dst1/output")
+
+
+# This is the main function that runs the whole module. Depending on the steps
+# that we select it will download and prepare data, fit models, diagnose models,
+# and summarise models. See ?ppl_run_pipe_dst1 for more details. Most of the
+# arguments at the end are passed on to other functions.
+out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                              sp_name = sp_name,
+                              year = year,
+                              config = config,
+                              steps = c("data", "fit", "diagnose", "summary"),
+                              force_gee_dwld = FALSE,
+                              monitor_gee = TRUE,
+                              force_abap_dwld = FALSE,
+                              save_occu_data = TRUE,
+                              overwrite_occu_data = c("site", "visit", "det"),
+                              scale_vars_occur = list(visit = NULL,
+                                                      site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
+                              spatial = FALSE,
+                              print_fitting = TRUE)
+
+```
+
+We will now look inside `ppl_run_pipe_dst1()`, to understand the different functions it calls and the steps we go through in this module.
+
+## Step1: Downloading and preparing ABAP data
+
+The main function used for downloading and preparing ABAP data for occupancy modelling is `ppl_create_site_visit()`. We can run
+this function also by running `ppl_run_pipe_dst1()` and setting the argument `steps = "data"`. See info with `?ppl_create_site_visit`
+
+If we look inside this function, we find two main sections:
+
+1. The first section will download the ABAP data necessary to fit an occupancy model for the species selected and year selected and annotate them with a set of pre-defined environmental variables from Google Earth Engine. Note that it is sometimes convenient to process several years at a time, because it is quicker than doing it one by one, and we can subset the years we want to fit models for at a later stage. That is why there is an element named `year_range` in the `config` object. To see what environmental variables are used at the moment, you can check `prepGEESiteData()` and `prepGEEVisitData()`. If data is already present on disk, and we choose not to force download (`force_gee_dwld` argument), then we can skip this (time-consuming) part.
+
+2. The second section takes generic ABAP visit data, combines it species detection data, runs some checks and provides some basic structure (e.g. generating one data set with visit specific data and another one with site specific data). This is not yet specific to any occupancy model fitting packages; that comes later.
+
+Once this function runs we will get ABAP site and visit data for the selected years on our `output` directory, and detection data specific for the selected species in the species directory.
+
+```{r, eval=FALSE}
+ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
+                                  save_occu_data = TRUE,
+                                  overwrite_occu_data = NULL, config, ...){
+
+    varargs <- list(...)
+
+
+    # Download ABAP data and annotate with Google Earth Engine ----------------
+
+    sitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
+    visitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
+
+    # Download from GEE if file doesn't exit
+    if("force_gee_dwld" %in% names(varargs)){
+        force_gee_dwld <- varargs$force_gee_dwld
+    }
+
+    if(!file.exists(sitefile) | force_gee_dwld){
+        prepGEESiteData(config, monitor = varargs$monitor_gee)
+    }
+
+    if(!file.exists(visitfile) | force_gee_dwld){
+        prepGEEVisitData(config, monitor = varargs$monitor_gee)
+    }
+
+    # Load data
+    sitedata <- utils::read.csv(sitefile)
+    visitdata <- utils::read.csv(visitfile)
+
+
+    # Format to occu ---------------------------------------------------------
+
+    occudata <- BIRDIE::createOccuData(sp_code = sp_code,
+                                       years = config$years,
+                                       site_data = sitedata,
+                                       visit_data = visitdata,
+                                       config = config,
+                                       force_abap_dwld = varargs$force_abap_dwld)
+
+
+    # Clean working directory
+    rm(sitedata, visitdata)
+    site_data <- occudata$site
+    visit_data <- occudata$visit
+    rm(occudata)
+    gc()
+
+    # Keep only pentads that appear in visit data
+    site_data <- site_data %>%
+        dplyr::filter(Pentad %in% unique(visit_data$Pentad))
+
+    # Check that all pentads-years in visit data are also in site data
+    miss_pentads <- visit_data %>%
+        dplyr::as_tibble() %>%
+        dplyr::distinct(Pentad, year) %>%
+        dplyr::anti_join(
+            site_data %>%
+                dplyr::as_tibble() %>%
+                dplyr::distinct(Pentad, year),
+            by = c("Pentad", "year"))
+
+    if(nrow(miss_pentads) > 0){
+        log_name <- file.path(config$out_dir, "reports", paste0("pentads_in_visit_not_site_", config$years_ch, ".csv"))
+        utils::write.csv(miss_pentads, log_name, row.names = FALSE)
+    }
+
+
+    # Remove visit data from missing pentads
+    visit_data <- visit_data %>%
+        dplyr::anti_join(miss_pentads, by = c("Pentad", "year"))
+
+    if(save_occu_data){
+
+        visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
+        sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
+        detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
+
+        if((!file.exists(visitfile)) | (file.exists(visitfile) & ("visit" %in% overwrite_occu_data))){
+            visit_data %>%
+                dplyr::select(-obs) %>%
+                utils::write.csv(visitfile, row.names = FALSE)
+        } else {
+            warning("Visit file not saved because 'visit' not in overwrite_occu_data")
+        }
+
+        if((!file.exists(sitefile)) | (file.exists(sitefile) & ("site" %in% overwrite_occu_data))){
+            site_data %>%
+                utils::write.csv(sitefile, row.names = FALSE)
+        } else {
+            warning("Site file not saved because 'site' not in overwrite_occu_data")
+        }
+
+        if((!file.exists(detfile)) | (file.exists(detfile) & ("det" %in% overwrite_occu_data))){
+            visit_data %>%
+                dplyr::select(CardNo, StartDate, Pentad, year, obs) %>%
+                utils::write.csv(detfile, row.names = FALSE)
+        } else {
+            warning("Detection file not saved because 'det' not in overwrite_occu_data")
+        }
+
+    }
+
+}
+
+```
+
+
+
+## Fitting an occupancy model
+
+The next function that will run when we call `ppl_run_pipe_dst1()`, and if we include 'fit' in the `steps` argument, is `ppl_fit_occu_model()`. This function will take the outputs produced by `ppl_create_site_visit()`, format them for the package used for fitting the model, and proceed to fit the model. Depending on whether we want to fit the model in a frequentist or Bayesian framework the function may call different functions.
+
+
+```{r, eval=FALSE}
+ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
+
+    varargs <- list(...)
+
+    # Prepare data ------------------------------------------------------------
+
+    # File names
+    visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
+    sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
+    detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
+
+    # Read in site and visit data
+    site_data <- utils::read.csv(sitefile, check.names = FALSE)
+    visit_data <- utils::read.csv(visitfile, check.names = FALSE)
+    det_data <- utils::read.csv(detfile, check.names = FALSE)
+
+    # Stop if there are no detections
+    if(!1 %in% unique(det_data$obs)){
+        warning(paste("No detection of species", sp_code))
+        return(1)
+    }
+
+    # Or species detected in too few Pentads
+    n_pentads <- det_data %>%
+        dplyr::count(Pentad, obs) %>%
+        dplyr::filter(obs == 1) %>%
+        nrow()
+
+    if(n_pentads < 5){
+        warning(paste("Species", sp_code, "detected in less than 5 pentads"))
+        return(2)
+    }
+
+    # Add detection info to visit data (we need Spp variable for functions in the ABAP package)
+    visit_data <- visit_data %>%
+        dplyr::left_join(det_data,
+                         by = c("CardNo", "StartDate", "year", "Pentad")) %>%
+        dplyr::mutate(Spp = ifelse(obs == 0, "-", sp_code))
+
+    # Subset data sets
+    site_data_year <- site_data %>%
+        dplyr::filter(year == year_sel)
+
+    visit_data_year <- visit_data %>%
+        dplyr::filter(year == year_sel)
+
+    # Get spatial sites if necessary
+    if(spatial){
+        sp_sites <- ABAP::getRegionPentads("country", "South Africa") %>%
+            dplyr::filter(Name %in% unique(site_data_year$Name)) %>%
+            dplyr::select(Name, pentad)
+    } else {
+        sp_sites <- NULL
+    }
+
+
+    # Fit model ---------------------------------------------------------------
+
+    message(paste("Fitting occupancy model to species", sp_code, "for year", year_sel, Sys.time()))
+
+    # Fit model
+    if(config$package == "spOccupancy"){
+        fitSpOccu(site_data_year, visit_data_year, config, spatial, sp_sites, sp_code, year_sel)
+    } else if(config$package == "occuR"){
+        fitOccuR(site_data_year, visit_data_year, config, spatial, sp_sites, verbose = varargs$print_fitting)
+    }
+
+
+}
+```
+
+At the end of the function we see the functions `fitSpOccu()` and `fitOccuR()`. These are the first package-specific functions in the module and therefore they take care of package-specific formatting and model fitting.
+
+```{r, eval=FALSE}
+fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, ...){
+
+    # Prepare data for spOccupancy
+    occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
+
+
+    # Define models -----------------------------------------------------------
+
+    # Priors and initial values
+    # Note: we could use posterior of previous years models to define priors
+
+    # For single season models
+    # Number of samples
+    n_samples <- 2e4
+    batch_length <- 25
+    n_batch  <- n_samples/batch_length
+
+    if(spatial){ # this might not work very well yet
+
+        # Pair-wise distances between all sites
+        dist_sites <- stats::dist(occu_data$coords)/1000
+
+        # Specify list of inits
+        inits <- list(alpha = 0,
+                      beta = 0,
+                      z = apply(occu_data$y, 1, max, na.rm = TRUE),
+                      sigma.sq = 1,
+                      phi = 3 / mean(dist_sites),
+                      w = rep(0, nrow(occu_data$y)))
+
+        # Priors
+        priors <- list(alpha.normal = list(mean = 0, var = 2.72),
+                       beta.normal = list(mean = 0, var = 2.72),
+                       sigma.sq.ig = c(2, 1),
+                       phi.unif = c(3/(1000*min(dist_sites)), 3/(min(dist_sites))))
+
+        # Run model
+        fit <- spOccupancy::spPGOcc(occ.formula = reformulate(config$site_mod),
+                                    det.formula = reformulate(config$visit_mod),
+                                    cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
+                                    data = occu_data, inits = inits, priors = priors,
+                                    batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
+                                    accept.rate = 0.43, tuning = list(phi = 4),
+                                    n.omp.threads = 3, n.thin = 20, n.chains = 3,
+                                    verbose = TRUE, n.report = 200)
+
+    } else {
+
+        # Specify list of inits
+        inits <- list(alpha = 0,
+                      beta = 0,
+                      z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+        # Priors
+        priors <- list(alpha.normal = list(mean = 0, var = 2.5),
+                       beta.normal = list(mean = 0, var = 2.5))
+
+        # Run model
+
+        fit <- tryCatch({
+            out <- spOccupancy::PGOcc(occ.formula = reformulate(config$occ_mod),
+                                      det.formula = reformulate(config$det_mod),
+                                      data = occu_data, inits = inits, priors = priors,
+                                      n.samples = n_samples, n.omp.threads = 1,
+                                      n.thin = 20, n.chains = 3,
+                                      verbose = TRUE, n.report = n_samples)
+
+            out
+
+        },
+        error = function(cond) {
+            sink(file.path(config$out_dir, paste0("reports/error_occu_fit_", year_sel, "_", sp_code, ".rds")))
+            print(cond)
+            sink()
+            message(cond)
+            return(NULL)
+        },
+        warning = function(cond) {
+            sink(file.path(config$out_dir, paste0("reports/warning_occu_fit_", year_sel, "_", sp_code, ".rds")))
+            print(cond)
+            sink()
+            message(cond)
+            return(out)
+        })
+
+    }
+
+    # Save fit and return 0 if success
+    if(!is.null(fit)){
+
+        # Save covariate scaling factors
+        fit$det.scale <- list(scale = unlist(lapply(occu_data$det.covs, attr, "scaled:scale")),
+                              center = unlist(lapply(occu_data$det.covs, attr, "scaled:center")))
+
+        fit$occ.scale <- list(scale = attr(occu_data$occ.covs, "scaled:scale"),
+                              center = attr(occu_data$occ.covs, "scaled:center"))
+
+
+        return(fit)
+
+    } else {
+
+        return(3)
+
+    }
+
+}
+
+
+```
+
+This function returns a model fit as it comes out of the corresponding package (spOccupancy in the above example). As opposed to the data-preparation functions, this function does not automatically save to disk, and there is a specific call in `ppl_run_pipe_dst1()` that does this. By default it saves it to the species directory `output/6`, in this case.
+
+## Diagnostics for model fit
+
+Once the model has been fit, the next step is to produce some diagnostics. The function `diagnoseSpOccu()` does this for spOccupancy. The spOccupancy package offers the functionality to run posterior predictive checks, but we have adapted the code to make it less memory intensive. However, the functionality is more limited. The rationale is to create synthetic detection/non-detection data sets (with the function `simDetSpOccu()`, which is in the utils-spOccu.R file at the moment) from the model posterior distribution and compare them with the observed data. In this case, a Chi-square statistic is computed for the number of detections aggregated by pentad for the observed and synthetic data (this is done by the function `gofSpOccupancy()`, that is also in the utils-spOccu.R file). This functions are still experimental.
+
+```{r,eval=FALSE}
+diagnoseSpOccu <- function(fit, sp_code, config, year_sel){
+
+    # Check convergence Gelman-Rubin diagnostic
+    fails <- sapply(fit$rhat, function(param) any(abs(param - 1) > 0.1))
+
+    if(any(fails)){
+        conv_file <- file.path(config$out_dir, paste0("reports/no_converge_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt"))
+        sink(conv_file)
+        print(paste("non-convergence", paste(names(fails)[fails == TRUE], collapse = ", ")))
+        sink()
+        message(paste("non-convergence", paste(names(fails)[fails == TRUE], collapse = ", "))) # to console
+    }
+
+    # Simulate detections/non-detection data from model
+    post_sims <- simDetSpOccu(fit)
+
+    # Check goodness-of-fit (Bayesian p-value from posterior predictive check)
+    ppc_out <- gofSpOccupancy(fit, post_sims, fit_stat = 'chi-squared', group = 1)
+
+    bayes_p <- mean(ppc_out$fit.y.rep > ppc_out$fit.y)
+
+    if(bayes_p < 0.05){
+        sink(file.path(config$out_dir, paste0("reports/gof_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt")))
+        print(paste("Bayesian p-value =", round(bayes_p, 2)))
+        sink()
+        message(paste("Bayesian p-value =", round(bayes_p, 2)))
+    }
+
+    # Posterior coverage
+    y_sims_per_site <- as.data.frame(post_sims$y.rep.samples) %>%
+        dplyr::mutate(site_id = attr(post_sims$y.rep.samples, "site_id")) %>%
+        dplyr::group_by(site_id) %>%
+        dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("V"), .fns = ~sum(.x))) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-1) %>%
+        as.matrix()
+
+    y_sims_per_site_quants <- apply(y_sims_per_site, 1, quantile, c(0.025, 0.25, 0.5, 0.75, 0.975))
+
+    y_grouped <- apply(fit$y, 1, sum, na.rm = TRUE)
+
+    pst_df <- as.data.frame(t(y_sims_per_site_quants)) %>%
+        stats::setNames(paste0("q", c(0.025, 0.25, 0.5, 0.75, 0.975)*100)) %>%
+        dplyr::mutate(obs = y_grouped,
+                      site_id = names(y_grouped))
+
+    # Save per site info
+    ppc_out$y.summ.per.site <- pst_df
+
+    return(ppc_out)
+
+}
+```
+
+
+## Summarise model outputs
+
+The last function of this model is `ppl_summarise_occu()` summarises the posterior predictive distribution of the fitted model. More specifically, it predicts occupancy and detection probabilities for all South African pentads, calculates realised occupancy (i.e., occupancy probability conditional on observed data), produces plots and stores quantiles of the predictive distribution.
+
+```{r, eval=FALSE}
+requires(ggplot2)
+
+ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
+
+    # Predict from model
+    modelfile <- paste0("occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
+    message(paste("Predicting from model", file.path(config$out_dir, sp_code, modelfile)))
+
+    if(config$package == "spOccupancy"){
+        pred_occu <- predictSpOccu(fit, sp_code, year_sel, config)
+    } else if(config$package == "occuR"){
+        pred_occu <- predictOccuR(fit, sp_code, year_sel, config)
+    }
+
+
+    # summarise predictions
+    message("Summarising predictions")
+    summ_occu <- summariseSpOcc(pred_psi = pred_occu$psi,
+                                pred_p = pred_occu$p,
+                                quants = c(0.025, 0.5, 0.975))
+
+    # Save predictions
+
+    # Subset predictions and add species
+    summ_occu <- summ_occu %>%
+        dplyr::mutate(species = sp_code) %>%
+        dplyr::select(species, everything())
+
+    # Save predictions
+    summfile <- paste0("occu_pred_", config$package, "_", year_sel, "_", sp_code, ".csv")
+    summ_occu %>%
+        write.csv(file.path(config$out_dir, sp_code, summfile),
+                  row.names = FALSE)
+
+    ## PLOTS
+
+    # Download geometry if not present on disk
+    pentads_file <- file.path(tempdir(), "sa_pentads.rds")
+
+    if(file.exists(pentads_file)){
+        pentads_sa <- readRDS(pentads_file)
+    } else {
+        pentads_sa <- ABAP::getRegionPentads(.region_type = "country", .region = "South Africa") # HARD CODED
+        saveRDS(pentads_sa, file.path(tempdir(), "sa_pentads.rds"))
+    }
+
+    # Add geometry
+    summ_occu <- summ_occu %>%
+        dplyr::left_join(pentads_sa %>%
+                             dplyr::select(pentad), by = "pentad") %>%
+        sf::st_sf()
+
+    # Occupancy probabilities
+    psi <- summ_occu %>%
+        ggplot() +
+        geom_sf(aes(fill = psi), color = NA) +
+        scale_fill_viridis_c(limits = c(0, 1)) +
+        ggtitle(paste(sp_name, year_sel)) +
+        facet_wrap("lim")
+
+    # Detection probabilities
+    p <- summ_occu %>%
+        dplyr::mutate(p = ifelse(is.na(p), 0, p)) %>%
+        ggplot() +
+        geom_sf(aes(fill = p), color = NA) +
+        scale_fill_viridis_c(name = "p", limits = c(0, 1)) +
+        ggtitle(paste(sp_name, year_sel)) +
+        facet_wrap("lim")
+
+    # Realized occupancy
+    occu <- summ_occu %>%
+        ggplot() +
+        geom_sf(aes(fill = real_occu), color = NA) +
+        scale_fill_viridis_c(limits = c(0, 1)) +
+        ggtitle(paste(sp_name, year_sel)) +
+        facet_wrap("lim")
+
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_psi_", config$package, "_", year_sel, "_", sp_code, ".png")), psi)
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_p_", config$package, "_", year_sel, "_", sp_code, ".png")), p)
+    ggsave(file.path(config$out_dir, sp_code, paste0("occu_occu_", config$package, "_", year_sel, "_", sp_code, ".png")), occu)
+
+}
+```
+
