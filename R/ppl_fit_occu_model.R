@@ -65,6 +65,9 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
         sp_sites <- NULL
     }
 
+
+    # Fit model ---------------------------------------------------------------
+
     message(paste("Fitting occupancy model to species", sp_code, "for year", year_sel, Sys.time()))
 
     # Fit model

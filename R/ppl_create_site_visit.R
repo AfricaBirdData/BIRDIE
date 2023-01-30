@@ -32,14 +32,11 @@ ppl_create_site_visit <- function(sp_code, force_gee_dwld = FALSE,
 
     varargs <- list(...)
 
-    # Site and visit data file names (commented for now!)
-    # if(year < 2020){
-    #     sitefile <- file.path(config$out_dir, "site_dat_sa_gee_08_19.csv")
-    #     visitfile <- file.path(config$out_dir, "visit_dat_sa_gee_08_19.csv")
-    # } else {
-        sitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
-        visitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
-    # }
+
+    # Download ABAP data and annotate with Google Earth Engine ----------------
+
+    sitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
+    visitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
 
     # Download from GEE if file doesn't exit
     if("force_gee_dwld" %in% names(varargs)){

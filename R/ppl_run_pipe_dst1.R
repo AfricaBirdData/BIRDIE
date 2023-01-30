@@ -21,6 +21,9 @@
 ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
                               steps = c("data", "fit", "diagnose", "summary"), ...){
 
+
+    # Uninteresting activity logs ---------------------------------------------
+
     # Find most recent log file
     logfile <- file.info(list.files(file.path(config$out_dir, "reports"), full.names = TRUE)) %>%
         dplyr::mutate(file = row.names(.)) %>%
@@ -37,10 +40,16 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
                  year = year, data = NA, fit = NA, diagnose = NA, summary = NA,
                  package = config$package, notes = NA)
 
+
+    # Download and prepare data for model fitting -----------------------------
+
     if("data" %in% steps){
         ppl_create_site_visit(sp_code, config, ...)
         ppl_log["data"] <- 0
     }
+
+
+    # Fit occupancy model -----------------------------------------------------
 
     if("fit" %in% steps){
 
@@ -65,6 +74,9 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     }
 
+
+    # Diagnose model fit ------------------------------------------------------
+
     if("diagnose" %in% steps){
 
         filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
@@ -77,7 +89,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         }
 
         saveRDS(diag_out,
-            file.path(config$out_dir, sp_code, paste0("occu_ppc_", config$package, "_", year, "_", sp_code, ".rds")))
+                file.path(config$out_dir, sp_code, paste0("occu_ppc_", config$package, "_", year, "_", sp_code, ".rds")))
 
         # Create log
         ppl_log["diagnose"] <- mean(diag_out$fit.y.rep > diag_out$fit.y) # Bayes p
@@ -85,6 +97,9 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         rm(diag_out)
 
     }
+
+
+    # Summarise predictions ---------------------------------------------------
 
     if("summary" %in% steps){
 
@@ -100,7 +115,12 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     }
 
+
+    # More uninteresting activity log -----------------------------------------
+
+
     # Close log
+    if(length(logfile) == 0) logfile <- NULL
     createLog(config, logfile, full_log = ppl_log)
 
     if(exists("ppl_status") && ppl_status != 0){
