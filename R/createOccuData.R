@@ -175,7 +175,7 @@ createOccuData <- function(sp_code, years,
 
         # We need to keep some extra variables of the visit data for other functions to work down the line
         visit_data <- visit_data %>%
-            dplyr::select(CardNo, Pentad, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
+            dplyr::select(CardNo, Pentad, site_id, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
 
     }
 
@@ -184,7 +184,7 @@ createOccuData <- function(sp_code, years,
     occu_vars <- gsub(".* \\| ", "", occu_vars)
 
     site_data <- site_data %>%
-        dplyr::select(Pentad, year, dplyr::all_of(occu_vars))
+        dplyr::select(Pentad, site_id, year, dplyr::all_of(occu_vars))
 
     return(list(site = site_data,
                 visit = visit_data))

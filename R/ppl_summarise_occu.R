@@ -15,7 +15,7 @@ ppl_summarise_occu <- function(fit, sp_code, sp_name, year_sel, config, ...){
     # Predict from model
     modelfile <- paste0("occu_fit_", config$package, "_", year_sel, "_", sp_code, ".rds")
     message(paste("Predicting from model", file.path(config$out_dir, sp_code, modelfile)))
-    fit <- readRDS(file.path(config$out_dir, sp_code, modelfile)) # this is not necessary
+    # fit <- readRDS(file.path(config$out_dir, sp_code, modelfile)) # this is not necessary
 
     if(config$package == "spOccupancy"){
         pred_occu <- predictSpOccu(fit, sp_code, year_sel, config)

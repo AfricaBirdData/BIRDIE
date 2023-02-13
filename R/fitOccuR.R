@@ -30,7 +30,8 @@ fitOccuR <- function(site_data_year, visit_data_year, config, spatial = FALSE, s
     occu_data$site <- occu_data$site %>%
         dplyr::mutate(site_id = factor(site_id))
     occu_data$visit <- occu_data$visit %>%
-        dplyr::mutate(obs_id = factor(obs_id))
+        dplyr::mutate(site_id = factor(site_id),
+                      obs_id = factor(obs_id))
 
     # Run model
     tryCatch({

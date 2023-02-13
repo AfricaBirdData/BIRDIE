@@ -89,7 +89,8 @@ predictOccuR <- function(fit, sp_code, year, config, ...){
     occuRdata$site <- occuRdata$site %>%
         dplyr::mutate(site_id = factor(site_id))
     occuRdata$visit <- occuRdata$visit %>%
-        dplyr::mutate(obs_id = factor(obs_id))
+        dplyr::mutate(obs_id = factor(obs_id),
+                      site_id = factor(site_id))
 
 
     tryCatch({

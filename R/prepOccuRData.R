@@ -46,6 +46,9 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE,
     occ_vars <- attr(tt_occ, "term.labels")
     occ_vars <- gsub(".* \\| ", "", occ_vars)
 
+    # Add site_id if not in covariates
+    if(!"site_id" %in% occ_vars){occ_vars <- c("site_id", occ_vars)}
+
     occ_cov_sel <- site_data %>%
         dplyr::select(pentad = Pentad, year, dplyr::all_of(occ_vars))
 
@@ -67,7 +70,7 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE,
     if(scale){
         # Scale covariates
         occur_data$site <- occur_data$site %>%
-            dplyr::mutate(dplyr::across(-c(pentad, year, site, occasion),
+            dplyr::mutate(dplyr::across(-(where(is.integer) | where(is.character)),
                                         ~ scale(.x)))
     }
 
@@ -76,6 +79,9 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE,
 
     det_vars <- attr(tt_det, "term.labels")
     det_vars <- gsub(".* \\| ", "", det_vars)
+
+    # Add site_id if not in covariates
+    if(!"site_id" %in% det_vars){det_vars <- c("site_id", det_vars)}
 
     det_cov_sel <- visit_data %>%
         dplyr::arrange(Pentad, StartDate) %>%  # This is how abapToOccuR orders rows
@@ -92,7 +98,7 @@ prepOccuRData <- function(site_data, visit_data, config, spatial = FALSE,
     if(scale){
         # Scale covariates
         occur_data$visit <- occur_data$visit %>%
-            dplyr::mutate(dplyr::across(c(log_hours, prcp, tdiff),
+            dplyr::mutate(dplyr::across(-(where(is.integer) | where(is.character)),
                                         ~ scale(.x)))
     }
 
