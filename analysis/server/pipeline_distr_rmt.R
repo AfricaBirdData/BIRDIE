@@ -13,10 +13,10 @@ for(y in seq_along(test_years)){
     year <- test_years[y]
     config <- configPreambOccu(year = year, dur = 3,
                                occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
-                                            "prcp", "tdiff", "watext:watrec"),
-                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "log_dist_coast", "elev"),
-                               package = "occuR",
+                                           "prcp", "tdiff", "watext:watrec"),
+                               det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               package = "spOccupancy",
                                server = TRUE)
 
     if(y == 1){
@@ -49,9 +49,9 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("fit"),
+                                              steps = c("data", "fit", "diagnose", "summary"),
                                               force_gee_dwld = FALSE,
-                                              monitor_gee = TRUE,
+                                              monitor_gee = FALSE,
                                               force_abap_dwld = FALSE,
                                               save_occu_data = TRUE,
                                               overwrite_occu_data = c("site", "visit", "det"),

@@ -16,9 +16,9 @@ for(y in seq_along(test_years)){
     config <- configPreambOccu(year = year, dur = 3,
                                occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
                                             "prcp", "tdiff", "watext:watrec"),
-                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "log_dist_coast", "elev"),
-                               package = "occuR",
+                               det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "dist_coast", "elev"),
+                               package = "spOccupancy",
                                server = FALSE)
 
     if(y == 1){
@@ -51,7 +51,7 @@ for(y in seq_along(test_years)){
                                               sp_name = sp_name,
                                               year = year_sel,
                                               config = config,
-                                              steps = c("fit"),
+                                              steps = c("data", "fit", "diagnose", "summary"),
                                               force_gee_dwld = FALSE,
                                               monitor_gee = TRUE,
                                               force_abap_dwld = FALSE,
@@ -60,7 +60,7 @@ for(y in seq_along(test_years)){
                                               scale_vars_occur = list(visit = NULL,
                                                                       site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                               spatial = FALSE,
-                                              print_fitting = FALSE)
+                                              print_fitting = TRUE)
 
                 message(paste("Pipeline DST1 status =", out_dst1))
 
