@@ -2,7 +2,8 @@ library(BIRDIE)
 
 rm(list = ls())
 
-config <- BIRDIE::configPreambJAGS(2021, server = TRUE)
+config <- BIRDIE::configPreambJAGS(2021, server = TRUE,
+                                   mod_file = "cwac_ssm_lat_season_multi_hier.R")
 
 for(i in 1:length(config$species)){
 
@@ -26,7 +27,7 @@ for(i in 1:length(config$species)){
     status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
                                      prep_data_steps = c("missing", "gee", "subset", "model"),
                                      catchment = catchment,
-                                     upload_catchment = FALSE, force_gee = TRUE,
+                                     upload_catchment = FALSE, force_gee = FALSE,
                                      monitor = FALSE)
 
     message(paste("ABU1 status =", status_abu1))
