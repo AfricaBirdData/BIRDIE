@@ -31,34 +31,55 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         plot_options$colors <- c("#71BD5E", "#B590C7")
     }
 
-    # Create a data frame with the posterior state
-    post_stt <- data.frame(mu_est = fit$mean$mu_t,
-                           mu_lb = fit$q2.5$mu_t,
-                           mu_ub = fit$q97.5$mu_t,
-                           year = ssm_counts$year,
-                           season = ssm_counts$Season,
-                           season_id = ssm_counts$season_id,
-                           season_est = as.integer(fit$mean$summer < 0.5) + 1L,
-                           loc_code = ssm_counts$LocationCode,
-                           site_id = ssm_counts$site_id,
-                           count = log(ssm_counts$count + 0.1))
-        # dplyr::filter(season != "O") # We should show these somehow
+    # Data summary
+    dat_summ <- ssm_counts %>%
+        dplyr::mutate(season_est = as.integer(fit$mean$summer < 0.5) + 1L,) %>%
+        dplyr::group_by(site_id, year, season_est) %>%
+        dplyr::summarise(count = log(mean(count+1, na.rm = TRUE))) %>%
+        dplyr::ungroup() %>%
+        tidyr::pivot_wider(names_from = season_est, values_from = count) %>%
+        dplyr::rename(count_s = "1",
+                      count_w = "2")
 
-    # There might be counts in more than one day per season and year, so
-    # we plot the mean for the season
+
+    # Create a data frame with the posterior state
+    post_stt <- data.frame(year = dat_summ$year,
+                           site_id = dat_summ$site_id,
+                           stt_s_est = as.vector(t(fit$mean$stt_s)),
+                           stt_s_lb = as.vector(t(fit$q2.5$stt_s)),
+                           stt_s_ub = as.vector(t(fit$q97.5$stt_s)),
+                           stt_w_est = as.vector(t(fit$mean$stt_w)),
+                           stt_w_lb = as.vector(t(fit$q2.5$stt_w)),
+                           stt_w_ub = as.vector(t(fit$q97.5$stt_w)))
+
+    # Pivot seasons
+    dat_summ <- dat_summ %>%
+        tidyr::pivot_longer(cols = c(count_s, count_w),
+                            names_to = "season", values_to = "count") %>%
+        dplyr::mutate(season = ifelse(grepl("_s", season), "summer", "winter"))
+
     post_stt <- post_stt %>%
-        dplyr::group_by(site_id, year, season_est, loc_code) %>%
-        dplyr::summarize(count = log(mean(exp(count) - 0.1)),
-                         mu_est = log(mean(exp(mu_est))),
-                         mu_lb = log(mean(exp(mu_lb))),
-                         mu_ub = log(mean(exp(mu_ub)))) %>%
-        dplyr::ungroup()
+        tidyr::pivot_longer(cols = -c(year, site_id),
+                            names_to = "quantile", values_to = "value") %>%
+        dplyr::mutate(season = if_else(grepl("_s", quantile), "summer", "winter")) %>%
+        dplyr::mutate(quantile = case_when(grepl("_est", quantile) ~ "est",
+                                           grepl("_ub", quantile) ~ "ub",
+                                           grepl("_lb", quantile) ~ "lb"))
+
+    # Add counts and location code
+    post_stt <- post_stt %>%
+        dplyr::left_join(dplyr::distinct(ssm_counts[,c("site_id", "LocationCode")]),
+                         by = "site_id") %>%
+        dplyr::rename(loc_code = LocationCode) %>%
+        dplyr::left_join(dat_summ, by = c("site_id", "year", "season"))
+
+
 
     if(linear){
         post_stt <- post_stt %>%
-            dplyr::mutate(dplyr::across(.cols = -c(site_id, year, season_est, loc_code),
-                                        .fns = ~exp(.x))) %>%
-            dplyr::mutate(count = count - 0.1)
+            dplyr::mutate(value = exp(value) - 1,
+                          count = exp(count) - 1)
+
         abund_label <- "Abundance"
 
         # Cut axis when values are larger than 10 times the max count
@@ -86,16 +107,13 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
         stt_plot <- post_stt %>%
             dplyr::filter(site_id == i) %>%
-            tidyr::pivot_longer(cols = c(mu_est, mu_lb, mu_ub),
-                                names_to = "quantile") %>%
             ggplot() +
             geom_path(aes(x = year, y = value, linetype = quantile)) +
-            geom_point(aes(x = year, y = count, col = factor(season_est)), show.legend = FALSE) +
+            geom_point(aes(x = year, y = count, col = season), show.legend = FALSE) +
             scale_linetype_manual(name = "", values = c(1, 2, 2), guide = NULL) +
             scale_colour_manual(values = plot_options$colors) +
             # coord_cartesian(ylim = ylims) +
-            facet_wrap("season_est", ncol = 2,
-                       labeller = labeller(season_est = c("1" = "Summer", "2" = "Winter"))) +
+            facet_wrap("season", ncol = 2) +
             xlab("Year") + ylab(abund_label) +
             plot_options$pers_theme
 
