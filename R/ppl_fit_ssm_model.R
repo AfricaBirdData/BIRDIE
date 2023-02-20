@@ -73,6 +73,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
 
     # Prepare data
     data <- list(
+        sum_mean_mu = sum(mean_mu),
         count = counts$count + 1, # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
         summer = dplyr::case_when(counts$season_id == 1 ~ 1L,
                                   counts$season_id == 2 ~ 0L,
@@ -89,28 +90,32 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
         K = ncol(covts_x),
         M = ncol(U))
 
-    param = c("phi", "beta", "lambda", "mu.beta", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t", "summer")
-
-    # param = c("beta", "mu.beta", "B", "G", "mu_t")
-
     # Set initial values
     inits <- function(){
-        list(ini_s = rnorm(data$nsites, data$mean_mu, data$ini_sd*1.5),
-             phi = runif(data$nsites, 0.1, 0.9),
+        list(zeta_ini = rnorm(data$nsites, 0, 1),
+             lambda_ini = rnorm(data$nsites, 0, 1),
              tau.alpha = rgamma(data$nsites, 3, 2),
              tau.e = rgamma(data$nsites, 3, 2),
              B = matrix(rnorm(data$K * data$nsites, 0, 1), ncol = data$K),
              G = matrix(rnorm(data$M * data$nsites, 0, 1), ncol = data$M),
-             tau.eps = rexp(data$nyears-1, 1),
-             tau.zeta = rexp(data$nyears-1, 1))
+             mu.zeta = rnorm(data$nsites, 0, 0.5),
+             mu.eps= rnorm(data$nsites, 0, 0.5),
+             tau.eps = rexp(data$nyears, 1),
+             tau.zeta = rexp(data$nyears, 1),
+             phi.mu = runif(data$nsites, 0.2, 0.8),
+             phi.lambda = runif(data$nsites, 0.2, 0.8))
     }
+
+    param = c("beta", "lambda", "mu.zeta", "mu.eps", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t", "summer", "phi.mu", "phi.lambda")
+
+    # param = c("beta", "mu.beta", "B", "G", "mu_t")
 
     print(paste("Fitting state-space JAGS model at", Sys.time()))
 
     # Fit 2-season dynamic trend model
     fit <- jagsUI::jags.basic(data = data,
                               parameters.to.save = param,
-                              model.file = file.path(config$mod_dir, "cwac_ssm_lat_season_multi_hier.R"),
+                              model.file = file.path(config$mod_dir, config$mod_file),
                               inits = inits,
                               n.chains = 3, n.iter = 10000, n.burnin = 5000,
                               modules = c('glm', 'dic'), parallel = TRUE,
