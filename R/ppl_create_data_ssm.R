@@ -146,10 +146,9 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
     # Add missing counts ------------------------------------------------------
 
-    message("Adding missing counts to all sites. This might take a while...")
-
-
     if("missing" %in% steps){
+
+        message("Adding missing counts to all sites. This might take a while...")
 
         tmp_sp_data_sel <- file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds"))
 
@@ -279,10 +278,10 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
     if("model" %in% steps){
 
-        outfile <- file.path(tempdir(), paste0(sp_code, "_", config$years_ch, "_cwac_data_subset.rds"))
+        outfile <- setSpOutFilePath("abu_gee_data", config, sp_code, ".csv")
 
         if(!exists("counts") & file.exists(outfile)){
-            counts <- readRDS(outfile)
+            counts <- read.csv(outfile)
         } else if(!exists("counts") & !file.exists(outfile)){
             stop("No dataset with subset counts found. Perhaps you need to run the 'subset' step?")
         }
@@ -304,16 +303,37 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             dplyr::ungroup() %>%
             dplyr::arrange(site_id, year_id, season_id, visit_id)
 
-        # Create variables that are change in covariates
+        # Remove seasons other than summer and winter
+        counts_mod <- counts_mod %>%
+            dplyr::filter(season_id != 3)
+
+        # Add counts that come from the same site, season and year
+        gen_vars <- counts_mod %>%
+            dplyr::select(year, Season, spp, LocationCode, UNIT_ID,
+                          season_id, site_id, year_id) %>%
+            dplyr::distinct()
+
         counts_mod <- counts_mod %>%
             dplyr::group_by(site_id, year_id, season_id) %>%
-            dplyr::mutate(dplyr::across(.cols = c(pdsi_mean, watext_count, watrec_mean),
-                                        .fns = mean, .names = "mean_{.col}")) %>%
-            dplyr::group_by(site_id, season_id) %>%
-            dplyr::mutate(dplyr::across(.cols = c(mean_pdsi_mean, mean_watext_count, mean_watrec_mean),
-                                        .fns = ~c(diff(.x), NA), .names = "diff_{.col}")) %>%
-            dplyr::rename_with(~gsub("_mean_", "_", .x), .cols = dplyr::everything()) %>%
+            dplyr::summarise(count = sum(count, na.rm = TRUE),
+                             dplyr::across(.cols = c(prcp_mean, tmmn_mean, tmmx_mean, pdsi_mean, watext_count, watrec_mean),
+                                           ~mean(.x))) %>%
             dplyr::ungroup()
+
+        counts_mod <- counts_mod %>%
+            dplyr::left_join(gen_vars, by = c("site_id", "year_id", "season_id"))
+
+
+        # Create variables that are change in covariates
+        # counts_mod <- counts_mod %>%
+        #     dplyr::group_by(site_id, year_id, season_id) %>%
+        #     dplyr::mutate(dplyr::across(.cols = c(pdsi_mean, watext_count, watrec_mean),
+        #                                 .fns = mean, .names = "mean_{.col}")) %>%
+        #     dplyr::group_by(site_id, season_id) %>%
+        #     dplyr::mutate(dplyr::across(.cols = c(mean_pdsi_mean, mean_watext_count, mean_watrec_mean),
+        #                                 .fns = ~c(diff(.x), NA), .names = "diff_{.col}")) %>%
+        #     dplyr::rename_with(~gsub("_mean_", "_", .x), .cols = dplyr::everything()) %>%
+        #     dplyr::ungroup()
 
         # counts_mod <- counts_mod %>%
         #     dplyr::select(year, Season, StartDate, LocationCode, year_id, season_id, site_id, visit_id, id_count) %>%
