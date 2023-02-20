@@ -4,13 +4,32 @@
 \alias{configPreambAbu}
 \title{Prepare server or local preamble}
 \usage{
-configPreambAbu(year, server)
+configPreambAbu(
+  year,
+  server,
+  mod_file,
+  data_dir = NULL,
+  mod_dir = NULL,
+  out_dir = NULL
+)
 }
 \arguments{
 \item{year}{Year of interest.}
 
 \item{server}{Logical. If TRUE the preamble is prepared to run remotely,
 otherwise it is prepared to run locally.}
+
+\item{mod_file}{Name of file containing model, with out path to directory.
+Directory is specified in \code{mod_dir}.}
+
+\item{data_dir}{Path to data directory. There are a few inputs to the pipeline
+that it doesn't generate itself, such as some environmental layers that are not
+on Google Earth Engine. Those would be stored here.}
+
+\item{mod_dir}{Path to directory where models are saved.}
+
+\item{out_dir}{Path to output directory. Pipeline outputs will be stored here,
+including intermediate outputs, so most what we need is here.}
 }
 \value{
 A list with:
