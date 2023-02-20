@@ -45,12 +45,15 @@ ppl_summarize_ssm <- function(sp_code, config, ...){
         # Prepare state data
         stt_df <- plotdata[[1]]
 
+        stt_df <- stt_df %>%
+            tidyr::pivot_wider(names_from = "quantile", values_from = "value")
+
         stt_dfw <- cbind(stt_df %>%
-                             dplyr::filter(season_est == 1) %>%
-                             dplyr::select(-c(site_id, season_est)),
+                             dplyr::filter(season == "summer") %>%
+                             dplyr::select(-c(site_id, season)),
                          stt_df %>%
-                             dplyr::filter(season_est == 2) %>%
-                             dplyr::select(-c(site_id, year, season_est, loc_code)))
+                             dplyr::filter(season == "winter") %>%
+                             dplyr::select(-c(site_id, year, season, loc_code)))
 
         names(stt_dfw) <- c("year", "site", "summer.count", "summer.est", "summer.ci.lower", "summer.ci.upper",
                             "winter.count", "winter.est", "winter.ci.lower", "winter.ci.upper")

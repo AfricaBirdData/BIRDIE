@@ -19,11 +19,11 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     #     dplyr::ungroup()
 
     # Create covariate matrix for summer/winter
-    covts_x <- counts %>%
-        dplyr::mutate(intcp = 1) %>%
-        dplyr::rename_with(~gsub("_mean||_count", "", .x), .cols = dplyr::everything()) %>%
-        dplyr::select(intcp, prcp, tmmn, tmmx) %>%
-        dplyr::mutate(dplyr::across(.cols = c(prcp, tmmn, tmmx), .fns = ~scale(.x)))
+    # covts_x <- counts %>%
+    #     dplyr::mutate(intcp = 1) %>%
+    #     dplyr::rename_with(~gsub("_mean||_count", "", .x), .cols = dplyr::everything()) %>%
+    #     dplyr::select(intcp, prcp, tmmn, tmmx) %>%
+    #     dplyr::mutate(dplyr::across(.cols = c(prcp, tmmn, tmmx), .fns = ~scale(.x)))
 
     # Create covariate matrix for mean population change
     covts_u <- counts %>%
@@ -43,7 +43,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
 
     # There is one NA at the end of each time series of covariates because they
     # are lagged variables. Make this zero - it won't affect the results
-    covts_u[is.na(covts_u)] <- 0
+    # covts_u[is.na(covts_u)] <- 0
 
     # Convert to array of multiple sites
     U <- covts_u %>%
@@ -56,38 +56,33 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
                          dplyr::n_distinct(counts$site_id)))
 
 
-    # Expected (log) summer count for each site would be the mean count over the years
-    mean_mu <- counts %>%
-        dplyr::filter(season_id == 1) %>%
-        dplyr::group_by(site_id) %>%
-        dplyr::summarise(mean_count = log(mean(count + 1, na.rm = TRUE))) %>%  # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
-        dplyr::pull(mean_count)
-
-
-    # Priors for initial states. It shouldn't be much higher than the maximum count at the site
-    ini_ub <- counts %>%
-        dplyr::group_by(site_id) %>%
-        dplyr::summarise(max_count = max(count + 1, na.rm = TRUE)) %>%
-        dplyr::pull(max_count) %>%
-        log()
+    # # Expected (log) summer count for each site would be the mean count over the years
+    # mean_mu <- counts %>%
+    #     dplyr::filter(season_id == 1) %>%
+    #     dplyr::group_by(site_id) %>%
+    #     dplyr::summarise(mean_count = log(mean(count + 1, na.rm = TRUE))) %>%  # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
+    #     dplyr::pull(mean_count)
+    #
+    #
+    # # Priors for initial states. It shouldn't be much higher than the maximum count at the site
+    # ini_ub <- counts %>%
+    #     dplyr::group_by(site_id) %>%
+    #     dplyr::summarise(max_count = max(count + 1, na.rm = TRUE)) %>%
+    #     dplyr::pull(max_count) %>%
+    #     log()
 
     # Prepare data
     data <- list(
-        sum_mean_mu = sum(mean_mu),
         count = counts$count + 1, # NOTE THE PLUS ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS
         summer = dplyr::case_when(counts$season_id == 1 ~ 1L,
                                   counts$season_id == 2 ~ 0L,
                                   TRUE ~ NA_integer_),
-        mean_mu = mean_mu,
-        ini_sd = ini_ub - mean_mu,
         nyears = dplyr::n_distinct(counts$year_id),
         nsites = dplyr::n_distinct(counts$site_id),
         year = counts$year_id,
         site = counts$site_id,
         N = nrow(counts),
-        X = as.matrix(covts_x),
         U = U,
-        K = ncol(covts_x),
         M = ncol(U))
 
     # Set initial values
@@ -96,7 +91,6 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
              lambda_ini = rnorm(data$nsites, 0, 1),
              tau.alpha = rgamma(data$nsites, 3, 2),
              tau.e = rgamma(data$nsites, 3, 2),
-             B = matrix(rnorm(data$K * data$nsites, 0, 1), ncol = data$K),
              G = matrix(rnorm(data$M * data$nsites, 0, 1), ncol = data$M),
              mu.zeta = rnorm(data$nsites, 0, 0.5),
              mu.eps= rnorm(data$nsites, 0, 0.5),
@@ -106,7 +100,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
              phi.lambda = runif(data$nsites, 0.2, 0.8))
     }
 
-    param = c("beta", "lambda", "mu.zeta", "mu.eps", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "mu_t", "summer", "phi.mu", "phi.lambda")
+    param = c("beta", "lambda", "mu.zeta", "mu.eps", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "stt_s", "stt_w", "summer", "phi.mu", "phi.lambda")
 
     # param = c("beta", "mu.beta", "B", "G", "mu_t")
 

@@ -14,8 +14,8 @@ model {
     for(s in 1:nsites){
 
         # Priors for initial states
-        zeta_ini[s] ~ dnorm(0, 10)              # prior for initial extra log abundance uncertainty
-        lambda_ini[s] ~ dnorm(0, 10)             # prior for log summer to winter ratio extra uncertainty
+        zeta_ini[s] ~ dnorm(0, 3)              # prior for initial extra log abundance uncertainty
+        lambda_ini[s] ~ dnorm(0, 3)             # prior for log summer to winter ratio extra uncertainty
         stt_w[s, 1] = stt_s[s, 1] + lambda[s, 1]  # This is not a prior but inherits directly from two priors
 
         phi.mu[s] ~ dbeta(2, 2)
@@ -28,9 +28,9 @@ model {
         sig.e[s] = sqrt(1/tau.e[s])           # observer error standard deviation winter
 
         # Prior for season covariate coefficients
-        for(k in 1:K){
-            B[s, k] ~ dnorm(0, 1)
-        }
+        # for(k in 1:K){
+        #     B[s, k] ~ dnorm(0, 1)
+        # }
 
         # Prior for expected population change coefficients
         # G[s, 1] ~ dnorm(0, 0.5)
@@ -46,8 +46,8 @@ model {
     }
 
     for(y in 1:nyears){
-        tau.zeta[y] ~ dscaled.gamma(5, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 2 for sig.zeta!
-        # tau.zeta[y] ~ dgamma(2, 1)
+        tau.zeta[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
+        # tau.zeta[y] ~ dgamma(6, 3)
         sig.zeta[y] = sqrt(1/tau.zeta[y])
         for(s in 1:nsites){
             zeta[s, y] ~ dnorm(mu.zeta[s], tau.zeta[y])
@@ -60,8 +60,8 @@ model {
     }
 
     for(y in 1:nyears){
-        tau.eps[y] ~ dscaled.gamma(5, 2)    # same as Student-t with 2 degrees of freedom and standard deviation 4 for sig.eps!
-        # tau.zeta[y] ~ dgamma(1.8, 1)
+        tau.eps[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.eps!
+        # tau.eps[y] ~ dgamma(6, 3)
         sig.eps[y] = sqrt(1/tau.eps[y])
         for(s in 1:nsites){
             eps[s, y] ~ dnorm(mu.eps[s], tau.eps[y])
@@ -81,7 +81,11 @@ model {
 
     # Summer abundance estimates
     for(s in 1:nsites){
-        for(y in 1:nyears){
+        mu_beta[s, 1] = eta[s, 1] + zeta[s, 1] + zeta_ini[s]
+    }
+
+    for(s in 1:nsites){
+        for(y in 2:nyears){
             mu_beta[s, y] = eta[s, y] + zeta[s, y]
         }
     }
@@ -107,14 +111,14 @@ model {
     # Update population states
     for(s in 1:nsites){
         # Initial state
-        stt_s[s, 1] = mu_beta[s, 1] + zeta_ini[s]
+        stt_s[s, 1] = mu_beta[s, 1]
     }
 
     for (y in 1:(nyears-1)){
         for(s in 1:nsites){
 
             # State update
-            stt_s[s, y+1] = phi.mu[s]*stt_s[s, y] + (1-phi.mu[s])*mu_beta[s, y]
+            stt_s[s, y+1] = phi.mu[s]*stt_s[s, y] + (1-phi.mu[s])*mu_beta[s, y+1]
             stt_w[s, y+1] = stt_s[s, y+1] + lambda[s, y+1]
 
             beta[s, y] = stt_s[s, y+1] - stt_s[s, y]
@@ -125,8 +129,8 @@ model {
 
     # model for summer/winter
     for(i in 1:N){
-        summer[i] ~ dbern(p[i])
-        logit(p[i]) = inprod(B[site[i],], X[i,])
+        # summer[i] ~ dbern(p[i])
+        # logit(p[i]) = inprod(B[site[i],], X[i,])
         winter[i] = 1 - summer[i]
     }
 
