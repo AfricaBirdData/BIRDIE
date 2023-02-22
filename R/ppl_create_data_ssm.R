@@ -265,7 +265,9 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         message("Annotating with covariates from GEE")
 
-        counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
+        try(
+            counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
+        )
 
         attr(counts, "gee") <- TRUE
 
