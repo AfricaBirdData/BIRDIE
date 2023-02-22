@@ -105,6 +105,7 @@ ppl_fit_ssm_model <- function(sp_code, config, ...){
     # param = c("beta", "mu.beta", "B", "G", "mu_t")
 
     print(paste("Fitting state-space JAGS model at", Sys.time()))
+    print(paste("model", file.path(config$mod_dir, config$mod_file)))
 
     # Fit 2-season dynamic trend model
     fit <- jagsUI::jags.basic(data = data,
