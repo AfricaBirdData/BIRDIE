@@ -37,7 +37,7 @@ configPreambAbu <- function(year, server, mod_file, data_dir = NULL,
             out_dir <- "/drv_birdie/birdie_ftp"
         }
 
-        if(is.null(out_dir)){
+        if(is.null(mod_dir)){
             mod_dir <- "/drv_birdie/Working/git/BIRDIE/analysis/models"
         }
 
