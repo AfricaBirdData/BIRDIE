@@ -62,9 +62,9 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
         tidyr::pivot_longer(cols = -c(year, site_id),
                             names_to = "quantile", values_to = "value") %>%
         dplyr::mutate(season = ifelse(grepl("_s", quantile), "summer", "winter")) %>%
-        dplyr::mutate(quantile = case_when(grepl("_est", quantile) ~ "est",
-                                           grepl("_ub", quantile) ~ "ub",
-                                           grepl("_lb", quantile) ~ "lb"))
+        dplyr::mutate(quantile = dplyr::case_when(grepl("_est", quantile) ~ "est",
+                                                  grepl("_ub", quantile) ~ "ub",
+                                                  grepl("_lb", quantile) ~ "lb"))
 
     # Add counts and location code
     post_stt <- post_stt %>%
