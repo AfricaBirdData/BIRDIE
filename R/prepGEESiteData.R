@@ -76,6 +76,38 @@ prepGEESiteData <- function(config, monitor = TRUE){
                                     .fns = ~.x/10)) %>%
         sf::st_drop_geometry()
 
+    # Annotate with National Wetland Map --------------------------------------
+
+    message("Annotating catchment data with National Wetland Map")
+
+    # Count pixels with wetland (wetland extension)
+    out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   reducer = "count",
+                                   monitor = TRUE)
+
+    out <- out %>%
+        dplyr::rename(wetext_2018 = count) %>%
+        sf::st_drop_geometry()
+
+    sitedata <- sitedata %>%
+        dplyr::left_join(out %>%
+                             dplyr::select(Name, wetext_2018),
+                         by = "Name")
+
+    # Average wetland condition (wetland extension)
+    out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   reducer = "mean",
+                                   monitor = TRUE)
+
+    sitedata <- sitedata %>%
+        dplyr::left_join(out %>%
+                             dplyr::rename(wetcon_2018 = mean) %>%
+                             dplyr::select(Name, wetcon_2018) %>%
+                             sf::st_drop_geometry(),
+                         by = "Name")
+
 
     # Annotate with yearly surface water occurrence --------------------------------
 
