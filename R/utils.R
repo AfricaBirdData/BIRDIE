@@ -130,7 +130,7 @@ createLog <- function(config, log_file = NULL, date_time = NULL, species = NULL,
 
 
     if(is.null(log_file)){
-        log_file <- file.path(config$out_dir, "reports", paste0("pipe_log_", today,".csv"))
+        log_file <- file.path(config$out_dir, "reports", paste0("pipe_log_", config$module, "_", today,".csv"))
         log <- data.frame(date_time = character(),
                           species = numeric(),
                           model = character(),

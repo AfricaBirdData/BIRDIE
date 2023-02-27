@@ -7,6 +7,13 @@ config <- BIRDIE::configPreambAbu(2021, server = FALSE,
 
 for(i in 1:length(config$species)){
 
+    # Create log
+    if(i == 1){
+        createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+                  year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+                  package = NA, notes = "Log file created")
+    }
+
     sp_code <- config$species[i]
 
     message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))

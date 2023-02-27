@@ -27,7 +27,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     # Find most recent log file
     logfile <- file.info(list.files(file.path(config$out_dir, "reports"), full.names = TRUE)) %>%
         dplyr::mutate(file = row.names(.)) %>%
-        dplyr::filter(grepl("pipe_log", file)) %>%
+        dplyr::filter(grepl(paste0("pipe_log_", config$module), file)) %>%
         dplyr::arrange(desc(ctime)) %>%
         dplyr::slice(1) %>%
         dplyr::pull(file)
@@ -45,6 +45,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     if("data" %in% steps){
         ppl_create_site_visit(sp_code, config, ...)
+
+        # Log data status
         ppl_log["data"] <- 0
     }
 
@@ -58,7 +60,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         # Generate reports
         fit_status <- logFitStatus(fit_out, year, sp_code, config)
 
-        # Create log
+        # Log fit status
         ppl_log["fit"] <- fit_status
 
         # Save fit if the process was successful or return the status otherwise

@@ -75,7 +75,7 @@ configPreambAbu <- function(year, server, mod_file, data_dir = NULL,
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, out_dir=out_dir, mod_dir=mod_dir, mod_file=mod_file,
+    list(server=server, module="abu", data_dir=data_dir, out_dir=out_dir, mod_dir=mod_dir, mod_file=mod_file,
          species=species, year=year, dyear=dyear, year_range=year_range,
          years_ch=years_ch, years=years)
 

@@ -74,7 +74,7 @@ configPreambOccu <- function(year, dur, occ_mod, det_mod, package = "spOccupancy
     years_ch <- paste(substring(as.character(year_range), 3, 4), collapse = "_")
     years <- year_range[1]:year_range[2]
 
-    list(server=server, data_dir=data_dir, out_dir=out_dir, species=species, dim_grid=dim_grid,
+    list(server=server, module="dst", data_dir=data_dir, out_dir=out_dir, species=species, dim_grid=dim_grid,
          year=year, dur=dur, year_range=year_range, years_ch=years_ch, years=years,
          occ_mod=occ_mod, det_mod=det_mod, package=package, fixed_vars=fixed_vars)
 
