@@ -80,11 +80,6 @@ ppl_fit_ssm_model <- function(counts, sp_code, config, ...){
                               modules = c('glm', 'dic'), parallel = TRUE,
                               n.cores = 3, DIC = TRUE, verbose = TRUE)
 
-    # Save
-    if(length(sp_code) > 1){
-        sp_code <- "group"
-    }
-
-    saveRDS(fit, setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
+    return(fit)
 
 }
