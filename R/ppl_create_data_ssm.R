@@ -254,7 +254,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             catchment %>%
                 ABDtools::uploadFeaturesToEE(asset_id = file.path(rgee::ee_get_assethome(), 'quin_catchm'),
                                              load = FALSE,
-                                             monitor = monitor)
+                                             monitor = varargs$monitor)
 
             prepGEECatchmData(sp_code, catchment, config, ...)
 
