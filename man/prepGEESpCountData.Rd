@@ -10,7 +10,6 @@ prepGEESpCountData(
   catchment,
   config,
   monitor = TRUE,
-  upload_catchment = FALSE,
   force_gee = FALSE
 )
 }
@@ -30,10 +29,6 @@ See \link{configPreambJAGS}}
 
 \item{monitor}{Logical. If TRUE (default) monitoring printed messages produced
 by \code{rgee} will displayed. If FALSE, only high-level messages will be displayed.}
-
-\item{upload_catchment}{If TRUE catchment will be uploaded to GEE. FALSE is
-an option because catchment info might have been already uploaded to GEE.
-Defaults to FALSE.}
 
 \item{force_gee}{If TRUE annotation with GEE info will occur even if a
 dataset with covariates is already present on disk.}

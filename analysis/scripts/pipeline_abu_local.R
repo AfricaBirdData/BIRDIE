@@ -32,10 +32,11 @@ for(i in 1:length(config$species)){
 
 
     # Run abudance pipeline module 1
-    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
-                                     prep_data_steps = c("missing", "gee", "subset", "model"),
+    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("summary"),
+                                     prep_data_steps = c("model"),
                                      catchment = catchment,
-                                     upload_catchment = FALSE, force_gee = FALSE,
+                                     force_catchm = FALSE,
+                                     force_gee = TRUE,
                                      monitor = TRUE)
 
     message(paste("ABU1 status =", status_abu1))

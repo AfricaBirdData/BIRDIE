@@ -47,7 +47,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
 
         # Save counts to disk
         outfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
-        utils::write.csv(counts_mod, outfile, row.names = FALSE)
+        utils::write.csv(counts, outfile, row.names = FALSE)
         message(paste("Final counts dataset saved at", outfile))
 
         # Log data status
@@ -60,7 +60,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
     if("fit" %in% steps){
 
         # Read data in if no counts are found in the environment
-        if(!exists(counts)){
+        if(!exists("counts")){
             counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
         }
 
@@ -78,10 +78,10 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
     if("summary" %in% steps){
 
         # Load counts and fit
-        if(!exists(counts)){
+        if(!exists("counts")){
             counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
         }
-        if(!exists(fit)){
+        if(!exists("fit")){
             fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
         }
 

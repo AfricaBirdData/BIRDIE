@@ -11,9 +11,6 @@
 #' See \link{configPreambJAGS}
 #' @param monitor Logical. If TRUE (default) monitoring printed messages produced
 #' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
-#' @param upload_catchment If TRUE catchment will be uploaded to GEE. FALSE is
-#' an option because catchment info might have been already uploaded to GEE.
-#' Defaults to FALSE.
 #' @param force_gee If TRUE annotation with GEE info will occur even if a
 #' dataset with covariates is already present on disk.
 #'
@@ -22,7 +19,7 @@
 #'
 #' @examples
 prepGEESpCountData <- function(counts, sp_code, catchment, config, monitor = TRUE,
-                               upload_catchment = FALSE, force_gee = FALSE){
+                               force_gee = FALSE){
 
     rgee::ee_check()
     rgee::ee_Initialize()
@@ -34,17 +31,8 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config, monitor = TRU
         stop("File with covariates already on disk. Set force_gee = TRUE to overwrite")
     }
 
-    # Upload catchment areas to EE (if not done already)
-
     # Set a name for the asset
     eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quin_catchm')
-
-    if(upload_catchment){
-        catchment %>%
-            ABDtools::uploadFeaturesToEE(asset_id = eeCatchm_id,
-                                         load = FALSE,
-                                         monitor = monitor)
-    }
 
     # Find nearest catchment to site counts. Nearest because some sites are on the
     # coast potentially falling offshore

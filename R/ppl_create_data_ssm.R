@@ -21,6 +21,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                                 steps = c("missing", "gee", "subset", "model"),
                                 ...){
 
+    varargs <- list(...)
 
     # Load species CWAC data
     if("missing" %in% steps | "subset" %in% steps){
@@ -248,15 +249,20 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         geefile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
 
-        if(!file.exists(geefile) | force_gee){
+        if(!file.exists(geefile) | varargs$force_catchm){
+
+            catchment %>%
+                ABDtools::uploadFeaturesToEE(asset_id = file.path(rgee::ee_get_assethome(), 'quin_catchm'),
+                                             load = FALSE,
+                                             monitor = monitor)
+
             prepGEECatchmData(sp_code, catchment, config, ...)
+
         } else {
             gee_catchm <- utils::read.csv(geefile)
         }
 
-        try(
-            counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
-        )
+        counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
 
         attr(counts, "gee") <- TRUE
 
@@ -332,6 +338,6 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
     }
 
-    return(counts)
+    return(counts_mod)
 
 }
