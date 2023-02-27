@@ -35,25 +35,6 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                           StartDate, Season, SppRef, WetIntCode, Species,
                           Common_group, Common_species, Count, X, Y)
 
-        # # Make sure that seasons are correctly entered
-        # sp_data <- sp_data %>%
-        #     dplyr::mutate(year_day = lubridate::yday(StartDate),
-        #                   month = lubridate::month(StartDate))
-        #
-        # if(any((sp_data$year_day > 14 & sp_data$year_day < 47) & (sp_data$Season != "S"))){
-        #     message("Changing mid-Jan to mid-Feb counts to summer season")
-        # }
-        #
-        # if(any((sp_data$month == 7) & (sp_data$Season != "W"))){
-        #     message("Changing July counts to winter season")
-        # }
-        #
-        # sp_data <- sp_data %>%
-        #     dplyr::mutate(Season = dplyr::case_when((year_day > 14 & year_day < 47) ~ "S",
-        #                                             month == 7 ~ "W",
-        #                                             TRUE ~ "O")) %>%
-        #     dplyr::select(-c(year_day, month))
-
         # Add DuToit's Doug's extra data
         dutoit <- utils::read.csv(file.path(config$data_dir, "28462448_data_2022_doug.csv")) %>%
             dplyr::select(LocationCode, LocationName, Province, Country, Year,
