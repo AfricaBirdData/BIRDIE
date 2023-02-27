@@ -2,10 +2,17 @@ library(BIRDIE)
 
 rm(list = ls())
 
-config <- BIRDIE::configPreambJAGS(2021, server = TRUE,
+config <- BIRDIE::configPreambAbu(2021, server = TRUE,
                                    mod_file = "cwac_ssm_lat_season_multi_hier.R")
 
 for(i in 1:length(config$species)){
+
+    # Create log
+    if(i == 1){
+        createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+                  year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+                  package = NA, notes = "Log file created")
+    }
 
     sp_code <- config$species[i]
 
@@ -24,11 +31,13 @@ for(i in 1:length(config$species)){
         sf::st_transform(crs = sf::st_crs(4326))
 
 
-    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("data", "fit", "summary"),
-                                     prep_data_steps = c("missing", "gee", "subset", "model"),
+    # Run abudance pipeline module 1
+    status_abu1 <- ppl_run_pipe_abu1(sp_code, config, steps = c("summary"),
+                                     prep_data_steps = c("model"),
                                      catchment = catchment,
-                                     upload_catchment = FALSE, force_gee = FALSE,
-                                     monitor = FALSE)
+                                     force_catchm = FALSE,
+                                     force_gee = TRUE,
+                                     monitor = TRUE)
 
     message(paste("ABU1 status =", status_abu1))
 
