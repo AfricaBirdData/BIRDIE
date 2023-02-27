@@ -265,6 +265,14 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         message("Annotating with covariates from GEE")
 
+        geefile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
+
+        if(!file.exists(geefile) | force_gee){
+            gee_catchm <- prepGEECatchmData(sp_code, catchment, config, ...)
+        } else {
+            gee_catchm <- utils::read.csv(geefile)
+        }
+
         try(
             counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
         )
@@ -340,12 +348,6 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         # counts_mod <- counts_mod %>%
         #     dplyr::select(year, Season, StartDate, LocationCode, year_id, season_id, site_id, visit_id, id_count) %>%
         #     dplyr::arrange(site_id, year_id, season_id, visit_id)
-
-        outfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
-
-        utils::write.csv(counts_mod, outfile, row.names = FALSE)
-
-        message(paste("Final counts dataset saved at", outfile))
 
     }
 
