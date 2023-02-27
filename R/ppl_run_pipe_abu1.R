@@ -29,7 +29,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
     attr(s,"tzone") <- "Africa/Johannesburg"
 
     ppl_log <- c(date_time = format(s), species = sp_code, model = "occ",
-                 year = year, data = NA, fit = NA, diagnose = NA, summary = NA,
+                 year = config$years_ch, data = NA, fit = NA, diagnose = NA, summary = NA,
                  package = config$package, notes = NA)
 
 
