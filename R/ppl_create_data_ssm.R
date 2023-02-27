@@ -249,7 +249,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         geefile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
 
         if(!file.exists(geefile) | force_gee){
-            gee_catchm <- prepGEECatchmData(sp_code, catchment, config, ...)
+            prepGEECatchmData(sp_code, catchment, config, ...)
         } else {
             gee_catchm <- utils::read.csv(geefile)
         }

@@ -306,6 +306,6 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE,
 
     message(paste("Catchment data with GEE covts saved at", outfile))
 
-    return(sitedata)
+    return(0)
 
 }
