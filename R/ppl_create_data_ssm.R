@@ -251,6 +251,9 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
         if(!file.exists(geefile) | varargs$force_catchm){
 
+            rgee::ee_check()
+            rgee::ee_Initialize()
+
             catchment %>%
                 ABDtools::uploadFeaturesToEE(asset_id = file.path(rgee::ee_get_assethome(), 'quin_catchm'),
                                              load = FALSE,
