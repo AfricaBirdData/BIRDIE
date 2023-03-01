@@ -266,7 +266,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             gee_catchm <- utils::read.csv(geefile)
         }
 
-        counts <- prepGEESpCountData(counts, sp_code, catchment, config, ...)
+        counts <- prepGEESpCountData(counts, sp_code, catchment, config, varargs$monitor,
+                                     force_gee = varargs$force_gee)
 
         attr(counts, "gee") <- TRUE
 
