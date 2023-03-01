@@ -259,7 +259,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                                              load = FALSE,
                                              monitor = varargs$monitor)
 
-            prepGEECatchmData(sp_code, catchment, config, ...)
+            prepGEECatchmData(sp_code, catchment, config, upload_catchment = FALSE,
+                              force_gee = TRUE, monitor = varargs$monitor)
 
         } else {
             gee_catchm <- utils::read.csv(geefile)
