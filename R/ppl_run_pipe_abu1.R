@@ -92,6 +92,12 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
 
     }
 
+    # More uninteresting activity log -----------------------------------------
+
+    # Close log
+    if(length(logfile) == 0) logfile <- NULL
+    createLog(config, logfile, full_log = ppl_log)
+
     return(0)
 
 }
