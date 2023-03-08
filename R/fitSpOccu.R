@@ -64,14 +64,34 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, 
 
     } else {
 
-        # Specify list of inits
-        inits <- list(alpha = 0,
-                      beta = 0,
-                      z = apply(occu_data$y, 1, max, na.rm = TRUE))
+        filename <- paste0("occu_fit_", config$package, "_", year_sel-1, "_", sp_code, ".rds")
 
-        # Priors
-        priors <- list(alpha.normal = list(mean = 0, var = 2.5),
-                       beta.normal = list(mean = 0, var = 2.5))
+        if(file.exists(file.path(config$out_dir, sp_code, filename))){
+
+            # Load previous fit
+            prev_fit <- readRDS(file.path(config$out_dir, sp_code, filename))
+
+            # Define priors
+            priors <- defineSpOccupancyPriors(prev_fit)
+
+            # Specify list of inits
+            inits <- list(alpha = priors$alpha.normal$mean,
+                          beta = priors$beta.normal$mean,
+                          z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+        } else {
+
+            # Generic priors
+            priors <- list(alpha.normal = list(mean = 0, var = 2.5),
+                           beta.normal = list(mean = 0, var = 2.5))
+
+            # Specify list of inits
+            inits <- list(alpha = 0,
+                          beta = 0,
+                          z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+        }
+
 
         # Run model
 

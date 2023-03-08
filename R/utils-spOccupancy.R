@@ -215,3 +215,63 @@ out$n.chains <- object$n.chains
 return(out)
 
 }
+
+
+defineSpOccupancyPriors <- function(prev_fit){
+
+    prior_mean_beta <- apply(prev_fit$beta.samples, 2, mean)
+    prior_sd_beta <- apply(prev_fit$beta.samples, 2, sd) + 1
+    names(prior_mean_beta) <- names(prior_sd_beta) <- dimnames(prev_fit$beta.samples)[[2]]
+
+    prior_mean_alpha <- apply(prev_fit$alpha.samples, 2, mean)
+    prior_sd_alpha <- apply(prev_fit$alpha.samples, 2, sd) + 1
+    names(prior_mean_alpha) <- names(prior_sd_alpha) <- dimnames(prev_fit$alpha.samples)[[2]]
+
+    if(!is.null(prev_fit$sigma.sq.p.samples)){
+        prior_mean_sigma.sq.p <- apply(prev_fit$sigma.sq.p.samples, 2, mean)
+        prior_sd_sigma.sq.p <- apply(prev_fit$sigma.sq.p.samples, 2, sd) + 1
+        names(prior_mean_sigma.sq.p) <- names(prior_sd_sigma.sq.p) <- dimnames(prev_fit$sigma.sq.p.samples)[[2]]
+
+        scale.p.ig <- prior_sd_sigma.sq.p^2 / prior_mean_sigma.sq.p
+        shape.p.ig <- prior_mean_sigma.sq.p / scale.p.ig
+
+    } else {
+        scale.p.ig <- NULL
+        shape.p.ig <- NULL
+    }
+
+    if(!is.null(prev_fit$sigma.sq.psi.samples)){
+        prior_mean_sigma.sq.psi <- apply(prev_fit$sigma.sq.psi.samples, 2, mean)
+        prior_sd_sigma.sq.psi <- apply(prev_fit$sigma.sq.psi.samples, 2, sd) + 1
+        names(prior_mean_sigma.sq.psi) <- names(prior_sd_sigma.sq.psi) <- dimnames(prev_fit$sigma.sq.psi.samples)[[2]]
+
+        scale.psi.ig <- prior_sd_sigma.sq.psi^2 / prior_mean_sigma.sq.psi
+        shape.psi.ig <- prior_mean_sigma.sq.psi / scale.psi.ig
+
+    } else {
+        scale.psi.ig <- NULL
+        shape.psi.ig <- NULL
+    }
+
+    priors <- list(alpha.normal = list(mean = prior_mean_alpha,
+                                       var = prior_sd_alpha^2),
+                   beta.normal = list(mean = prior_mean_beta,
+                                      var = prior_sd_beta^2))
+
+    # Add random effects
+    if(is.null(shape.psi.ig)){
+        priors <- c(priors,
+                    list(sigma.sq.psi.ig = list(shape = shape.psi.ig,
+                                                scale = scale.psi.ig)))
+    }
+
+    if(is.null(shape.p.ig)){
+        priors <- c(priors,
+                    list(sigma.sq.p.ig = list(shape = shape.p.ig,
+                                              scale = scale.p.ig)))
+    }
+
+    return(priors)
+
+}
+
