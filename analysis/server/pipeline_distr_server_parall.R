@@ -14,7 +14,8 @@ for(y in seq_along(test_years)){
 
     year <- test_years[y]
     config <- configPreambOccu(year = year, dur = 3,
-                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec",
+                                           "log_wetext", "wetcon", "ndvi", "elev",
                                            "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",

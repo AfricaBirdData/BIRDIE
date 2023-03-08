@@ -73,6 +73,8 @@ createOccuData <- function(sp_code, years,
                       log_dist_coast = log(dist_coast + 1),
                       log_watext = log(watext + 1),
                       log_watrec = log(watrec + 1),
+                      log_wetext = log(wetext_2018 + 1),
+                      wetcon = wetcon_2018,
                       site_id = dplyr::cur_group_id()) %>%
         dplyr::ungroup()
 
