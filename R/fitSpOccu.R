@@ -6,6 +6,7 @@
 #' (see \code{\link{ppl_create_site_visit}})
 #' @param config A list with pipeline configuration parameters
 #' (see \code{\link{configPreambOccu}}).
+#' @param sp_code SAFRING code of the species the pipeline is running for
 #' @param spatial Logical, indicating whether spatial random effects should be
 #' included in the model (TRUE) or not (FALSE, default)
 #' @param sp_sites Spatial object containing the pentads in `site_data_year`.
@@ -16,7 +17,7 @@
 #' @export
 #'
 #' @examples
-fitSpOccu <- function(site_data_year, visit_data_year, config, spatial = FALSE, sp_sites, ...){
+fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial = FALSE, sp_sites, ...){
 
     # Prepare data for spOccupancy
     occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)

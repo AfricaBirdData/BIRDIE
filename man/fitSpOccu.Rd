@@ -8,6 +8,7 @@ fitSpOccu(
   site_data_year,
   visit_data_year,
   config,
+  sp_code,
   spatial = FALSE,
   sp_sites,
   ...
@@ -22,6 +23,8 @@ fitSpOccu(
 
 \item{config}{A list with pipeline configuration parameters
 (see \code{\link{configPreambOccu}}).}
+
+\item{sp_code}{SAFRING code of the species the pipeline is running for}
 
 \item{spatial}{Logical, indicating whether spatial random effects should be
 included in the model (TRUE) or not (FALSE, default)}

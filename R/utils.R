@@ -33,8 +33,6 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
                                   force_abap_dwld = FALSE,
                                   save_occu_data = TRUE,
                                   overwrite_occu_data = c("site", "visit", "det"),
-                                  scale_vars_occur = list(visit = NULL,
-                                                          site = c("dist_coast", "prcp", "tdiff", "ndvi", "watext", "watrec")),
                                   spatial = .spatial,
                                   print_fitting = FALSE)
 

@@ -72,7 +72,7 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
 
     # Fit model
     if(config$package == "spOccupancy"){
-        fitSpOccu(site_data_year, visit_data_year, config, spatial, sp_sites, sp_code, year_sel)
+        fitSpOccu(site_data_year, visit_data_year, config, sp_code, spatial, sp_sites, year_sel)
     } else if(config$package == "occuR"){
         fitOccuR(site_data_year, visit_data_year, config, spatial, sp_sites, verbose = varargs$print_fitting)
     }
