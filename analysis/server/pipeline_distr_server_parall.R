@@ -8,7 +8,7 @@ test_years <- c(2012, 2013, 2014, 2015)
 run_modules <- 1
 ncores <- 4
 parall <- ncores != 1
-annotate <- FALSE
+annotate <- TRUE
 
 for(y in seq_along(test_years)){
 
@@ -80,7 +80,8 @@ for(y in seq_along(test_years)){
 
             year_sel <- config$years[t]
 
-            furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config))
+            furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config),
+                              .options = furrr::furrr_options(seed = TRUE))
 
         }
 
