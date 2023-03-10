@@ -21,7 +21,7 @@
 ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
                               steps = c("data", "fit", "diagnose", "summary"), ...){
 
-    varargs_dst1 <- (...)
+    varargs_dst1 <- list(...)
 
     # Uninteresting activity logs ---------------------------------------------
 
