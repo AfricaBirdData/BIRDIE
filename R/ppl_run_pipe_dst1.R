@@ -21,6 +21,7 @@
 ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
                               steps = c("data", "fit", "diagnose", "summary"), ...){
 
+    varargs_dst1 <- (...)
 
     # Uninteresting activity logs ---------------------------------------------
 
@@ -55,7 +56,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
 
     if("fit" %in% steps){
 
-        fit_out <- ppl_fit_occu_model(sp_code, year_sel = year, config, ...)
+        fit_out <- ppl_fit_occu_model(sp_code, year_sel = year, config, varargs_dst1$spatial, ...)
 
         # Generate reports
         fit_status <- logFitStatus(fit_out, year, sp_code, config)
