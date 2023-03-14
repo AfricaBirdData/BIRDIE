@@ -24,7 +24,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
             if(file.exists(abu_file)){
                 new_abu <- utils::read.csv(abu_file)
-                new_abu <- round(new_abu)
+                new_abu <- round(new_abu, 3)
                 abu_out <- rbind(abu_out, new_abu)
             } else {
                 abu_out <- abu_out
@@ -51,7 +51,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
                 if(file.exists(dst_file)){
                     new_dst <- utils::read.csv(dst_file)
-                    new_dst <- round(new_dst)
+                    new_dst <- round(new_dst, 3)
                     dst_out <- rbind(dst_out, new_dst)
                 } else {
                     dst_out <- dst_out
@@ -77,7 +77,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst", "indtr_dst")
 
             if(file.exists(dst_file)){
                 new_dst <- utils::read.csv(dst_file)
-                new_dst <- round(new_dst)
+                new_dst <- round(new_dst, 3)
                 dst_out <- rbind(dst_out, utils::read.csv(dst_file))
             } else {
                 dst_out <- dst_out
