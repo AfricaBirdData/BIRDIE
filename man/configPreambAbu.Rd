@@ -10,7 +10,8 @@ configPreambAbu(
   mod_file,
   data_dir = NULL,
   mod_dir = NULL,
-  out_dir = NULL
+  out_dir = NULL,
+  package = "jagsUI"
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ on Google Earth Engine. Those would be stored here.}
 
 \item{out_dir}{Path to output directory. Pipeline outputs will be stored here,
 including intermediate outputs, so most what we need is here.}
+
+\item{package}{A character string with the name of the package that should be used for
+fitting state-space models. Currently only "jagsUI" (default).}
 }
 \value{
 A list with:
@@ -39,6 +43,7 @@ A list with:
 \item dyear: number of years before and after the year of interest.
 \item sptemp: spatio-temporal effect of the occupancy model.
 \item species: species models will be fitted to.
+\item package: package used for fitting the models
 }
 }
 \description{

@@ -12,6 +12,8 @@
 #' @param mod_dir Path to directory where models are saved.
 #' @param out_dir Path to output directory. Pipeline outputs will be stored here,
 #' including intermediate outputs, so most what we need is here.
+#' @param package A character string with the name of the package that should be used for
+#' fitting state-space models. Currently only "jagsUI" (default).
 #'
 #' @return A list with:
 #'   - data_dir: directory where data is retrieved from.
@@ -19,12 +21,13 @@
 #'   - dyear: number of years before and after the year of interest.
 #'   - sptemp: spatio-temporal effect of the occupancy model.
 #'   - species: species models will be fitted to.
+#'   - package: package used for fitting the models
 #' @export
 #'
 #' @examples
 #' configPreambAbu(year = 2010, server = TRUE)
 configPreambAbu <- function(year, server, mod_file, data_dir = NULL,
-                            mod_dir = NULL, out_dir = NULL){
+                            mod_dir = NULL, out_dir = NULL, package = "jagsUI"){
 
     if(server){
 
@@ -77,6 +80,6 @@ configPreambAbu <- function(year, server, mod_file, data_dir = NULL,
 
     list(server=server, module="abu", data_dir=data_dir, out_dir=out_dir, mod_dir=mod_dir, mod_file=mod_file,
          species=species, year=year, dyear=dyear, year_range=year_range,
-         years_ch=years_ch, years=years)
+         years_ch=years_ch, years=years, package=package)
 
 }
