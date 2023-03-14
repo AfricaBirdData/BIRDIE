@@ -151,7 +151,7 @@ model {
     # Prepare mu_t_1 for export: SUBTRACT 1 BECAUSE WE ADDED 1 TO ALL COUNTS
     # BETAS AND LAMBDAS SHOULD BE UNAFFECTED BY THIS
     for(i in 1:N){
-        mu_t[i] = log(max(0.1, exp(mu_t_1[i]) - 1))
+        mu_t[i] = log(max(0.001, exp(mu_t_1[i]) - 1))
     }
 
 

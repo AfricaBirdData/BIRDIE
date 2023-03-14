@@ -33,7 +33,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
     # Data summary
     dat_summ <- ssm_counts %>%
-        dplyr::mutate(season_est = as.integer(fit$mean$summer < 0.5) + 1L,) %>%
+        dplyr::mutate(season_est = as.integer(fit$mean$summer < 0.5) + 1L) %>%
         dplyr::group_by(site_id, year, season_est) %>%
         dplyr::summarise(count = log(mean(count+1, na.rm = TRUE))) %>%
         dplyr::ungroup() %>%
@@ -77,7 +77,7 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
     if(linear){
         post_stt <- post_stt %>%
-            dplyr::mutate(value = exp(value) - 1,
+            dplyr::mutate(value = max(0, exp(value) - 1),
                           count = exp(count) - 1)
 
         abund_label <- "Abundance"
