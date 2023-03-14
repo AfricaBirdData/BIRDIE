@@ -78,7 +78,9 @@ for(y in seq_along(test_years)){
 
             year_sel <- config$years[t]
 
-            furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config))
+            furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config),
+                              .options = furrr::furrr_options(seed = TRUE,
+                                                              packages = c("BIRDIE", "spOccupancy")))
 
         }
 
