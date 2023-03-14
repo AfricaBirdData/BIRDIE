@@ -87,9 +87,6 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, config, ...){
 
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
-    # Export sample
-    datadir <- setSpOutFilePath("ssm_pred", config, sp_code, "_all.csv")
-
-    utils::write.csv(out_all_sites, datadir, row.names = FALSE)
+    return(out_all_sites)
 
 }

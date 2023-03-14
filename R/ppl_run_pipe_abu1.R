@@ -85,7 +85,12 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
             fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
         }
 
-        ppl_summarise_ssm(fit, counts, sp_code, config)
+        summs <- ppl_summarise_ssm(fit, counts, sp_code, config)
+
+        # Save counts to disk
+        outfile <- setSpOutFilePath("ssm_pred", config, sp_code, "_all.csv")
+        utils::write.csv(summs, outfile, row.names = FALSE)
+        message(paste("Summaries saved at", outfile))
 
         # Log summary status
         ppl_log["summary"] <- 0
