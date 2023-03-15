@@ -104,8 +104,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         # If less than 5 sites create notification, because we might need a different model
         if(length(sites_good) < 5){
 
-            sink(setSpOutFilePath("Less_5_sites", config, sp_code, ".txt"))
-            message(paste("Less than 5 sites for species", sp_code, "on year", config$year))
+            sink(setSpOutFilePath("Less_5_CWAC_sites", config, sp_code, ".txt"))
+            message(paste("Less than 5 CWAC sites for species", sp_code, "on years", config$years_ch))
             sink()
 
             return(1)
