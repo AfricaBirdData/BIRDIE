@@ -60,40 +60,59 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
     if("fit" %in% steps){
 
         # Read data in if no counts are found in the environment
-        if(!exists("counts")){
-            counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
+        countsfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
+        if(!exists("counts") && file.exists(countsfile)){
+            counts <- utils::read.csv(countsfile)
         }
 
-        # Fit model
-        fit <- ppl_fit_ssm_model(counts, sp_code, config)
+        if(exists("counts")){
 
-        # Save
-        saveRDS(fit, setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
+            # Fit model
+            fit <- ppl_fit_ssm_model(counts, sp_code, config)
 
-        # Log fit status
-        ppl_log["fit"] <- 0
+            # Save
+            saveRDS(fit, setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
+
+            # Log fit status
+            ppl_log["fit"] <- 0
+
+        } else {
+            # Log fit status
+            ppl_log["fit"] <- 1
+        }
     }
 
 
     if("summary" %in% steps){
 
         # Load counts and fit
-        if(!exists("counts")){
-            counts <- utils::read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
-        }
-        if(!exists("fit")){
-            fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
+        countsfile <- setSpOutFilePath("abu_model_data", config, sp_code, ".csv")
+        if(!exists("counts") && file.exists(countsfile)){
+            counts <- utils::read.csv(countsfile)
         }
 
-        summs <- ppl_summarise_ssm(fit, counts, sp_code, config)
+        fitfile <- setSpOutFilePath("ssm_fit", config, sp_code, ".rds")
+        if(!exists("fit") && file.exists(fitfile)){
+            fit <- utils::read.csv(fitfile)
+        }
 
-        # Save counts to disk
-        outfile <- setSpOutFilePath("ssm_pred", config, sp_code, "_all.csv")
-        utils::write.csv(summs, outfile, row.names = FALSE)
-        message(paste("Summaries saved at", outfile))
+        # If files are available summarise fit
+        if(exists("counts") && exists("fit")){
 
-        # Log summary status
-        ppl_log["summary"] <- 0
+            summs <- ppl_summarise_ssm(fit, counts, sp_code, config)
+
+            # Save counts to disk
+            outfile <- setSpOutFilePath("ssm_pred", config, sp_code, "_all.csv")
+            utils::write.csv(summs, outfile, row.names = FALSE)
+            message(paste("Summaries saved at", outfile))
+
+            # Log summary status
+            ppl_log["summary"] <- 0
+
+        } else {
+            # Log summary status
+            ppl_log["summary"] <- 1
+        }
 
     }
 
