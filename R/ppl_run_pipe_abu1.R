@@ -93,7 +93,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
 
         fitfile <- setSpOutFilePath("ssm_fit", config, sp_code, ".rds")
         if(!exists("fit") && file.exists(fitfile)){
-            fit <- utils::read.csv(fitfile)
+            fit <- readRDS(fitfile)
         }
 
         # If files are available summarise fit
