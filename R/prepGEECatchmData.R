@@ -296,16 +296,12 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE,
         dplyr::left_join(out, by = "UNIT_ID")
 
 
+    # Round results
+    sitedata <- round(sitedata, 3)
+
 
     # Return ------------------------------------------------------------------
 
-
-    outfile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
-
-    utils::write.csv(sitedata, outfile, row.names = FALSE)
-
-    message(paste("Catchment data with GEE covts saved at", outfile))
-
-    return(0)
+    return(sitedata)
 
 }

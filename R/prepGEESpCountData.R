@@ -199,17 +199,12 @@ prepGEESpCountData <- function(counts, sp_code, catchment, config, monitor = TRU
                          by = "id_count")
 
 
-    # Save data with covariates -----------------------------------------------
+    # Return data with covariates -----------------------------------------------
 
     # Correct
     counts <- counts %>%
         sf::st_drop_geometry() %>%
         dplyr::left_join(counts_vars, by = "id_count")
-
-    counts %>%
-        utils::write.csv(outfile, row.names = FALSE)
-
-    message(paste("Dataset with GEE covts saved at", outfile))
 
     return(counts)
 

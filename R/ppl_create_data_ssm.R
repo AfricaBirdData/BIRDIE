@@ -259,8 +259,14 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                                              load = FALSE,
                                              monitor = varargs$monitor)
 
-            prepGEECatchmData(sp_code, catchment, config, upload_catchment = FALSE,
-                              force_gee = TRUE, monitor = varargs$monitor)
+            gee_catchm <- prepGEECatchmData(sp_code, catchment, config, upload_catchment = FALSE,
+                                           force_gee = TRUE, monitor = varargs$monitor)
+
+            outfile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
+
+            utils::write.csv(gee_catchm, outfile, row.names = FALSE)
+
+            message(paste("Catchment data with GEE covts saved at", outfile))
 
         } else {
             gee_catchm <- utils::read.csv(geefile)
@@ -270,6 +276,14 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
                                      force_gee = varargs$force_gee)
 
         attr(counts, "gee") <- TRUE
+
+        # Set species code and output file name
+        outfile <- setSpOutFilePath("abu_gee_data", config, sp_code, ".csv")
+
+        counts %>%
+            utils::write.csv(outfile, row.names = FALSE)
+
+        message(paste("Dataset with GEE covts saved at", outfile))
 
     }
 
@@ -325,24 +339,8 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         counts_mod <- counts_mod %>%
             dplyr::left_join(gen_vars, by = c("site_id", "year_id", "season_id"))
 
-
-        # Create variables that are change in covariates
-        # counts_mod <- counts_mod %>%
-        #     dplyr::group_by(site_id, year_id, season_id) %>%
-        #     dplyr::mutate(dplyr::across(.cols = c(pdsi_mean, watext_count, watrec_mean),
-        #                                 .fns = mean, .names = "mean_{.col}")) %>%
-        #     dplyr::group_by(site_id, season_id) %>%
-        #     dplyr::mutate(dplyr::across(.cols = c(mean_pdsi_mean, mean_watext_count, mean_watrec_mean),
-        #                                 .fns = ~c(diff(.x), NA), .names = "diff_{.col}")) %>%
-        #     dplyr::rename_with(~gsub("_mean_", "_", .x), .cols = dplyr::everything()) %>%
-        #     dplyr::ungroup()
-
-        # counts_mod <- counts_mod %>%
-        #     dplyr::select(year, Season, StartDate, LocationCode, year_id, season_id, site_id, visit_id, id_count) %>%
-        #     dplyr::arrange(site_id, year_id, season_id, visit_id)
+        return(counts_mod)
 
     }
-
-    return(counts_mod)
 
 }
