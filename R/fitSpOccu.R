@@ -80,6 +80,22 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
                           beta = priors$beta.normal$mean,
                           z = apply(occu_data$y, 1, max, na.rm = TRUE))
 
+            # Add random effects inits if necessary
+            re_occ <- grepl("\\|", config$occ_mod)
+            re_det <- grepl("\\|", config$det_mod)
+
+            if(any(re_occ)){
+                inits <- c(inits,
+                           list(sigma.sq.psi.ig = list(shape = rep(0.1, sum(re_occ)),
+                                                       scale = rep(0.1, sum(re_occ)))))
+            }
+
+            if(any(re_det)){
+                inits <- c(inits,
+                           list(sigma.sq.p.ig = list(shape = rep(0.1, sum(re_det)),
+                                                     scale = rep(0.1, sum(re_det)))))
+            }
+
         } else {
 
             # Generic priors
@@ -90,6 +106,28 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
             inits <- list(alpha = 0,
                           beta = 0,
                           z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+            # Add random effects if necessary
+            re_occ <- grepl("\\|", config$occ_mod)
+            re_det <- grepl("\\|", config$det_mod)
+
+            if(any(re_occ)){
+                priors <- c(priors,
+                            list(sigma.sq.psi.ig = list(shape = rep(1, sum(re_occ)),
+                                                        scale = rep(1.5, sum(re_occ)))))
+                inits <- c(inits,
+                           list(sigma.sq.psi.ig = list(shape = rep(0.1, sum(re_occ)),
+                                                       scale = rep(0.1, sum(re_occ)))))
+            }
+
+            if(any(re_det)){
+                priors <- c(priors,
+                            list(sigma.sq.p.ig = list(shape = rep(1, sum(re_det)),
+                                                      scale = rep(1.5, sum(re_det)))))
+                inits <- c(inits,
+                           list(sigma.sq.p.ig = list(shape = rep(0.1, sum(re_det)),
+                                                     scale = rep(0.1, sum(re_det)))))
+            }
 
         }
 
