@@ -77,8 +77,9 @@ plotSsm2ss <- function(fit, ssm_counts, linear = TRUE,
 
     if(linear){
         post_stt <- post_stt %>%
-            dplyr::mutate(value = max(0, exp(value) - 1),
-                          count = exp(count) - 1)
+            dplyr::mutate(value = exp(value) - 1,
+                          count = exp(count) - 1) %>%
+            dplyr::mutate(value = ifelse(value < 0, 0, value))
 
         abund_label <- "Abundance"
 
