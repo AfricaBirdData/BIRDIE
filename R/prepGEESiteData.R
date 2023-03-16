@@ -108,6 +108,8 @@ prepGEESiteData <- function(config, monitor = TRUE){
                              sf::st_drop_geometry(),
                          by = "Name")
 
+    # Sites with no wetland condition are set to 0
+    sitedata$wetcon_2018[is.na(sitedata$wetcon_2018)] <- 0
 
     # Annotate with yearly surface water occurrence --------------------------------
 

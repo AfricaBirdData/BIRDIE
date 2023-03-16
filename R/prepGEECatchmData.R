@@ -125,6 +125,9 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE,
                              sf::st_drop_geometry(),
                          by = "UNIT_ID")
 
+    # Sites with no wetland condition are set to 0
+    sitedata$wetcon[is.na(sitedata$wetcon)] <- 0
+
     # Annotate with yearly surface water occurrence --------------------------------
 
     message("Annotating catchment data with JRC surface water")
