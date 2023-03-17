@@ -9,51 +9,18 @@
 #' want data for. Ignored if download set to FALSE.
 #' @param site_data A dataframe with occupancy site data.
 #' @param visit_data Optional. A dataframe with occupancy visit data.
-#' @param force_abap_dwld Indicates whether ABAP data must be downloaded for the species
-#' and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
-#' from ABAP once per session and cached in a temp file. After this the cached
-#' file will be used, unless download is set to FALSE, in which case data will
-#' be downloaded regardless of the cached file.
 #' @param config A list of configuration parameters see \link{configPreambOccu}
 #'
 #' @return A list containing two data frames: one with site data and one with
 #' visit data, if visit data is provided. The second element will be NULL if visit
-#' data not provided.
+#' data not provided. Note that if `visit_data` is provided then all the sites without
+#' visits will be removed - i.e., both site and visit data frames will have the same
+#' set of sites.
 #' @export
 #'
 #' @examples
-createOccuData <- function(sp_code, years,
-                           site_data, visit_data = NULL,
-                           force_abap_dwld = FALSE, config){
-
-    # Download detection data -------------------------------------------------
-
-    # Only needed if visit data is provided
-    if(!is.null(visit_data)){
-
-        # Cache file name
-        cachefile <- file.path(tempdir(), paste(c(sp_code, years, ".rds"), collapse = "_"))
-
-        if(!file.exists(cachefile) | force_abap_dwld){
-
-            # Download species detection
-            message("Downloading from SABAP")
-
-            sp_detect <- ABAP::getAbapData(.spp_code = sp_code,
-                                           .region_type = "country",
-                                           .region = "South Africa",
-                                           .years = years)
-
-            # Save to cache
-            saveRDS(sp_detect, cachefile)
-
-        } else {
-
-            message("Using cached file")
-            sp_detect <- readRDS(cachefile)
-
-        }
-    }
+createOccuData <- function(config, sp_code, years,
+                           site_data, visit_data = NULL){
 
     # Configure site covariates -----------------------------------------------
 
@@ -96,18 +63,12 @@ createOccuData <- function(sp_code, years,
 
         # Subset visits that correspond to the years of interest
         visit_data <- visit_data %>%
-            dplyr::filter(year %in% years)
-
-        # Add detections to visit data
-        visit_data <- visit_data %>%
-            dplyr::mutate(StartDate = as.Date(StartDate)) %>%
-            dplyr::left_join(sp_detect %>%
-                                 dplyr::select(CardNo, StartDate, Pentad, obs = Spp) %>%
-                                 dplyr::mutate(obs = ifelse(obs == "-", 0, 1)),
-                             by = c("CardNo", "StartDate", "Pentad"))
+            dplyr::filter(year %in% years) %>%
+            tidyr::drop_na()   # I'M REMOVING VISITS WITH NA DATA! MAKE SURE THIS MAKES SENSE
 
         # Create additional detection variables
-        visit_data <- visit_data %>%
+        visit_data <- visit_data  %>%
+            dplyr::mutate(StartDate = as.Date(StartDate))%>%
             dplyr::mutate(StartMonth = lubridate::month(StartDate),
                           obs_id = as.numeric(ObserverNo),
                           tdiff = tmmx - tmmn,
@@ -127,13 +88,6 @@ createOccuData <- function(sp_code, years,
         for(i in seq_along(intrcs)){
             visit_data <- visit_data %>%
                 dplyr::mutate(!!intrcs[i] := !!rlang::sym(intrcs_vars[[i]][1]) * !!rlang::sym(intrcs_vars[[i]][2]))
-        }
-
-        # Remove NA values in detection data
-        if(any(is.na(visit_data$obs))){
-            warning("NA found in detection data")
-            visit_data <- visit_data %>%
-                dplyr::filter(!is.na(obs))
         }
 
     }
@@ -177,7 +131,7 @@ createOccuData <- function(sp_code, years,
 
         # We need to keep some extra variables of the visit data for other functions to work down the line
         visit_data <- visit_data %>%
-            dplyr::select(CardNo, Pentad, site_id, StartDate, year, TotalHours, obs, dplyr::all_of(det_vars))
+            dplyr::select(CardNo, Pentad, site_id, StartDate, year, TotalHours, dplyr::all_of(det_vars))
 
     }
 
@@ -187,6 +141,32 @@ createOccuData <- function(sp_code, years,
 
     site_data <- site_data %>%
         dplyr::select(Pentad, site_id, year, dplyr::all_of(occu_vars))
+
+    # Keep only pentads that appear in visit data
+    site_data <- site_data %>%
+        dplyr::filter(Pentad %in% unique(visit_data$Pentad))
+
+
+    # Clean up data -----------------------------------------------------------
+
+    # Check that all pentads-years in visit data are also in site data
+    miss_pentads <- visit_data %>%
+        dplyr::as_tibble() %>%
+        dplyr::distinct(Pentad, year) %>%
+        dplyr::anti_join(
+            site_data %>%
+                dplyr::as_tibble() %>%
+                dplyr::distinct(Pentad, year),
+            by = c("Pentad", "year"))
+
+    if(nrow(miss_pentads) > 0){
+        log_name <- file.path(config$out_dir, "reports", paste0("pentads_in_visit_not_site_", config$years_ch, ".csv"))
+        utils::write.csv(miss_pentads, log_name, row.names = FALSE)
+    }
+
+    # Remove visit data from missing pentads
+    visit_data <- visit_data %>%
+        dplyr::anti_join(miss_pentads, by = c("Pentad", "year"))
 
     return(list(site = site_data,
                 visit = visit_data))

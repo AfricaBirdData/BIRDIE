@@ -45,7 +45,28 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
     # Download and prepare data for model fitting -----------------------------
 
     if("data" %in% steps){
-        ppl_create_site_visit(sp_code, config, ...)
+
+        occu_data <- ppl_create_site_visit(config, sp_code,
+                                           force_gee_dwld = varargs_dst1$force_gee_dwld ,
+                                           force_site_visit = varargs_dst1$force_site_visit,
+                                           force_abap_dwld = varargs_dst1$force_abap_dwld)
+
+        # Save data files
+        visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
+        sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
+        detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
+
+        # Save data
+        occu_data$visit %>%
+            dplyr::select(-obs) %>%
+            utils::write.csv(visitfile, row.names = FALSE)
+
+        occu_data$site %>%
+            utils::write.csv(sitefile, row.names = FALSE)
+
+        occu_data$visit %>%
+            dplyr::select(CardNo, StartDate, Pentad, year, obs) %>%
+            utils::write.csv(detfile, row.names = FALSE)
 
         # Log data status
         ppl_log["data"] <- 0

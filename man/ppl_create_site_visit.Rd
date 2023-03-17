@@ -5,33 +5,31 @@
 \title{Create site and visit occupancy files}
 \usage{
 ppl_create_site_visit(
+  config,
   sp_code,
   force_gee_dwld = FALSE,
-  save_occu_data = TRUE,
-  overwrite_occu_data = NULL,
-  config,
-  ...
+  force_site_visit = FALSE,
+  force_abap_dwld = FALSE
 )
 }
 \arguments{
+\item{config}{A list with pipeline configuration parameters.
+See \link{configPreambOccu}}
+
 \item{sp_code}{SAFRING code of the species to run the pipeline for}
 
 \item{force_gee_dwld}{Whether covariates from Google Earth Engine should be
 downloaded, even if a file with covariates is already present on disk.
 Defaults to FALSE.}
 
-\item{save_occu_data}{If TRUE data is saved to disc, but see 'overwrite_occu_data'.}
+\item{force_site_visit}{Whether site and visit data should be prepared even if
+visit and site data files are already on disk. Defaults to FALSE}
 
-\item{overwrite_occu_data}{A character vector with the data that should be overwritten in
-case it is already present on disc. It can be any combination of
-c("site", "visit", "det"), with site referring to site data, visit to visit data
-and det to detection data. Site and visit data are typically common for
-multiple species and we might not want to save it all the time.}
-
-\item{config}{A list with pipeline configuration parameters.
-See \link{configPreambOccu}}
-
-\item{...}{Other arguments passed on to other functions}
+\item{force_abap_dwld}{Indicates whether ABAP data must be downloaded for the species
+and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
+from ABAP once per session and cached in a temp file. After this the cached
+file will be used, unless download is set to FALSE, in which case data will
+be downloaded regardless of the cached file.}
 }
 \value{
 The first part of the function creates two data frames (in .csv format)
@@ -46,6 +44,5 @@ occupancy model from ABAP data. It has two parts: the first part downloads ABAP
 data and annotates them with covariates from Google Earth Engine using the
 functions \code{\link{prepGEESiteData()}} and \code{\link{prepGEEVisitData()}},
 the second part uses the function \code{\link{createOccuData}} to format the
-data. Other changes might be necessary to fit into different occupancy modelling
-packages
+data.
 }

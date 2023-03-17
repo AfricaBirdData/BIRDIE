@@ -4,16 +4,11 @@
 \alias{createOccuData}
 \title{Create data for fitting an occupancy model}
 \usage{
-createOccuData(
-  sp_code,
-  years,
-  site_data,
-  visit_data = NULL,
-  force_abap_dwld = FALSE,
-  config
-)
+createOccuData(config, sp_code, years, site_data, visit_data = NULL)
 }
 \arguments{
+\item{config}{A list of configuration parameters see \link{configPreambOccu}}
+
 \item{sp_code}{SAFRING_No of the species of interest as extracted from ABAP.
 Ignored if download set to FALSE.}
 
@@ -23,19 +18,13 @@ want data for. Ignored if download set to FALSE.}
 \item{site_data}{A dataframe with occupancy site data.}
 
 \item{visit_data}{Optional. A dataframe with occupancy visit data.}
-
-\item{force_abap_dwld}{Indicates whether ABAP data must be downloaded for the species
-and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
-from ABAP once per session and cached in a temp file. After this the cached
-file will be used, unless download is set to FALSE, in which case data will
-be downloaded regardless of the cached file.}
-
-\item{config}{A list of configuration parameters see \link{configPreambOccu}}
 }
 \value{
 A list containing two data frames: one with site data and one with
 visit data, if visit data is provided. The second element will be NULL if visit
-data not provided.
+data not provided. Note that if \code{visit_data} is provided then all the sites without
+visits will be removed - i.e., both site and visit data frames will have the same
+set of sites.
 }
 \description{
 This function takes generic occupancy site data and, optionally,
