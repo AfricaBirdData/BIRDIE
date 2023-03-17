@@ -50,6 +50,9 @@ configPreambAbu <- function(year, server, mod_file, data_dir = NULL,
         # Define species to fit models to
         species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
 
+        # Remove partially identified species
+        species <- species[species < 10000]
+
     } else {
 
         # Define data and output directories
