@@ -13,13 +13,13 @@ run_data_prep <- TRUE
 
 for(y in seq_along(test_years)){
 
-    year <- test_years[y]
+    year_sel <- test_years[y]
 
 
     # Preamble ----------------------------------------------------------------
 
     # Create config object
-    config <- configPreambOccu(year = year, dur = 3,
+    config <- configPreambOccu(year = year_sel, dur = 3,
                                occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
                                            "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
@@ -57,72 +57,69 @@ for(y in seq_along(test_years)){
 
     # Annotate data with GEE --------------------------------------------------
 
-    # Annotate data if necessary (we also only annotate data for once each period defined by config$years)
+    # Annotate data if necessary (we also only annotate data once each period defined by config$years)
     if(annotate){
 
         message(paste("Annotating sites/visits for years", config$year_range))
 
-        ppl_create_site_visit(sp_code = config$species[1],
-                              force_gee_dwld = TRUE,
-                              save_occu_data = TRUE,
-                              overwrite_occu_data = c("site", "visit", "det"),
-                              config = config,
-                              force_abap_dwld = TRUE,
-                              monitor_gee = TRUE)
+        ppl_run_pipe_dst1(sp_code = config$species[1],
+                          sp_name = "sp_name",
+                          year = year_sel,
+                          config = config,
+                          steps = c("data"),
+                          force_gee_dwld = TRUE,
+                          monitor_gee = FALSE,
+                          force_site_visit = TRUE,
+                          force_abap_dwld = FALSE,
+                          spatial = FALSE,
+                          print_fitting = FALSE)
     }
 
 
     # RUN PIPELINE ------------------------------------------------------------
 
-    for(i in seq_along(keep)){
+    for(k in seq_along(keep)){
 
         # Index handling for parallel computing
-        idx <- keep[i]
-        j <- ppll[i]
+        idx <- keep[k]
+        j <- ppll[k]
         sp_codes <- config$species[idx:(idx+j-1)]
 
 
         # 1. Run data preparation routines in series ------------------------------
 
-        if(run_data_prep){
+        message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
 
-            message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
+        # We need to run through all species to prepare detection data, but not site and visit data.
+        # That is why force_site_visit = FALSE below, for all species but one
+        for(i in seq_along(sp_codes)){
 
-            for(i in seq_along(sp_codes)){
+            sp_code <- sp_codes[i]
 
-                sp_code <- sp_codes[i]
+            # Species name
+            sp_name <- BIRDIE::barberspan %>%
+                dplyr::filter(SppRef == sp_code) %>%
+                dplyr::mutate(name = paste(Common_species, Common_group)) %>%
+                dplyr::mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
+                dplyr::pull(name) %>%
+                unique()
 
-                # Species name
-                sp_name <- BIRDIE::barberspan %>%
-                    dplyr::filter(SppRef == sp_code) %>%
-                    dplyr::mutate(name = paste(Common_species, Common_group)) %>%
-                    dplyr::mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
-                    dplyr::pull(name) %>%
-                    unique()
+            message(paste("Preparing data for species", sp_code))
 
-                message(paste("Preparing data for species", sp_code))
+            out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                          sp_name = sp_name,
+                                          year = year_sel,
+                                          config = config,
+                                          steps = c("data"),
+                                          force_gee_dwld = FALSE,
+                                          monitor_gee = FALSE,
+                                          force_site_visit = ifelse(i == 1, TRUE, FALSE),
+                                          force_abap_dwld = FALSE,
+                                          spatial = FALSE,
+                                          print_fitting = FALSE)
 
-                for(t in seq_along(config$years)){
-
-                    year_sel <- config$years[t]
-
-                    out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
-                                                  sp_name = sp_name,
-                                                  year = year_sel,
-                                                  config = config,
-                                                  steps = c("data"),
-                                                  force_gee_dwld = FALSE,
-                                                  monitor_gee = TRUE,
-                                                  force_abap_dwld = FALSE,
-                                                  save_occu_data = TRUE,
-                                                  overwrite_occu_data = c("site", "visit", "det"),
-                                                  spatial = FALSE,
-                                                  print_fitting = TRUE)
-
-                    if(out_dst1 == 1){
-                        next
-                    }
-                }
+            if(out_dst1 == 1){
+                next
             }
         }
 
