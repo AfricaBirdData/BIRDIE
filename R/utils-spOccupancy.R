@@ -275,3 +275,738 @@ defineSpOccupancyPriors <- function(prev_fit){
 
 }
 
+
+#' Run diagnostics for spOccupancy model
+#'
+#' @description This function runs basic diagnostic checks for spOccupancy models
+#' performing posterior predictive goodness of fit checks see \code{\link[spOccupancy]{ppcOcc}}.
+#' @inheritParams ppl_run_pipe_dst1
+#' @param fit An spOccupancy model fit see \code{\link[spOccupancy]{PGOcc}}
+#' @param year_sel The year the model was run for.
+#'
+#' @return The function will create a list with several objects. The most important are:
+#' - fit.y: For each MCMC sample, chi-squared statistic for total number of detections
+#' for all sites in data wrt expected model expectation
+#' - fit.y.rep: For each MCMC sample, chi-squared statistic for total number of detections
+#' for all sites in simulated data wrt expected model expectation
+#' - fit.y.group.quants: For each site, chi-squared statistic for total number of detections
+#' in data wrt expected model expectation (posterior distribution quantiles)
+#' - fit.y.rep.group.quants: For each site, chi-squared statistic for total number of detections
+#' in simulated data wrt expected model expectation (posterior distribution quantiles)
+#' - y.summ.per.site: Data frame with number of detections per site obtained from
+#' data simulated from the posterior distribution. Also the observed number of detections
+#' in the data.
+#'
+#' @export
+#'
+#' @examples
+diagnoseSpOccu <- function(fit, sp_code, config, year_sel){
+
+    # Check convergence Gelman-Rubin diagnostic
+    fails <- sapply(fit$rhat, function(param) any(abs(param - 1) > 0.1))
+
+    if(any(fails)){
+        conv_file <- file.path(config$out_dir, paste0("reports/no_converge_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt"))
+        sink(conv_file)
+        print(paste("non-convergence", paste(names(fails)[fails == TRUE], collapse = ", ")))
+        sink()
+        message(paste("non-convergence", paste(names(fails)[fails == TRUE], collapse = ", "))) # to console
+    }
+
+    # Simulate detections/non-detection data from model
+    post_sims <- simDetSpOccu(fit)
+
+    # Check goodness-of-fit (Bayesian p-value from posterior predictive check)
+    ppc_out <- gofSpOccupancy(fit, post_sims, fit_stat = 'chi-squared', group = 1)
+
+    bayes_p <- mean(ppc_out$fit.y.rep > ppc_out$fit.y)
+
+    if(bayes_p < 0.05){
+        sink(file.path(config$out_dir, paste0("reports/gof_occu_fit_", config$package, "_", year_sel, "_", sp_code, ".txt")))
+        print(paste("Bayesian p-value =", round(bayes_p, 2)))
+        sink()
+        message(paste("Bayesian p-value =", round(bayes_p, 2)))
+    }
+
+    # Posterior coverage
+    y_sims_per_site <- as.data.frame(post_sims$y.rep.samples) %>%
+        dplyr::mutate(site_id = attr(post_sims$y.rep.samples, "site_id")) %>%
+        dplyr::group_by(site_id) %>%
+        dplyr::summarise(dplyr::across(.cols = dplyr::starts_with("V"), .fns = ~sum(.x))) %>%
+        dplyr::ungroup() %>%
+        dplyr::select(-1) %>%
+        as.matrix()
+
+    y_sims_per_site_quants <- apply(y_sims_per_site, 1, quantile, c(0.025, 0.25, 0.5, 0.75, 0.975))
+
+    y_grouped <- apply(fit$y, 1, sum, na.rm = TRUE)
+
+    pst_df <- as.data.frame(t(y_sims_per_site_quants)) %>%
+        stats::setNames(paste0("q", c(0.025, 0.25, 0.5, 0.75, 0.975)*100)) %>%
+        dplyr::mutate(obs = y_grouped,
+                      site_id = names(y_grouped))
+
+    # Save per site info
+    ppc_out$y.summ.per.site <- pst_df
+
+    return(ppc_out)
+
+}
+
+#' Summarise spOccupancy occupancy estimates
+#'
+#' @description spOccupancy produces estimates of detection probability for each
+#' visit and occupancy probabilities for each site. This functions takes these
+#' predictions and creates detection probabilities, occupancy probabilities and
+#' realized occupancy probabilities (occupancy probabilities conditional on
+#' observed data) for each site.
+#' @param pred_psi Occupancy probabilities estimated from an a spOccupancy model.
+#' It must be a matrix (or mcmc object) with each row corresponding to an MCMC sample and each column
+#' corresponding to a pentad. This object must contain a "pentad" attribute indicating
+#' which pentad each column correspond to, and an attribute "year" indicating what
+#' year the probabilities correspond to. Outputs from \code{\link{predictSpOccu}},
+#' should be readily appropriate.
+#' @param pred_p Detection probabilities estimated from a spOccupancy model.
+#' It must be a matrix (or mcmc object) with each row corresponding to an MCMC sample and each column
+#' corresponding to a visit. This object must contain a "pentad" attribute indicating
+#' which pentad each column correspond to, an attribute "year" indicating what
+#' year the probabilities correspond to, and an attribute "obs" indicating whether
+#' the species was detected in the visit or not. Outputs from \code{\link{predictSpOccu}},
+#' should be readily appropriate.
+#' @param quants Quantiles to summarise predictions distribution passed as c("lower", "med", "upper").
+#'
+#' @return A tibble with estimates and/or quantiles for each pentad in site_data:
+#' - psi: occupancy probability,
+#' - p: detection probability,
+#' - occu: realized occupancy (occupancy conditional on data).
+#' @export
+#'
+#' @examples
+summariseSpOcc <- function(pred_p, pred_psi, quants){
+
+    # Estimate realized occupancy ---------------------------------------------
+
+    # Calculate probability of non-detections for each pentad visited
+    p_nondet <- data.frame(pentad = attr(pred_p, "pentads"),
+                           obs = attr(pred_p, "obs")) %>%
+        dplyr::mutate(ub = apply(pred_p, 2, quantile, quants[3]),
+                      lb = apply(pred_p, 2, quantile, quants[1]),
+                      med = apply(pred_p, 2, quantile, quants[2]),
+                      est = apply(pred_p, 2, mean)) %>%
+        tidyr::pivot_longer(cols = c("ub", "lb", "med", "est"),
+                            names_to = "lim", values_to = "p") %>%
+        dplyr::group_by(pentad, lim) %>%
+        dplyr::summarise(q = prod(1-p),
+                         obs = max(obs)) %>%
+        dplyr::ungroup()
+
+    # From probability of non-detection calculate the conditional occupancy probs
+    # and plot
+    pred_occu <- data.frame(pentad = attr(pred_psi, "pentads"),
+                            year = attr(pred_psi, "year")) %>%
+        dplyr::mutate(ub = apply(pred_psi, 2, quantile, quants[3]),
+                      lb = apply(pred_psi, 2, quantile, quants[1]),
+                      med = apply(pred_psi, 2, quantile, quants[2]),
+                      est = apply(pred_psi, 2, mean)) %>%
+        tidyr::pivot_longer(cols = c("ub", "lb", "med", "est"),
+                            names_to = "lim", values_to = "psi") %>%
+        dplyr::left_join(p_nondet %>%
+                             dplyr::select(pentad, lim, q, obs), by = c("pentad", "lim")) %>%
+        dplyr::mutate(real_occu = dplyr::case_when(obs == 1 ~ 1,
+                                                   is.na(obs) ~ psi,
+                                                   obs == 0 ~ psi*q / (1 - psi + psi*q)),
+                      p = 1 - q) %>%
+        dplyr::select(pentad, year, psi, p, real_occu, lim)
+
+    return(pred_occu)
+
+}
+
+
+
+#' Predict from spOccupancy model fit
+#'
+#' @inheritParams ppl_summarise_occu
+#'
+#' @return A list with two elements: 1) posterior occupancy probability samples for
+#' the South African pentads, and 2) posterior detection probability samples for each
+#' visit in the ABAP data for the year `year_sel`.
+#' @export
+#'
+#' @examples
+predictSpOccu <- function(fit, sp_code, year_sel, config, ...){
+
+    varargs <- list(...)
+
+    # Prepare prediction data -------------------------------------------------
+
+    # Load site data for prediction
+    sitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
+    visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
+    detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
+
+    # Load data
+    sitedata <- utils::read.csv(sitefile, check.names = FALSE)
+    visitdata <- utils::read.csv(visitfile, check.names = FALSE)
+    detdata <- utils::read.csv(detfile, check.names = FALSE)
+
+
+    # Format for occupancy modelling ------------------------------------------
+
+    occudata <- BIRDIE::createOccuData(sp_code = sp_code,
+                                       years = year_sel,
+                                       site_data = sitedata,
+                                       visit_data = NULL,
+                                       config = config,
+                                       force_abap_dwld = FALSE)
+
+    # Add detection info to visit data and subset years
+    occudata$visit <- visitdata %>%
+        dplyr::left_join(detdata,
+                         by = c("CardNo", "StartDate", "year", "Pentad")) %>%
+        dplyr::filter(year == year_sel)
+
+    # Save codes of pentads we are predicting occupancy and detection for
+    occ_pentads <- occudata$site$Pentad
+    det_pentads <- occudata$visit$Pentad
+
+    # Save also detections in visits
+    obs_visit <- occudata$visit$obs
+
+    # Select occupancy variables to be included in the model
+    tt_occ <- stats::terms(stats::reformulate(config$occ_mod))
+    occ_vars <- attr(tt_occ, "term.labels")
+    occ_vars <- gsub(".* \\| ", "", occ_vars)
+
+    occudata$site <- occudata$site %>%
+        dplyr::select(dplyr::all_of(occ_vars))
+
+    # Select detection variables to be included in the model
+    tt_det <- stats::terms(stats::reformulate(config$det_mod))
+    det_vars <- attr(tt_det, "term.labels")
+    det_vars <- gsub(".* \\| ", "", det_vars)
+
+    occudata$visit <- occudata$visit %>%
+        dplyr::select(dplyr::all_of(det_vars))
+
+    # Scale and center as for model
+    scale_fct_occ <- fit$occ.scale
+    occudata$site[,names(scale_fct_occ$center)] <- scale(occudata$site[,names(scale_fct_occ$center)],
+                                                         center = scale_fct_occ$center,
+                                                         scale =  scale_fct_occ$scale)
+
+    scale_fct_det <- fit$det.scale
+    occudata$visit[,names(scale_fct_det$center)] <- scale(occudata$visit[,names(scale_fct_det$center)],
+                                                          center = scale_fct_det$center,
+                                                          scale =  scale_fct_det$scale)
+
+    # Add intercept
+    occudata <- purrr::map(occudata, ~ .x %>%
+                               dplyr::mutate(intcp = 1) %>%
+                               dplyr::select(intcp, dplyr::everything()))
+
+
+    pred_data <- list(psi = NA, p = NA)
+    pred_data$psi <- spOccupancy:::predict.PGOcc(fit, as.matrix(occudata$site), ignore.RE = FALSE, type = "occupancy")$psi.0.samples
+    pred_data$p <- spOccupancy:::predict.PGOcc(fit, as.matrix(occudata$visit), ignore.RE = FALSE, type = "detection")$p.0.samples
+
+    # Add pentad information
+    attr(pred_data$psi, "pentads") <- occ_pentads
+    attr(pred_data$p, "pentads") <- det_pentads
+
+    # And detections information
+    attr(pred_data$p, "obs") <- obs_visit
+
+    # Add year information
+    attr(pred_data$psi, "year") <- year_sel
+    attr(pred_data$p, "year") <- year_sel
+
+    return(pred_data)
+
+}
+
+
+
+#' Prepare spOccupancy data for single-season model fitting
+#'
+#' @inheritParams ppl_run_pipe_dst1
+#' @param site_data A data frame containing information about covariates associated
+#' with ABAP pentads for a given year.
+#' @param visit_data A data frame with information associated with sampling visits
+#' to ABAP pentads in a given year. Detection/non-detection data for the species
+#' of interest must also be included in this data frame.
+#' @param spatial Logical, indicating whether spatial random effects should be
+#' included in the model. Defaults to FALSE.
+#' @sp_sites Spatial object with the sites to be used for fitting spatial models
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE, sp_sites = NULL){
+
+
+    # Prepare spOccupancy data list -------------------------------------------
+
+    # Return list for spatial occupancy model
+    if(spatial){
+        # Add coordinates to the data
+        spocc_data <- ABAP::abapToSpOcc_single(visit_data,
+                                               pentads = sp_sites %>%
+                                                   dplyr::filter(Name %in% unique(site_data$Name)))
+    } else {
+        spocc_data <- ABAP::abapToSpOcc_single(visit_data)
+    }
+
+
+    # Add covariates to spOccupancy object -----------------------------------
+
+    # Select occupancy covariates and add to data list
+    tt_occ <- stats::terms(stats::reformulate(config$occ_mod))
+
+    occ_vars <- attr(tt_occ, "term.labels")
+    occ_vars <- gsub(".* \\| ", "", occ_vars)
+
+    occ_cov_sel <- site_data %>%
+        dplyr::select(pentad = Pentad, dplyr::all_of(occ_vars))
+
+    spocc_data <- spocc_data %>%
+        ABAP::addEEtoSpOcc_single(ee_data = occ_cov_sel)
+
+    # Scale covariates
+    spocc_data <- scaleSpOccVars(spocc_data, "occ", scale_vars = names(occ_cov_sel)[-1])
+
+    # Add detection covariates
+    tt_det <- stats::terms(stats::reformulate(config$det_mod))
+
+    det_vars <- attr(tt_det, "term.labels")
+    det_vars <- gsub(".* \\| ", "", det_vars)
+
+    det_cov_sel <- visit_data %>%
+        dplyr::select(Pentad, StartDate, dplyr::all_of(det_vars))
+
+    spocc_data <- addSpOccDetCovt(spocc_data, det_cov_sel)
+
+    # Scale covariates
+    spocc_data <- scaleSpOccVars(spocc_data, "det", scale_vars = c("log_hours", "prcp", "tdiff"))
+
+    # # Create a cyclic month variable
+    # spocc_data$det.covs$month_sin <- sin(2*pi*spocc_data$det.covs$month/12)
+    # spocc_data$det.covs$month_cos <- cos(2*pi*spocc_data$det.covs$month/12)
+
+
+    return(spocc_data)
+
+}
+
+
+
+#' Scale covariates in spOccupancy-type data
+#'
+#' @param spOcc_data an spOccupancy data list.
+#' @param var_type Type of variables we want to scale. Currently, one of "occ"
+#' occupancy covariates, "det" detection covariates.
+#' @param scale_vars A vector with the names of the covariates that we want to
+#' scale.
+#'
+#' @return An spOccupancy data list with the scaled covariates, substituting the
+#' original, unscaled covariates. A single factor is used to center and scale all
+#' data (across all dimensions) of the covariate. That means, for example, that
+#' all seasons will be scaled by the same amount. The factors used
+#' for centering and scaling are stored as attributes of each covariate.
+#' @export
+#'
+#' @examples
+scaleSpOccVars <- function(spOcc_data, var_type, scale_vars){
+
+    # if(var_type == "det"){
+    #     stop("Only var_type = 'occ' is supported at the moment")
+    # }
+
+    if(var_type == "occ"){
+
+        if(is.list(spOcc_data$occ.covs)){
+
+            f <- function(x){
+                scl <- stats::sd(c(x), na.rm = TRUE)
+                cnt <- mean(c(x), na.rm = TRUE)
+
+                out_scl <- apply(x, 2, FUN = scale, center = cnt, scale = scl)
+                dimnames(out_scl) <- dimnames(x)
+                attr(out_scl, "scaled:scale") <- scl
+                attr(out_scl, "scaled:center") <- cnt
+                out_scl
+            }
+
+            covts <- spOcc_data$occ.covs[scale_vars]
+
+            covts <- lapply(covts, f)
+
+            spOcc_data$occ.covs[scale_vars] <- covts
+
+        } else if(is.matrix(spOcc_data$occ.covs)){
+
+            covt_sel <- spOcc_data$occ.covs[,scale_vars]
+
+            scl <- apply(covt_sel, 2, sd, na.rm = TRUE)
+            cnt <- apply(covt_sel, 2, mean, na.rm = TRUE)
+
+            # make temporary object to presenve attributes
+            covt_sel <- scale(covt_sel, center = cnt, scale = scl)
+
+            spOcc_data$occ.covs[,scale_vars] <- covt_sel
+            attr(spOcc_data$occ.covs, 'scaled:center') <- attr(covt_sel, 'scaled:center')
+            attr(spOcc_data$occ.covs, 'scaled:scale') <- attr(covt_sel, 'scaled:scale')
+
+        }
+
+    } else if(var_type == "det"){
+
+        if(is.list(spOcc_data$det.covs)){
+
+            f <- function(x){
+                scl <- stats::sd(c(x), na.rm = TRUE)
+                cnt <- mean(c(x), na.rm = TRUE)
+
+                out_scl <- apply(x, 2, FUN = scale, center = cnt, scale = scl)
+                dimnames(out_scl) <- dimnames(x)
+                attr(out_scl, "scaled:scale") <- scl
+                attr(out_scl, "scaled:center") <- cnt
+                out_scl
+            }
+
+            covts <- spOcc_data$det.covs[scale_vars]
+
+            covts <- lapply(covts, f)
+
+            spOcc_data$det.covs[scale_vars] <- covts
+
+        } else if(is.matrix(spOcc_data$det.covs)){
+
+            covt_sel <- spOcc_data$det.covs[,scale_vars]
+
+            scl <- apply(covt_sel, 2, sd, na.rm = TRUE)
+            cnt <- apply(covt_sel, 2, mean, na.rm = TRUE)
+
+            # make temporary object to presenve attributes
+            covt_sel <- scale(covt_sel, center = cnt, scale = scl)
+
+            spOcc_data$det.covs[,scale_vars] <- covt_sel
+            attr(spOcc_data$det.covs, 'scaled:center') <- attr(covt_sel, 'scaled:center')
+            attr(spOcc_data$det.covs, 'scaled:scale') <- attr(covt_sel, 'scaled:scale')
+
+        }
+
+    }
+
+    return(spOcc_data)
+
+}
+
+
+#' Fit spOccupancy model
+#'
+#' @param site_data_year Occupancy site data for a single year and species
+#' (see \code{\link{ppl_create_site_visit}})
+#' @param visit_data_year Occupancy visit data for a single year and species
+#' (see \code{\link{ppl_create_site_visit}})
+#' @param config A list with pipeline configuration parameters
+#' (see \code{\link{configPreambOccu}}).
+#' @param sp_code SAFRING code of the species the pipeline is running for
+#' @param spatial Logical, indicating whether spatial random effects should be
+#' included in the model (TRUE) or not (FALSE, default)
+#' @param sp_sites Spatial object containing the pentads in `site_data_year`.
+#' @param ... Other arguments that might be needed (e.g. for messages)
+#'
+#' @return Either a spOccupancy model fit or the integer 3, indicating that model fit
+#' failed.
+#' @export
+#'
+#' @examples
+fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial = FALSE, sp_sites, ...){
+
+    # Prepare data for spOccupancy
+    occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
+
+
+    # Define models -----------------------------------------------------------
+
+    # Priors and initial values
+    # Note: we could use posterior of previous years models to define priors
+
+    # For single season models
+    # Number of samples
+    n_samples <- 2e4
+    batch_length <- 25
+    n_batch  <- n_samples/batch_length
+
+    if(spatial){
+
+        # Pair-wise distances between all sites
+        dist_sites <- stats::dist(occu_data$coords)/1000
+
+        # Specify list of inits
+        inits <- list(alpha = 0,
+                      beta = 0,
+                      z = apply(occu_data$y, 1, max, na.rm = TRUE),
+                      sigma.sq = 1,
+                      phi = 3 / mean(dist_sites),
+                      w = rep(0, nrow(occu_data$y)))
+
+        # Priors
+        priors <- list(alpha.normal = list(mean = 0, var = 2.72),
+                       beta.normal = list(mean = 0, var = 2.72),
+                       sigma.sq.ig = c(2, 1),
+                       phi.unif = c(3/(1000*min(dist_sites)), 3/(min(dist_sites))))
+
+        # Run model
+        fit <- spOccupancy::spPGOcc(occ.formula = reformulate(config$site_mod),
+                                    det.formula = reformulate(config$visit_mod),
+                                    cov.model = "exponential", NNGP = TRUE, n.neighbors = 10,
+                                    data = occu_data, inits = inits, priors = priors,
+                                    batch.length = batch_length, n.batch = n_batch, n.burn = 2000,
+                                    accept.rate = 0.43, tuning = list(phi = 4),
+                                    n.omp.threads = 3, n.thin = 20, n.chains = 3,
+                                    verbose = TRUE, n.report = 200)
+
+    } else {
+
+        filename <- paste0("occu_fit_", config$package, "_", year_sel-1, "_", sp_code, ".rds")
+
+        if(file.exists(file.path(config$out_dir, sp_code, filename))){
+
+            # Load previous fit
+            prev_fit <- readRDS(file.path(config$out_dir, sp_code, filename))
+
+            # Define priors
+            priors <- defineSpOccupancyPriors(prev_fit)
+
+            # Specify list of inits
+            inits <- list(alpha = priors$alpha.normal$mean,
+                          beta = priors$beta.normal$mean,
+                          z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+            # Add random effects inits if necessary
+            re_occ <- grepl("\\|", config$occ_mod)
+            re_det <- grepl("\\|", config$det_mod)
+
+            if(any(re_occ)){
+                inits <- c(inits,
+                           list(sigma.sq.psi.ig = list(shape = rep(0.1, sum(re_occ)),
+                                                       scale = rep(0.1, sum(re_occ)))))
+            }
+
+            if(any(re_det)){
+                inits <- c(inits,
+                           list(sigma.sq.p.ig = list(shape = rep(0.1, sum(re_det)),
+                                                     scale = rep(0.1, sum(re_det)))))
+            }
+
+        } else {
+
+            # Generic priors
+            priors <- list(alpha.normal = list(mean = 0, var = 2.5),
+                           beta.normal = list(mean = 0, var = 2.5))
+
+            # Specify list of inits
+            inits <- list(alpha = 0,
+                          beta = 0,
+                          z = apply(occu_data$y, 1, max, na.rm = TRUE))
+
+            # Add random effects if necessary
+            re_occ <- grepl("\\|", config$occ_mod)
+            re_det <- grepl("\\|", config$det_mod)
+
+            if(any(re_occ)){
+                priors <- c(priors,
+                            list(sigma.sq.psi.ig = list(shape = rep(1, sum(re_occ)),
+                                                        scale = rep(1.5, sum(re_occ)))))
+                inits <- c(inits,
+                           list(sigma.sq.psi.ig = list(shape = rep(0.1, sum(re_occ)),
+                                                       scale = rep(0.1, sum(re_occ)))))
+            }
+
+            if(any(re_det)){
+                priors <- c(priors,
+                            list(sigma.sq.p.ig = list(shape = rep(1, sum(re_det)),
+                                                      scale = rep(1.5, sum(re_det)))))
+                inits <- c(inits,
+                           list(sigma.sq.p.ig = list(shape = rep(0.1, sum(re_det)),
+                                                     scale = rep(0.1, sum(re_det)))))
+            }
+
+        }
+
+
+        # Run model
+
+        fit <- tryCatch({
+            out <- spOccupancy::PGOcc(occ.formula = reformulate(config$occ_mod),
+                                      det.formula = reformulate(config$det_mod),
+                                      data = occu_data, inits = inits, priors = priors,
+                                      n.samples = n_samples, n.omp.threads = 1,
+                                      n.thin = 20, n.chains = 3,
+                                      verbose = TRUE, n.report = n_samples)
+
+            out
+
+        },
+        error = function(cond) {
+            sink(file.path(config$out_dir, paste0("reports/error_occu_fit_", year_sel, "_", sp_code, ".rds")))
+            print(cond)
+            sink()
+            message(cond)
+            return(NULL)
+        },
+        warning = function(cond) {
+            sink(file.path(config$out_dir, paste0("reports/warning_occu_fit_", year_sel, "_", sp_code, ".rds")))
+            print(cond)
+            sink()
+            message(cond)
+            return(out)
+        })
+
+    }
+
+    # Save fit and return 0 if success
+    if(!is.null(fit)){
+
+        # Save covariate scaling factors
+        fit$det.scale <- list(scale = unlist(lapply(occu_data$det.covs, attr, "scaled:scale")),
+                              center = unlist(lapply(occu_data$det.covs, attr, "scaled:center")))
+
+        fit$occ.scale <- list(scale = attr(occu_data$occ.covs, "scaled:scale"),
+                              center = attr(occu_data$occ.covs, "scaled:center"))
+
+
+        return(fit)
+
+    } else {
+
+        return(3)
+
+    }
+
+}
+
+
+
+#' Prepare spOccupancy data for multi-season model fitting
+#'
+#' @inheritParams ppl_run_pipe_dst1
+#' @param spatial Logical, indicating whether spatial random effects should be
+#' included in the model. Defaults to FALSE.
+#'
+#' @return
+#' @export
+#'
+#' @examples
+prepSpOccuData_multi <- function(sp_code, year, config, spatial = FALSE, ...){
+
+    varargs <- list(...)
+
+
+    # Load data ---------------------------------------------------------------
+
+    # File names
+    visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
+    sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
+    detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
+
+    # Read in site and visit data
+    site_data <- utils::read.csv(sitefile)
+    visit_data <- utils::read.csv(visitfile)
+    det_data <- utils::read.csv(detfile)
+
+    # Stop if there are no detections
+    if(!1 %in% unique(det_data$obs)){
+        warning(paste("No detection of species", sp_code))
+        return(1)
+    }
+
+    # Or species detected in too few Pentads
+    n_pentads <- det_data %>%
+        dplyr::count(Pentad, obs) %>%
+        dplyr::filter(obs == 1) %>%
+        nrow()
+
+    if(n_pentads < 5){
+        warning(paste("Species", sp_code, "detected in less than 5 pentads"))
+        return(2)
+    }
+
+
+    # Prepare spOccupancy data list -------------------------------------------
+
+    # Add detection info to visit data
+    visit_data <- visit_data %>%
+        dplyr::left_join(det_data,
+                         by = c("CardNo", "StartDate", "year", "Pentad")) %>%
+        dplyr::mutate(Spp = ifelse(obs == 0, "-", 1))
+
+    # Return list for spatial occupancy model
+    if(spatial){
+        # Add coordinates to the data
+        spocc_data <- ABAP::abapToSpOcc_multi(visit_data,
+                                              pentads = sa_pentads %>%
+                                                  dplyr::filter(Name %in% unique(site_data$Name)),
+                                              seasons = "year")
+    } else {
+        spocc_data <- ABAP::abapToSpOcc_multi(visit_data, seasons = "year")
+    }
+
+
+    # Add covariates to spOccupancy object -----------------------------------
+
+    # Keep only those sites that appear in visits
+    site_data <- site_data %>%
+        dplyr::filter(Pentad %in% unique(visit_data$Pentad))
+
+    # Select covariates and add to data list
+    spocc_data <- spocc_data %>%
+        ABAP::addEEtoSpOcc_multi(
+            ee_data = site_data %>%
+                dplyr::select(pentad = Pentad, year, dist_coast, prcp, tdiff, ndvi,
+                              watext, watrec, elev, log_dist_coast, log_watext),
+            type = "occ", seasons = "year")
+
+    # Scale covariates
+    spocc_data <- scaleSpOccVars(spocc_data, "occ", scale_vars = names(spocc_data$occ.covs)[-1])
+
+    # Add detection covariates
+    spocc_data <- spocc_data %>%
+        addSpOccDetCovt(visit_data %>%
+                            dplyr::mutate(StartMonth = lubridate::month(StartDate)) %>%
+                            dplyr::select(Pentad, StartDate, StartMonth, year),
+                        seasons = "year")
+
+
+    # Add observer ID as covariate
+    spocc_data <- spocc_data %>%
+        addSpOccDetCovt(visit_data %>%
+                            dplyr::mutate(obs_id = as.numeric(ObserverNo)) %>%
+                            dplyr::select(Pentad, StartDate, obs_id, year),
+                        seasons = "year")
+
+    # Add temperature, precipitation, CWAC site presence and pentad as detection covariates
+    spocc_data <- spocc_data %>%
+        ABAP::addEEtoSpOcc_multi(
+            ee_data = site_data %>%
+                dplyr::group_by(Pentad) %>%
+                dplyr::mutate(site_id = dplyr::cur_group_id()) %>%
+                dplyr::ungroup() %>%
+                dplyr::select(pentad = Pentad, year, prcp, tdiff, cwac, site_id),
+            type = "det", seasons = "year")
+
+    # Scale covariates
+    spocc_data <- scaleSpOccVars(spocc_data, "det", scale_vars = c("prcp", "tdiff"))
+
+    # # Create a cyclic month variable
+    # spocc_data$det.covs$month_sin <- sin(2*pi*spocc_data$det.covs$month/12)
+    # spocc_data$det.covs$month_cos <- cos(2*pi*spocc_data$det.covs$month/12)
+
+
+    return(spocc_data)
+
+}
+
