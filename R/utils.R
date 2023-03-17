@@ -27,7 +27,7 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
                                   sp_name = sp_name,
                                   year = .year,
                                   config = .config,
-                                  steps = c("data", "fit", "diagnose", "summary"),
+                                  steps = c("fit"),
                                   force_gee_dwld = FALSE,
                                   monitor_gee = FALSE,
                                   force_abap_dwld = FALSE,
@@ -39,6 +39,8 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
     message(paste("Pipeline DST1 status =", out_dst1))
 
 }
+
+
 #'
 #' Generate fit status messages
 #'

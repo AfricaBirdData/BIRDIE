@@ -8,27 +8,32 @@ test_years <- c(2012, 2013, 2014, 2015)
 run_modules <- 1
 ncores <- 4
 parall <- ncores != 1
-annotate <- TRUE
+annotate <- FALSE
+run_data_prep <- TRUE
 
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
+
+
+    # Preamble ----------------------------------------------------------------
+
+    # Create config object
     config <- configPreambOccu(year = year, dur = 3,
-                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec",
-                                           "log_wetext", "wetcon", "ndvi", "elev",
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
                                            "prcp", "tdiff", "watext:watrec"),
-                               det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
                                server = TRUE)
 
+    # Create log (we do this once for each period defined by config$years)
     if(y == 1){
         createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
                   year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
                   package = NA, notes = "Log file created")
     }
-
 
     # Create aux indices for parallel computing
     if(parall){
@@ -49,26 +54,88 @@ for(y in seq_along(test_years)){
         ppll <- rep(1, length(keep))
     }
 
+
+    # Annotate data with GEE --------------------------------------------------
+
+    # Annotate data if necessary (we also only annotate data for once each period defined by config$years)
+    if(annotate){
+
+        message(paste("Annotating sites/visits for years", config$year_range))
+
+        ppl_create_site_visit(sp_code = config$species[1],
+                              force_gee_dwld = TRUE,
+                              save_occu_data = TRUE,
+                              overwrite_occu_data = c("site", "visit", "det"),
+                              config = config,
+                              force_abap_dwld = TRUE,
+                              monitor_gee = TRUE)
+    }
+
+
+    # RUN PIPELINE ------------------------------------------------------------
+
+    # 1. Run data preparation routines in series ------------------------------
+
+    if(run_data_prep){
+
+        for(i in seq_along(keep)){
+
+            # Index handling for parallel computing
+            idx <- keep[i]
+            j <- ppll[i]
+            sp_codes <- config$species[idx:(idx+j-1)]
+
+            message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", i, " of ", length(keep), ")"))
+
+            for(i in seq_along(sp_codes)){
+
+                sp_code <- sp_codes[i]
+
+                # Species name
+                sp_name <- BIRDIE::barberspan %>%
+                    dplyr::filter(SppRef == sp_code) %>%
+                    dplyr::mutate(name = paste(Common_species, Common_group)) %>%
+                    dplyr::mutate(name = gsub(" NA|NA ", "", name)) %>% # in case there are NAs in species or group
+                    dplyr::pull(name) %>%
+                    unique()
+
+                message(paste("Preparing data for species", sp_code))
+
+                for(t in seq_along(config$years)){
+
+                    year_sel <- config$years[t]
+
+                    out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                                  sp_name = sp_name,
+                                                  year = year_sel,
+                                                  config = config,
+                                                  steps = c("data"),
+                                                  force_gee_dwld = FALSE,
+                                                  monitor_gee = TRUE,
+                                                  force_abap_dwld = FALSE,
+                                                  save_occu_data = TRUE,
+                                                  overwrite_occu_data = c("site", "visit", "det"),
+                                                  spatial = FALSE,
+                                                  print_fitting = TRUE)
+
+                    if(out_dst1 == 1){
+                        next
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    # 2. Run model fitting in parallel ----------------------------------------
+
     for(i in seq_along(keep)){
 
         # Index handling for parallel computing
         idx <- keep[i]
         j <- ppll[i]
         sp_codes <- config$species[idx:(idx+j-1)]
-
-        # Annotate data if necessary
-        if(annotate && i == 1){
-
-            message(paste0("Annotating sites/visits species ", paste(sp_codes[1], collapse = ", "), " (", i, " of ", length(keep), ")"))
-
-            ppl_create_site_visit(sp_code = sp_codes[1],
-                                  force_gee_dwld = TRUE,
-                                  save_occu_data = TRUE,
-                                  overwrite_occu_data = c("site", "visit", "det"),
-                                  config = config,
-                                  force_abap_dwld = TRUE,
-                                  monitor_gee = FALSE)
-        }
 
         message(paste0("Working on species ", paste(sp_codes, collapse = ", "), " (", i, " of ", length(keep), ")"))
 
