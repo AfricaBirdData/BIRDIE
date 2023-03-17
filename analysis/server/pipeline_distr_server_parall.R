@@ -74,18 +74,19 @@ for(y in seq_along(test_years)){
 
     # RUN PIPELINE ------------------------------------------------------------
 
-    # 1. Run data preparation routines in series ------------------------------
+    for(i in seq_along(keep)){
 
-    if(run_data_prep){
+        # Index handling for parallel computing
+        idx <- keep[i]
+        j <- ppll[i]
+        sp_codes <- config$species[idx:(idx+j-1)]
 
-        for(i in seq_along(keep)){
 
-            # Index handling for parallel computing
-            idx <- keep[i]
-            j <- ppll[i]
-            sp_codes <- config$species[idx:(idx+j-1)]
+        # 1. Run data preparation routines in series ------------------------------
 
-            message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", i, " of ", length(keep), ")"))
+        if(run_data_prep){
+
+            message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
 
             for(i in seq_along(sp_codes)){
 
@@ -121,23 +122,14 @@ for(y in seq_along(test_years)){
                     if(out_dst1 == 1){
                         next
                     }
-
                 }
             }
         }
-    }
 
 
-    # 2. Run model fitting in parallel ----------------------------------------
+        # 2. Run model fitting in parallel ----------------------------------------
 
-    for(i in seq_along(keep)){
-
-        # Index handling for parallel computing
-        idx <- keep[i]
-        j <- ppll[i]
-        sp_codes <- config$species[idx:(idx+j-1)]
-
-        message(paste0("Working on species ", paste(sp_codes, collapse = ", "), " (", i, " of ", length(keep), ")"))
+        message(paste0("Fitting models for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
 
         if(parall){
             future::plan("multisession", workers = ppll[i])
@@ -156,6 +148,5 @@ for(y in seq_along(test_years)){
         if(parall){
             future::plan("sequential")
         }
-
     }
 }
