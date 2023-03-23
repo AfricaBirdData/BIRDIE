@@ -17,6 +17,8 @@
 #' from ABAP once per session and cached in a temp file. After this the cached
 #' file will be used, unless download is set to FALSE, in which case data will
 #' be downloaded regardless of the cached file.
+#' @param monitor_gee if TRUE (default) periodic messages of the state of the downloads
+#' from GEE will be printed on screen.
 #'
 #' @return The first part of the function creates two data frames (in .csv format)
 #' that will be saved to disk: GEE annotated ABAP site data and GEE annotated ABAP
@@ -29,7 +31,8 @@
 ppl_create_site_visit <- function(config, sp_code,
                                   force_gee_dwld = FALSE,
                                   force_site_visit = FALSE,
-                                  force_abap_dwld = FALSE){
+                                  force_abap_dwld = FALSE,
+                                  monitor_gee = TRUE){
 
     # varargs <- list(...)
 
@@ -55,11 +58,11 @@ ppl_create_site_visit <- function(config, sp_code,
 
         # Download from GEE if file doesn't exit
         if(!file.exists(geesitefile) | force_gee_dwld){
-            prepGEESiteData(config, monitor = varargs$monitor_gee)
+            prepGEESiteData(config, monitor = monitor_gee)
         }
 
         if(!file.exists(geevisitfile) | force_gee_dwld){
-            prepGEEVisitData(config, monitor = varargs$monitor_gee)
+            prepGEEVisitData(config, monitor = monitor_gee)
         }
 
         # Load data

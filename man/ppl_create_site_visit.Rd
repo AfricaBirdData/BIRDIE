@@ -9,7 +9,8 @@ ppl_create_site_visit(
   sp_code,
   force_gee_dwld = FALSE,
   force_site_visit = FALSE,
-  force_abap_dwld = FALSE
+  force_abap_dwld = FALSE,
+  monitor_gee = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,9 @@ and years indicated by 'sp_code' and 'years'. If TRUE, data will be downloaded
 from ABAP once per session and cached in a temp file. After this the cached
 file will be used, unless download is set to FALSE, in which case data will
 be downloaded regardless of the cached file.}
+
+\item{monitor_gee}{if TRUE (default) periodic messages of the state of the downloads
+from GEE will be printed on screen.}
 }
 \value{
 The first part of the function creates two data frames (in .csv format)

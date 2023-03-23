@@ -49,7 +49,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         occu_data <- ppl_create_site_visit(config, sp_code,
                                            force_gee_dwld = varargs_dst1$force_gee_dwld ,
                                            force_site_visit = varargs_dst1$force_site_visit,
-                                           force_abap_dwld = varargs_dst1$force_abap_dwld)
+                                           force_abap_dwld = varargs_dst1$force_abap_dwld,
+                                           monitor_gee = varargs_dst1$monitor_gee)
 
         # Save data files
         visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
