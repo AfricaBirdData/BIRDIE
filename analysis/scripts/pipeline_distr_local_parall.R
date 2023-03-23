@@ -8,7 +8,7 @@ test_years <- c(2012, 2013, 2014, 2015)
 run_modules <- 1
 ncores <- 4
 parall <- ncores != 1
-annotate <- FALSE
+annotate <- TRUE
 run_data_prep <- TRUE
 
 for(y in seq_along(test_years)){
@@ -27,6 +27,14 @@ for(y in seq_along(test_years)){
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
                                server = FALSE)
+
+    # Define species to fit models to
+    species <- unique(BIRDIE::barberspan$SppRef) # For now, we want to select species present at Barberspan
+
+    # Remove partially identified species
+    species <- species[species < 10000]
+
+    config$species <- species[51:54]
 
     # Create log (we do this once for each period defined by config$years)
     if(y == 1){
@@ -68,7 +76,7 @@ for(y in seq_along(test_years)){
                           config = config,
                           steps = c("data"),
                           force_gee_dwld = TRUE,
-                          monitor_gee = FALSE,
+                          monitor_gee = TRUE,
                           force_site_visit = TRUE,
                           force_abap_dwld = FALSE,
                           spatial = FALSE,
@@ -129,7 +137,7 @@ for(y in seq_along(test_years)){
         message(paste0("Fitting models for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
 
         if(parall){
-            future::plan("multisession", workers = ppll[i])
+            future::plan("multisession", workers = ppll[k])
         }
 
         for(t in seq_along(config$years)){

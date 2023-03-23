@@ -68,7 +68,7 @@ for(y in seq_along(test_years)){
                           config = config,
                           steps = c("data"),
                           force_gee_dwld = TRUE,
-                          monitor_gee = FALSE,
+                          monitor_gee = TRUE,
                           force_site_visit = TRUE,
                           force_abap_dwld = FALSE,
                           spatial = FALSE,
@@ -129,7 +129,7 @@ for(y in seq_along(test_years)){
         message(paste0("Fitting models for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
 
         if(parall){
-            future::plan("multisession", workers = ppll[i])
+            future::plan("multisession", workers = ppll[k])
         }
 
         for(t in seq_along(config$years)){
