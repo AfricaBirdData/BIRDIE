@@ -19,9 +19,9 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, config, ...){
 
     # Plot
     pers_theme <- ggplot2::theme_bw()
-    p <- BIRDIE::plotSsm2ss(fit = fit_stats, ssm_counts = counts, linear = TRUE,
-                            plot_options = list(pers_theme = pers_theme,
-                                                colors = c("#71BD5E", "#B590C7")))
+    p <- BIRDIE::plotJagsSsm2ss(fit = fit_stats, ssm_counts = counts, linear = TRUE,
+                                plot_options = list(pers_theme = pers_theme,
+                                                    colors = c("#71BD5E", "#B590C7")))
 
     # grid::grid.newpage()
     # grid::grid.draw(p$plot)
