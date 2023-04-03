@@ -60,14 +60,14 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
         # Save data
         occu_data$visit %>%
             dplyr::select(-obs) %>%
-            utils::write.csv(visitfile, row.names = FALSE)
+            utils::write.csv(visitfile, row.names = FALSE, check.names = FALSE)
 
         occu_data$site %>%
-            utils::write.csv(sitefile, row.names = FALSE)
+            utils::write.csv(sitefile, row.names = FALSE, check.names = FALSE)
 
         occu_data$visit %>%
             dplyr::select(CardNo, StartDate, Pentad, year, obs) %>%
-            utils::write.csv(detfile, row.names = FALSE)
+            utils::write.csv(detfile, row.names = FALSE, check.names = FALSE)
 
         # Log data status
         ppl_log["data"] <- 0
