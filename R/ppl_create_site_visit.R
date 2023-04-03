@@ -87,8 +87,8 @@ ppl_create_site_visit <- function(config, sp_code,
 
     } else {
 
-        site_data <- read.csv(sitefile)
-        visit_data <- read.csv(visitfile)
+        site_data <- read.csv(sitefile, check.names = FALSE)
+        visit_data <- read.csv(visitfile, check.names = FALSE)
 
     }
 
