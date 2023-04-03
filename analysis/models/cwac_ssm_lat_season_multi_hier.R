@@ -4,7 +4,7 @@
 # State changes are estimated in a hierarchical way such that changes across sites
 # in a given year come from a common distribution.
 
-# NOTE THAT THE MODEL ASSUMES COUNTS ARE ADDED ONE TO AVOID ERO COUNTS AND NON-IDENTIFIBILITY OF PARAMETERS.
+# NOTE THAT THE MODEL ASSUMES COUNTS ARE ADDED ONE TO AVOID ZERO COUNTS AND NON-IDENTIFIABILITY OF PARAMETERS.
 # SEE RE-DEFINITION OF MU_T_1 INTO MU_T AT THE END OF THE MODEL
 
 model {
@@ -41,30 +41,22 @@ model {
     }
 
     # Priors for stochastic summer population changes
-    for(s in 1:nsites){
-        mu.zeta[s] ~ dnorm(0, 3)             # This is essentially a random effect for site
-    }
-
     for(y in 1:nyears){
         tau.zeta[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
         # tau.zeta[y] ~ dgamma(6, 3)
         sig.zeta[y] = sqrt(1/tau.zeta[y])
         for(s in 1:nsites){
-            zeta[s, y] ~ dnorm(mu.zeta[s], tau.zeta[y])
+            zeta[s, y] ~ dnorm(0, tau.zeta[y])
         }
     }
 
     # Priors for changes in winter-to-summer abundance ratio
-    for(s in 1:nsites){
-        mu.eps[s] ~ dnorm(0, 3)             # This is essentially a random effect for site
-    }
-
     for(y in 1:nyears){
         tau.eps[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.eps!
         # tau.eps[y] ~ dgamma(6, 3)
         sig.eps[y] = sqrt(1/tau.eps[y])
         for(s in 1:nsites){
-            eps[s, y] ~ dnorm(mu.eps[s], tau.eps[y])
+            eps[s, y] ~ dnorm(0, tau.eps[y])
         }
     }
 

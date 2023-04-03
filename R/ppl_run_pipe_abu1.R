@@ -3,7 +3,7 @@
 #' @param sp_code SAFRING reference number of the species we want to analyze.
 #' @param config A list with pipeline configuration parameters.
 #' See \link{configPreambJAGS}
-#' @param steps Pipeline steps to run. It can be one or more of: c("data", "fit", "summary").
+#' @param steps Pipeline steps to run. It can be one or more of: c("data", "fit", "diagnose", "summary").
 #' @param prep_data_steps Data preparation steps to pass on to \link{ppl_create_data_ssm}
 #' @param ... Other parameters to pass on to \link{prepGEESpCountData}
 #'
@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples
-ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary"),
+ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnose", "summary"),
                               prep_data_steps, ...){
 
     # Uninteresting activity logs ---------------------------------------------
@@ -82,6 +82,45 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "summary
         }
     }
 
+
+    # Diagnose fit ------------------------------------------------------------
+
+    if("diagnose" %in% steps){
+
+        message(paste0("Diagnostics on species ", sp_code, " SSM for years ", paste(config$year_range, collapse = "-")))
+
+        # Skip species if less than 5 suitable sites were detected during fitting model fitting
+        error_file <- setSpOutFilePath("Less_5_sites", config, sp_code, ".txt")
+
+        if(file.exists(error_file)){
+            warning(paste0("Less than 5 sites for species ", sp_code, " ", paste(config$year_range, collapse = "-"), ". Cannot diagnose"))
+        } else {
+
+            # Proceed with diagnostics
+
+            # Load model fit
+            fit <- readRDS(setSpOutFilePath("ssm_fit", config, sp_code, ".rds"))
+            fit_stats <- BIRDIE:::processJAGSoutput(fit, DIC = FALSE, params.omit = NULL)
+            rm(fit) # to free memory
+
+            # Load count data
+            counts <- read.csv(setSpOutFilePath("abu_model_data", config, sp_code, ".csv"))
+
+            diags <- ppl_diagnose_ssm(fit_stats, counts, sp_code, config)
+
+            diagfile <- setSpOutFilePath("abu_diagnostics", config, sp_code, ".csv")
+            utils::write.csv(diags, diagfile, row.names = FALSE)
+
+            # Log diagnosis status
+            diag_log <- diags[,c("nc_pars", "Tmean", "Tsd", "Tdiff")]
+            diag_log <- paste(diag_log, collapse = "-")
+            ppl_log["diagnose"] <- diag_log
+
+        }
+
+    }
+
+    # Summarise estimates -----------------------------------------------------
 
     if("summary" %in% steps){
 

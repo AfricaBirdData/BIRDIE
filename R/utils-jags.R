@@ -104,7 +104,7 @@ plotJagsSsm2ss <- function(fit, ssm_counts, linear = TRUE,
             dplyr::distinct(loc_code) %>%
             dplyr::pull(loc_code)
 
-        # Abundance by season -----------------------------------------------------
+        ### Abundance by season
 
         stt_plot <- post_stt %>%
             dplyr::filter(site_id == i) %>%
@@ -119,7 +119,7 @@ plotJagsSsm2ss <- function(fit, ssm_counts, linear = TRUE,
             plot_options$pers_theme
 
 
-        # Trend plot --------------------------------------------------------------
+        ### Trend plot
 
         # Create a data frame with the posterior trend
         post_trd <- data.frame(beta_est = c(fit$mean$beta[i,], NA),
@@ -157,7 +157,7 @@ plotJagsSsm2ss <- function(fit, ssm_counts, linear = TRUE,
             plot_options$pers_theme
 
 
-        # Winter/summer ratio -----------------------------------------------------
+        ### Winter/summer ratio
 
         # Plot proportion summer/winter
         prop_plot <- post_trd %>%
@@ -172,7 +172,7 @@ plotJagsSsm2ss <- function(fit, ssm_counts, linear = TRUE,
             plot_options$pers_theme
 
 
-        # Save --------------------------------------------------------------------
+        ### Save
 
         # Title
         plottitle <- paste(ifelse(unique(ssm_counts$spp) == "multi",
@@ -450,3 +450,209 @@ populate <- function(input,dim,simslist=FALSE,samples=NULL){
     return(fill)
 
 }
+
+
+
+#' Diagnose convergence for JAGS state-space model
+#'
+#' @description This function runs basic Rhat checks for a JAGS SSM
+#' @inheritParams ppl_run_pipe_abu1
+#'
+#' @return A data frame with Rhat values for the different parameters estimated
+#' by the model.
+#'
+#' @export
+#'
+#' @examples
+diagnoseRhatJagsSsm <- function(fit, sp_code, config){
+
+    # Extract Rhats and put them in a data frame
+    rhats <- lapply(fit$Rhat, function(x) sum(abs(x - 1) > 0.1))
+
+    rhats <- rhats[!is.na(rhats)] %>%
+        as.data.frame()
+
+    # Number of non-convergent parameters and observations
+    rhats$nc_pars <- sum(rhats != 0)
+    rhats$nc_obs <- sum(rhats)
+
+    # Total number of parameters and observations
+    rhats$npars <- length(fit$sims.list)
+    rhats$nobs <- prod(dim(fit$mean$stt_s))
+
+    # General info
+    rhats$sp <- sp_code
+    rhats$years <- config$years_ch
+
+    return(rhats)
+
+}
+
+
+
+
+#' Diagnose goodness-of-fit for JAGS state-space model
+#'
+#' @description This function runs basic posterior predictive checks for a JAGS SSM
+#' @inheritParams ppl_run_pipe_abu1
+#'
+#' @return A data frame with Rhat values for the different parameters estimated
+#' by the model.
+#'
+#' @export
+#'
+#' @examples
+diagnoseGofJagsSsm <- function(fit, counts, config){
+
+    # Prepare posterior predictive distribution
+    post_sims <- postPredDistJagsSsm(fit, counts, 500)
+
+    # Test statistics
+    post_sims <- post_sims %>%
+        dplyr::mutate(obs_sim = exp(obs_sim)-1) %>%
+        dplyr::mutate(obs_sim = ifelse(obs_sim < 0, 0, obs_sim))
+
+    Ty_obs <- post_sims %>%
+        dplyr::filter(iter == 0) %>%
+        dplyr::group_by(iter, season) %>%
+        dplyr::summarise(mm = mean(obs_sim, na.rm = TRUE),
+                  ss = sd(obs_sim, na.rm = TRUE)) %>%
+        dplyr::ungroup()
+
+    Ty_sim <- post_sims  %>%
+        dplyr::filter(iter != 0) %>%
+        dplyr::group_by(iter, season) %>%
+        dplyr::summarise(mm = mean(obs_sim, na.rm = TRUE),
+                  ss = sd(obs_sim, na.rm = TRUE)) %>%
+        dplyr::ungroup()
+
+    # Calculate GOF statistics
+    gof_ty <- numeric(length = 3)
+    names(gof_ty) <- c("Tmean", "Tsd", "Tdiff")
+
+    # Mean and sd statistics
+    gof_ty[1:2] <- Ty_sim %>%
+        dplyr::mutate(mm = mm > Ty_obs$mm[1],
+               ss = ss > Ty_obs$ss[1]) %>%
+        dplyr::summarise(mm = sum(mm) / nrow(.),
+                  ss = sum(ss) / nrow(.)) %>%
+        unlist()
+
+    # Discrepancy statistic
+
+    # Compute estimated states in the original scale
+    mu_t <- post_sims %>%
+        dplyr::mutate(state = exp(state)-1) %>%
+        dplyr::mutate(state = ifelse(state < 0, 0, state)) %>%
+        dplyr::filter(iter != 0) %>%
+        dplyr::group_by(year, season) %>%
+        dplyr::summarise(stt = mean(state)) %>%
+        dplyr::ungroup()
+
+    # Calculate total squared difference between sims and estimated state
+    Ty_dd <- post_sims %>%
+        dplyr::left_join(mu_t, by = c("year", "season")) %>%
+        dplyr::mutate(diff = (obs_sim - stt)^2) %>%
+        dplyr::group_by(iter) %>%
+        dplyr::summarise(Ty = sum(diff)) %>%
+        dplyr::ungroup()
+
+    # Calculate total squared difference between observations and estimated state
+    ref <- Ty_dd$Ty[Ty_dd$iter == 0]
+    gof_ty[3] <- Ty_dd %>%
+        dplyr::filter(iter != 0) %>%
+        dplyr::mutate(val = Ty >= ref) %>% #print(n = Inf) %>%
+        dplyr::summarise(val = sum(val) / nrow(.)) %>%
+        dplyr::pull(val)
+
+    return(gof_ty)
+
+}
+
+
+#' Prepare posterior predictive distribution for JAGS state-space model
+#'
+#' @description This function prepares a data frame with the observed response
+#' and the corresponding estimates obtained from a Bayesian state-space model
+#' fitted with JAGS
+#' @param fit A state-space model fitted with JAGS
+#' @param data The data used to fit the model `fit`. This must be counts from
+#' CWAC data. See \code{\link{ppl_fit_ssm_model}}
+#' @param nsamples Number of posterior samples that should be used to build the
+#' data frame. Defaults to 500.
+#'
+#' @return A data frame with the observed response and the corresponding estimates
+#' obtained from a Bayesian state-space model fitted with JAGS. The variable `obs_sim`
+#' correspond contains the real and simulated data. The variable `iter` identifies the
+#' iteration each observation corresponds to, and those observation with `iter = 0`
+#' and/or `obs = 1` correspond to observed data.
+#'
+#' @export
+#'
+#' @examples
+postPredDistJagsSsm <- function(fit, data, nsamples){
+
+    # Prepare observed data
+    truth <- data %>%
+        dplyr::select(site_id, year, season = Season, count) %>%
+        dplyr::mutate(count = log(count + 1))
+
+    # Take a sample from the MCMC chains
+    keep <- sample(1:nrow(fit$sims.list$stt_s), nsamples)
+    sims_s <- fit$sims.list$stt_s[keep, 1,]
+    sims_w <- fit$sims.list$stt_w[keep, 1,]
+    error_s <- fit$sims.list$sig.alpha[keep, 1]
+    error_w <- fit$sims.list$sig.e[keep, 1]
+
+    # Build data frames
+    error_s <- error_s %>%
+        as.data.frame() %>%
+        dplyr::rename(sig = 1) %>%
+        dplyr::mutate(iter = dplyr::row_number())
+
+    error_w <- error_w %>%
+        as.data.frame() %>%
+        dplyr::rename(sig = 1) %>%
+        dplyr::mutate(iter = dplyr::row_number())
+
+    sims_s <- sims_s %>%
+        as.data.frame() %>%
+        setNames(unique(truth$year)) %>%
+        dplyr::mutate(iter = dplyr::row_number()) %>%
+        tidyr::pivot_longer(cols = -iter, names_to = "year", values_to = "state") %>%
+        dplyr::mutate(year = as.integer(year),
+                      season = "S") %>%
+        dplyr::left_join(error_s, by = "iter")
+
+    sims_w <- sims_w %>%
+        as.data.frame() %>%
+        setNames(unique(truth$year)) %>%
+        dplyr::mutate(iter = dplyr::row_number()) %>%
+        tidyr::pivot_longer(cols = -iter, names_to = "year", values_to = "state") %>%
+        dplyr::mutate(year = as.integer(year),
+                      season = "W") %>%
+        dplyr::left_join(error_w, by = "iter")
+
+    post_sims <- rbind(sims_s, sims_w)
+
+    # This is necessary just in case there is more than one observation per season
+    post_sims <- post_sims %>%
+        dplyr::left_join(truth, by = c("year", "season"))
+
+    # Add observation error to estimates
+    post_sims$obs_sim <- post_sims$state + rnorm(nrow(post_sims), 0, post_sims$sig)
+
+    # Make observations as being iteration zero
+    post_sims <- dplyr::bind_rows(
+        post_sims %>%
+            dplyr::select(-count),
+        post_sims %>%
+            dplyr::select(site_id, year, season, obs_sim = count) %>%
+            dplyr::distinct()) %>%
+        dplyr::mutate(iter = ifelse(is.na(iter), 0, iter),
+                      obs = ifelse(iter == 0, "1", "0"))
+
+    return(post_sims)
+
+}
+

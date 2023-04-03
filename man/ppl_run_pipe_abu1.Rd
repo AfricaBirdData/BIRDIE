@@ -7,7 +7,7 @@
 ppl_run_pipe_abu1(
   sp_code,
   config,
-  steps = c("data", "fit", "summary"),
+  steps = c("data", "fit", "diagnose", "summary"),
   prep_data_steps,
   ...
 )
@@ -18,7 +18,7 @@ ppl_run_pipe_abu1(
 \item{config}{A list with pipeline configuration parameters.
 See \link{configPreambJAGS}}
 
-\item{steps}{Pipeline steps to run. It can be one or more of: c("data", "fit", "summary").}
+\item{steps}{Pipeline steps to run. It can be one or more of: c("data", "fit", "diagnose", "summary").}
 
 \item{prep_data_steps}{Data preparation steps to pass on to \link{ppl_create_data_ssm}}
 

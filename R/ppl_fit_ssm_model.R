@@ -57,15 +57,15 @@ ppl_fit_ssm_model <- function(counts, sp_code, config, ...){
              tau.alpha = rgamma(data$nsites, 3, 2),
              tau.e = rgamma(data$nsites, 3, 2),
              G = matrix(rnorm(data$M * data$nsites, 0, 1), ncol = data$M),
-             mu.zeta = rnorm(data$nsites, 0, 0.5),
-             mu.eps= rnorm(data$nsites, 0, 0.5),
+             # mu.zeta = rnorm(data$nsites, 0, 0.5),
+             # mu.eps= rnorm(data$nsites, 0, 0.5),
              tau.eps = rexp(data$nyears, 1),
              tau.zeta = rexp(data$nyears, 1),
              phi.mu = runif(data$nsites, 0.2, 0.8),
              phi.lambda = runif(data$nsites, 0.2, 0.8))
     }
 
-    param = c("beta", "lambda", "mu.zeta", "mu.eps", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "stt_s", "stt_w", "summer", "phi.mu", "phi.lambda")
+    param = c("beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "stt_s", "stt_w", "summer", "phi.mu", "phi.lambda")
 
     # param = c("beta", "mu.beta", "B", "G", "mu_t")
 
