@@ -69,6 +69,8 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
             dplyr::select(CardNo, StartDate, Pentad, year, obs) %>%
             utils::write.csv(detfile, row.names = FALSE)
 
+        message(paste("Site-visit data saved at", config$out_dir))
+
         # Log data status
         ppl_log["data"] <- 0
     }
