@@ -142,31 +142,34 @@ createOccuData <- function(config, sp_code, years,
     site_data <- site_data %>%
         dplyr::select(Pentad, site_id, year, dplyr::all_of(occu_vars))
 
-    # Keep only pentads that appear in visit data
-    site_data <- site_data %>%
-        dplyr::filter(Pentad %in% unique(visit_data$Pentad))
-
-
     # Clean up data -----------------------------------------------------------
 
-    # Check that all pentads-years in visit data are also in site data
-    miss_pentads <- visit_data %>%
-        dplyr::as_tibble() %>%
-        dplyr::distinct(Pentad, year) %>%
-        dplyr::anti_join(
-            site_data %>%
-                dplyr::as_tibble() %>%
-                dplyr::distinct(Pentad, year),
-            by = c("Pentad", "year"))
+    if(!is.null(visit_data)){
 
-    if(nrow(miss_pentads) > 0){
-        log_name <- file.path(config$out_dir, "reports", paste0("pentads_in_visit_not_site_", config$years_ch, ".csv"))
-        utils::write.csv(miss_pentads, log_name, row.names = FALSE)
+        # Keep only pentads that appear in visit data
+        site_data <- site_data %>%
+            dplyr::filter(Pentad %in% unique(visit_data$Pentad))
+
+        # Check that all pentads-years in visit data are also in site data
+        miss_pentads <- visit_data %>%
+            dplyr::as_tibble() %>%
+            dplyr::distinct(Pentad, year) %>%
+            dplyr::anti_join(
+                site_data %>%
+                    dplyr::as_tibble() %>%
+                    dplyr::distinct(Pentad, year),
+                by = c("Pentad", "year"))
+
+        if(nrow(miss_pentads) > 0){
+            log_name <- file.path(config$out_dir, "reports", paste0("pentads_in_visit_not_site_", config$years_ch, ".csv"))
+            utils::write.csv(miss_pentads, log_name, row.names = FALSE)
+        }
+
+        # Remove visit data from missing pentads
+        visit_data <- visit_data %>%
+            dplyr::anti_join(miss_pentads, by = c("Pentad", "year"))
+
     }
-
-    # Remove visit data from missing pentads
-    visit_data <- visit_data %>%
-        dplyr::anti_join(miss_pentads, by = c("Pentad", "year"))
 
     return(list(site = site_data,
                 visit = visit_data))
