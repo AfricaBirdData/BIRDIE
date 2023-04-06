@@ -453,12 +453,11 @@ predictSpOccu <- function(fit, sp_code, year_sel, config, ...){
 
     ## Format for occupancy modelling
 
-    occudata <- BIRDIE::createOccuData(sp_code = sp_code,
+    occudata <- BIRDIE::createOccuData(config = config,
+                                       sp_code = sp_code,
                                        years = year_sel,
                                        site_data = sitedata,
-                                       visit_data = NULL,
-                                       config = config,
-                                       force_abap_dwld = FALSE)
+                                       visit_data = NULL)
 
     # Add detection info to visit data and subset years
     occudata$visit <- visitdata %>%
