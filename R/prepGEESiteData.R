@@ -173,7 +173,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
 
     message("Annotating ABAP site data with MODIS NDVI")
 
-    # Find mean water presence for each pixel and year
+    # Find mean NDVI for each pixel and year
     band <- "NDVI"
     stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
                                                          dates = paste0(config$year_range + c(0,1), "-01-01"),
@@ -183,7 +183,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
                                                          reducer = "mean",
                                                          unmask = FALSE)
 
-    # Find mean (mean) water presence for each pentad and year
+    # Find mean (mean) NDVI for each pentad and year
     out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
     # Fix covariates
@@ -192,6 +192,35 @@ prepGEESiteData <- function(config, monitor = TRUE){
         dplyr::rename_with(~gsub("NDVI", "ndvi", .x), .cols = dplyr::starts_with("NDVI")) %>%
         dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("ndvi"),
                                     .fns = ~.x/10000)) %>%
+        sf::st_drop_geometry()
+
+    sitedata <- sitedata %>%
+        dplyr::left_join(out, by = "Name")
+
+
+    # Annotate with yearly human population density ---------------------------
+
+    message("Annotating ABAP site data with WorldPop")
+
+    # Find mean human density for each pixel and year
+    band <- "population"
+    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "WorldPop/GP/100m/pop",
+                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                         band = band,
+                                                         group_type = "year",
+                                                         groups = config$years,
+                                                         reducer = "mean",
+                                                         unmask = FALSE)
+
+    # Find mean (mean) human density for each pentad and year
+    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+    # Fix covariates
+    out <- out %>%
+        dplyr::select(Name, dplyr::starts_with("population")) %>%
+        dplyr::rename_with(~gsub("population", "hum_km2", .x), .cols = dplyr::starts_with("population")) %>%
+        dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("hum_km2"),
+                                    .fns = ~.x*100)) %>%
         sf::st_drop_geometry()
 
     sitedata <- sitedata %>%
