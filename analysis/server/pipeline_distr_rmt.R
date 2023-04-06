@@ -1,6 +1,4 @@
 library(BIRDIE)
-# library(dplyr)
-# library(occuR)
 
 rm(list = ls())
 
@@ -12,11 +10,10 @@ for(y in seq_along(test_years)){
 
     year <- test_years[y]
     config <- configPreambOccu(year = year, dur = 3,
-                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec",
-                                           "log_wetext", "wetcon", "ndvi", "elev",
-                                           "prcp", "tdiff", "watext:watrec"),
+                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "log_wetext",
+                                           "wetcon", "ndvi", "elev", "prcp", "tdiff", "watext:watrec"),
                                det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever","wetext_2018", "wetcon_2018",
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
                                server = TRUE)
@@ -52,13 +49,12 @@ for(y in seq_along(test_years)){
                                               year = year_sel,
                                               config = config,
                                               steps = c("data", "fit", "diagnose", "summary"),
-                                              force_gee_dwld = FALSE,
+                                              force_gee_dwld = TRUE,
                                               monitor_gee = FALSE,
+                                              force_site_visit = TRUE,
                                               force_abap_dwld = FALSE,
-                                              save_occu_data = TRUE,
-                                              overwrite_occu_data = c("site", "visit", "det"),
                                               spatial = FALSE,
-                                              print_fitting = FALSE)
+                                              print_fitting = TRUE)
 
                 message(paste("Pipeline DST1 status =", out_dst1))
 
