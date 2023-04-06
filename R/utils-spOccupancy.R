@@ -11,12 +11,12 @@
 #' @noRd
 simDetSpOccu <- function(object){
 
-    # Functions -------------------------------------------------------------
+    # Functions
     logit <- function(theta, a = 0, b = 1) {log((theta-a)/(b-theta))}
     logit.inv <- function(z, a = 0, b = 1) {b-(b-a)/(1+exp(z))}
 
 
-    # Object ----------------------------
+    # Object
     n.post <- object$n.post * object$n.chains
     X.p <- object$X.p
     y <- object$y
@@ -96,13 +96,13 @@ gofSpOccupancy <- function(object, post_sims, fit_stat = "chi-squared", group = 
 
     cl <- match.call()
 
-    # Functions -------------------------------------------------------------
+    # Functions
     logit <- function(theta, a = 0, b = 1) {log((theta-a)/(b-theta))}
     logit.inv <- function(z, a = 0, b = 1) {b-(b-a)/(1+exp(z))}
 
     out <- list()
 
-    # Single-species models -------------------------------------------------
+    # Single-species models
 
     y <- object$y
     J <- nrow(y)
@@ -110,7 +110,7 @@ gofSpOccupancy <- function(object, post_sims, fit_stat = "chi-squared", group = 
 
         ## EDITED: fitted.spPGOcc() ALREADY KILLS MY COMPUTER!!!
         # fitted.out <- simDetSpOccu(object)
-        #####
+        ##
 
     } else {
         stop("Only non-spatial models supported at the moment.")
@@ -181,7 +181,7 @@ gofSpOccupancy <- function(object, post_sims, fit_stat = "chi-squared", group = 
                 # For each MCMC iteration, calculate the chi-square statistic for the simulated data
                 fit.big.y.rep[, i] <- (y.rep.grouped[,i] - E.grouped[,i])^2 / (E.grouped[,i] + e)
                 fit.y.rep[i] <- sum(fit.big.y.rep[, i])
-                #####
+                ##
 
             }
         } else if (fit_stat == 'freeman-tukey') {
@@ -384,7 +384,7 @@ diagnoseSpOccu <- function(fit, sp_code, config, year_sel){
 #' @examples
 summariseSpOcc <- function(pred_p, pred_psi, quants){
 
-    # Estimate realized occupancy ---------------------------------------------
+    ## Estimate realized occupancy
 
     # Calculate probability of non-detections for each pentad visited
     p_nondet <- data.frame(pentad = attr(pred_p, "pentads"),
@@ -438,7 +438,7 @@ predictSpOccu <- function(fit, sp_code, year_sel, config, ...){
 
     varargs <- list(...)
 
-    # Prepare prediction data -------------------------------------------------
+    # Prepare prediction data
 
     # Load site data for prediction
     sitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
@@ -451,7 +451,7 @@ predictSpOccu <- function(fit, sp_code, year_sel, config, ...){
     detdata <- utils::read.csv(detfile, check.names = FALSE)
 
 
-    # Format for occupancy modelling ------------------------------------------
+    ## Format for occupancy modelling
 
     occudata <- BIRDIE::createOccuData(sp_code = sp_code,
                                        years = year_sel,
@@ -546,7 +546,7 @@ predictSpOccu <- function(fit, sp_code, year_sel, config, ...){
 prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE, sp_sites = NULL){
 
 
-    # Prepare spOccupancy data list -------------------------------------------
+    ## Prepare spOccupancy data list
 
     # Return list for spatial occupancy model
     if(spatial){
@@ -559,7 +559,7 @@ prepSpOccuData_single <- function(site_data, visit_data, config, spatial = FALSE
     }
 
 
-    # Add covariates to spOccupancy object -----------------------------------
+    ## Add covariates to spOccupancy object
 
     # Select occupancy covariates and add to data list
     tt_occ <- stats::terms(stats::reformulate(config$occ_mod))
@@ -729,7 +729,7 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
     occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
 
 
-    # Define models -----------------------------------------------------------
+    ## Define models
 
     # Priors and initial values
     # Note: we could use posterior of previous years models to define priors
@@ -906,7 +906,7 @@ prepSpOccuData_multi <- function(sp_code, year, config, spatial = FALSE, ...){
     varargs <- list(...)
 
 
-    # Load data ---------------------------------------------------------------
+    ## Load data
 
     # File names
     visitfile <- file.path(config$out_dir, paste0("occu_visit_dat_sa_", config$years_ch, ".csv"))
@@ -936,7 +936,7 @@ prepSpOccuData_multi <- function(sp_code, year, config, spatial = FALSE, ...){
     }
 
 
-    # Prepare spOccupancy data list -------------------------------------------
+    ## Prepare spOccupancy data list
 
     # Add detection info to visit data
     visit_data <- visit_data %>%
@@ -956,7 +956,7 @@ prepSpOccuData_multi <- function(sp_code, year, config, spatial = FALSE, ...){
     }
 
 
-    # Add covariates to spOccupancy object -----------------------------------
+    ## Add covariates to spOccupancy object
 
     # Keep only those sites that appear in visits
     site_data <- site_data %>%
