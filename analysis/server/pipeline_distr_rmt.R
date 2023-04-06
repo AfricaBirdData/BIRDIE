@@ -4,7 +4,7 @@ library(BIRDIE)
 
 rm(list = ls())
 
-test_years <- c(2012, 2013, 2014, 2015)
+test_years <- c(2010, 2013, 2016, 2019)
 
 run_modules <- 1
 
