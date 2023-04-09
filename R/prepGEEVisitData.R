@@ -171,7 +171,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
                       ndvi = ndvi/1e4,
                       tmmn = tmmn/10,
                       tmmx = tmmx/10,
-                      hum_km2 = hum_km*100)
+                      hum_km2 = hum_km2*100)
 
 
     outfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
