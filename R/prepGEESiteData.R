@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-prepGEESiteData <- function(config, monitor = TRUE){
+prepGEESiteData <- function(config, monitor = monitor){
 
     # Initialize Earth Engine
     rgee::ee_check()
@@ -82,7 +82,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
                                    image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
                                    reducer = "count",
-                                   monitor = TRUE)
+                                   monitor = monitor)
 
     out <- out %>%
         dplyr::rename(wetext_2018 = count) %>%
@@ -97,7 +97,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
                                    image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
                                    reducer = "mean",
-                                   monitor = TRUE)
+                                   monitor = monitor)
 
     sitedata <- sitedata %>%
         dplyr::left_join(out %>%
