@@ -63,7 +63,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
 
     sitedata <- Reduce("cbind", pentad_vars)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     sitedata <- sitedata %>%
         dplyr::select(!contains(".")) %>%
         dplyr::select(Name, dplyr::everything()) %>%
@@ -127,7 +127,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
 
     out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, dplyr::starts_with("waterClass")) %>%
         dplyr::rename_with(~gsub("waterClass", "watext", .x), .cols = dplyr::starts_with("waterClass")) %>%
@@ -139,7 +139,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
     # Recurrence of pixels with water each year
     out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, dplyr::starts_with("waterClass")) %>%
         dplyr::rename_with(~gsub("waterClass", "watrec", .x), .cols = dplyr::starts_with("waterClass")) %>%
@@ -160,7 +160,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
                                    unmask = TRUE,
                                    monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, watocc_ever = occurrence_mean) %>%
         sf::st_drop_geometry()
@@ -186,7 +186,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
     # Find mean (mean) NDVI for each pentad and year
     out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, dplyr::starts_with("NDVI")) %>%
         dplyr::rename_with(~gsub("NDVI", "ndvi", .x), .cols = dplyr::starts_with("NDVI")) %>%
@@ -215,11 +215,11 @@ prepGEESiteData <- function(config, monitor = TRUE){
     # Find mean (mean) human density for each pentad and year
     out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, dplyr::starts_with("population")) %>%
-        dplyr::rename_with(~gsub("population", "hum_km2", .x), .cols = dplyr::starts_with("population")) %>%
-        dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("hum_km2"),
+        dplyr::rename_with(~gsub("population", "hum.km2", .x), .cols = dplyr::starts_with("population")) %>%
+        dplyr::mutate(dplyr::across(.cols = dplyr::starts_with("hum.km2"),
                                     .fns = ~.x*100)) %>%
         sf::st_drop_geometry()
 
@@ -270,7 +270,7 @@ prepGEESiteData <- function(config, monitor = TRUE){
                                    unmask = FALSE,
                                    monitor = monitor)
 
-    # Fix covariates
+    # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
         dplyr::select(Name, elev = dem_mean) %>%
         sf::st_drop_geometry()

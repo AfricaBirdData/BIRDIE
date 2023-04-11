@@ -138,7 +138,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
         visit_pop <- ABDtools::addVarEEclosestImage(ee_feats = ee_visit,
                                                     collection = "WorldPop/GP/100m/pop",
                                                     reducer = "mean",                          # We only need spatial reducer
-                                                    maxdiff = 15,                              # This is the maximum time difference that GEE checks
+                                                    maxdiff = 200,                              # This is the maximum time difference that GEE checks
                                                     bands = c("population"),
                                                     monitor = monitor)
 
@@ -147,7 +147,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_pop %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(CardNo, population_mean) %>%
-                                 dplyr::rename(hum_km2 = population_mean),
+                                 dplyr::rename(hum.km2 = population_mean),
                              by = c("CardNo"))
 
         rm(visit_pop)
@@ -164,6 +164,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
 
     # Prepare variables for fitting -------------------------------------------
 
+    # Fix covariates (it is important not to use "_" in names other than to separate the year)
     visitdata <- visitdata %>%
         dplyr::mutate(Date = lubridate::date(Date),
                       year = lubridate::year(Date),
@@ -171,7 +172,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
                       ndvi = ndvi/1e4,
                       tmmn = tmmn/10,
                       tmmx = tmmx/10,
-                      hum_km2 = hum_km2*100)
+                      hum.km2 = hum.km2*100)
 
 
     outfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
