@@ -135,8 +135,12 @@ prepGEEVisitData <- function(config, monitor = TRUE){
 
         message("Annotating ABAP visit data with WorldPop")
 
+        # We need to subset the image collection to South Africa
+        ee_collection <- rgee::ee$ImageCollection("WorldPop/GP/100m/pop")
+        ee_collection <- ee_collection$filterMetadata('country','equals','ZAF')
+
         visit_pop <- ABDtools::addVarEEclosestImage(ee_feats = ee_visit,
-                                                    collection = "WorldPop/GP/100m/pop",
+                                                    collection = ee_collection,
                                                     reducer = "mean",                          # We only need spatial reducer
                                                     maxdiff = 200,                              # This is the maximum time difference that GEE checks
                                                     bands = c("population"),

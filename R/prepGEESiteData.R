@@ -200,9 +200,13 @@ prepGEESiteData <- function(config, monitor = TRUE){
 
     message("Annotating ABAP site data with WorldPop")
 
+    # We need to subset the image collection to South Africa
+    ee_collection <- rgee::ee$ImageCollection("WorldPop/GP/100m/pop")
+    ee_collection <- ee_collection$filterMetadata('country','equals','ZAF')
+
     # Find mean human density for each pixel and year
     band <- "population"
-    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "WorldPop/GP/100m/pop",
+    stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
                                                          dates = paste0(config$year_range + c(0,1), "-01-01"),
                                                          band = band,
                                                          group_type = "year",
