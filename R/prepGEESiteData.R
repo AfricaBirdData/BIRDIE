@@ -78,8 +78,6 @@ prepGEESiteData <- function(config, monitor = TRUE){
 
     # Annotate with National Wetland Map --------------------------------------
 
-    message("Annotating catchment data with National Wetland Map")
-
     # Count pixels with wetland (wetland extension)
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
                                    image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
