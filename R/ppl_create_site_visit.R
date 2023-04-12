@@ -56,18 +56,30 @@ ppl_create_site_visit <- function(config, sp_code,
         geesitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
         geevisitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
 
+        if(!file.exists(geesitefile) | !file.exists(geevisitfile) | force_gee_dwld){
+            # Initialize Earth Engine
+            rgee::ee_check()
+            rgee::ee_Initialize(drive = TRUE)
+        }
+
         # Download from GEE if file doesn't exit
         if(!file.exists(geesitefile) | force_gee_dwld){
-            prepGEESiteData(config, monitor = monitor_gee)
+            geesitedata <- prepGEESiteData(config, monitor = monitor_gee)
+            utils::write.csv(geesitedata, geesitefile, row.names = FALSE)
+            message(paste("Site data with GEE covts saved at", geesitefile))
+        } else {
+            # Load data
+            geesitedata <- utils::read.csv(geesitefile)
         }
 
         if(!file.exists(geevisitfile) | force_gee_dwld){
-            prepGEEVisitData(config, monitor = monitor_gee)
+            geevisitdata <- prepGEEVisitData(config, monitor = monitor_gee)
+            utils::write.csv(geevisitdata, geevisitfile, row.names = FALSE)
+            message(paste("Visits data with GEE covts saved at", geevisitfile))
+        } else {
+            # Load data
+            geevisitdata <- utils::read.csv(geevisitfile)
         }
-
-        # Load data
-        geesitedata <- utils::read.csv(geesitefile)
-        geevisitdata <- utils::read.csv(geevisitfile)
 
 
         # Prepare site and visit data ---------------------------------------------

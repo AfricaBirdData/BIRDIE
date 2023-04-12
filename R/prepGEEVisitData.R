@@ -11,10 +11,6 @@
 #' @examples
 prepGEEVisitData <- function(config, monitor = TRUE){
 
-    # Initialize Earth Engine
-    rgee::ee_check()
-    rgee::ee_Initialize(drive = TRUE)
-
     years <- config$years
 
     # Load pentads to GEE -----------------------------------------------------
@@ -177,13 +173,6 @@ prepGEEVisitData <- function(config, monitor = TRUE){
                       tmmn = tmmn/10,
                       tmmx = tmmx/10,
                       hum.km2 = hum.km2*100)
-
-
-    outfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
-
-    utils::write.csv(visitdata, outfile, row.names = FALSE)
-
-    message(paste("Visits data with GEE covts saved at", outfile))
 
     return(visitdata)
 

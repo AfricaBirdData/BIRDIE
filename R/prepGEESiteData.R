@@ -11,11 +11,6 @@
 #' @examples
 prepGEESiteData <- function(config, monitor = monitor){
 
-    # Initialize Earth Engine
-    rgee::ee_check()
-    rgee::ee_Initialize(drive = TRUE)
-
-
     # Load pentads to GEE -----------------------------------------------------
 
     # Load ABAP pentads
@@ -280,12 +275,6 @@ prepGEESiteData <- function(config, monitor = monitor){
     sitedata <- sitedata %>%
         sf::st_drop_geometry() %>%
         dplyr::left_join(out, by = "Name")
-
-    outfile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
-
-    utils::write.csv(sitedata, outfile, row.names = FALSE)
-
-    message(paste("Site data with GEE covts saved at", outfile))
 
     return(sitedata)
 
