@@ -4,7 +4,7 @@ library(BIRDIE)
 
 rm(list = ls())
 
-test_years <- c(2012, 2013, 2014, 2015)
+test_years <- c(2010, 2013, 2016, 2019)
 run_modules <- 1
 ncores <- 4
 parall <- ncores != 1
@@ -12,13 +12,11 @@ annotate <- FALSE
 
 for(y in seq_along(test_years)){
 
-    year_sel <- test_years[y]
-
-
     # Preamble ----------------------------------------------------------------
 
     # Create config object
-    config <- configPreambOccu(year = year_sel, dur = 3,
+    config_year <- test_years[y]
+    config <- configPreambOccu(year = config_year, dur = 3,
                                occ_mod = c("log_dist_coast", "elev", "hum.km2", "wetcon",
                                            "watrec", "watext", "log_watext", "watext:watrec",
                                            "ndvi", "prcp", "tdiff"),
@@ -64,12 +62,12 @@ for(y in seq_along(test_years)){
 
         ppl_run_pipe_dst1(sp_code = config$species[1],
                           sp_name = "sp_name",
-                          year = year_sel,
+                          year = config$years[1],  # This year could be anything really
                           config = config,
                           steps = c("data"),
                           force_gee_dwld = TRUE,
                           monitor_gee = TRUE,
-                          force_site_visit = TRUE,
+                          force_site_visit = FALSE,
                           force_abap_dwld = FALSE,
                           spatial = FALSE,
                           print_fitting = FALSE)
@@ -107,7 +105,7 @@ for(y in seq_along(test_years)){
             out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                           sp_name = sp_name,
                                           year = year_sel,
-                                          config = config,
+                                          year = config$years[1],  # This year could be anything really
                                           steps = c("data"),
                                           force_gee_dwld = FALSE,
                                           monitor_gee = FALSE,

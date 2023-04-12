@@ -8,8 +8,8 @@ run_modules <- 1
 
 for(y in seq_along(test_years)){
 
-    year <- test_years[y]
-    config <- configPreambOccu(year = year_sel, dur = 3,
+    config_year <- test_years[y]
+    config <- configPreambOccu(year = config_year, dur = 3,
                                occ_mod = c("log_dist_coast", "elev", "hum.km2", "wetcon",
                                            "watrec", "watext", "log_watext", "watext:watrec",
                                            "ndvi", "prcp", "tdiff"),
@@ -50,7 +50,7 @@ for(y in seq_along(test_years)){
                                               year = year_sel,
                                               config = config,
                                               steps = c("data", "fit", "diagnose", "summary"),
-                                              force_gee_dwld = TRUE,
+                                              force_gee_dwld = ifelse(t == 1, TRUE, FALSE),
                                               monitor_gee = FALSE,
                                               force_site_visit = TRUE,
                                               force_abap_dwld = FALSE,
