@@ -9,11 +9,12 @@ run_modules <- 1
 for(y in seq_along(test_years)){
 
     year <- test_years[y]
-    config <- configPreambOccu(year = year, dur = 3,
-                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "log_wetext",
-                                           "wetcon", "ndvi", "elev", "prcp", "tdiff", "watext:watrec"),
-                               det_mod = c("(1|site_id)", "(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
-                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever","wetext_2018", "wetcon_2018",
+    config <- configPreambOccu(year = year_sel, dur = 3,
+                               occ_mod = c("log_dist_coast", "elev", "hum.km2", "wetcon",
+                                           "watrec", "watext", "log_watext", "watext:watrec",
+                                           "ndvi", "prcp", "tdiff"),
+                               det_mod = c("( 1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac", "hum.km2"),
+                               fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
                                server = TRUE)

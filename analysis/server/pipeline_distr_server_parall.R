@@ -9,7 +9,6 @@ run_modules <- 1
 ncores <- 4
 parall <- ncores != 1
 annotate <- FALSE
-run_data_prep <- TRUE
 
 for(y in seq_along(test_years)){
 
@@ -20,9 +19,10 @@ for(y in seq_along(test_years)){
 
     # Create config object
     config <- configPreambOccu(year = year_sel, dur = 3,
-                               occ_mod = c("log_dist_coast", "watext", "log_watext", "watrec", "ndvi", "elev",
-                                           "prcp", "tdiff", "watext:watrec"),
-                               det_mod = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                               occ_mod = c("log_dist_coast", "elev", "hum.km2", "wetcon",
+                                           "watrec", "watext", "log_watext", "watext:watrec",
+                                           "ndvi", "prcp", "tdiff"),
+                               det_mod = c("( 1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac", "hum.km2"),
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
@@ -88,8 +88,6 @@ for(y in seq_along(test_years)){
 
         # 1. Run data preparation routines in series ------------------------------
 
-        message(paste0("Preparing data for species ", paste(sp_codes, collapse = ", "), " (", k, " of ", length(keep), ")"))
-
         # We need to run through all species to prepare detection data, but not site and visit data.
         # That is why force_site_visit = FALSE below, for all species but one
         for(i in seq_along(sp_codes)){
@@ -113,7 +111,7 @@ for(y in seq_along(test_years)){
                                           steps = c("data"),
                                           force_gee_dwld = FALSE,
                                           monitor_gee = FALSE,
-                                          force_site_visit = ifelse(i == 1, TRUE, FALSE),
+                                          force_site_visit = ifelse(k == 1, TRUE, FALSE),
                                           force_abap_dwld = FALSE,
                                           spatial = FALSE,
                                           print_fitting = FALSE)
