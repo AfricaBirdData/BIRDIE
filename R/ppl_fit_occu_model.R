@@ -33,13 +33,15 @@ ppl_fit_occu_model <- function(sp_code, year_sel, config, spatial = FALSE, ...){
     }
 
     # Or species detected in too few Pentads
+    min_pentads <- 2*length(config$occ_mod)
+
     n_pentads <- det_data %>%
         dplyr::count(Pentad, obs) %>%
         dplyr::filter(obs == 1) %>%
         nrow()
 
-    if(n_pentads < 5){
-        warning(paste("Species", sp_code, "detected in less than 5 pentads"))
+    if(n_pentads < min_pentads){
+        warning(paste("Species", sp_code, "detected in less than", min_pentads, "pentads"))
         return(2)
     }
 
