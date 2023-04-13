@@ -57,8 +57,10 @@ logFitStatus <- function(.fit_out, .year, .sp_code, .config){
 
     if(is.numeric(.fit_out)){ # this immediately flags a problem
 
+        min_pentads <- 2*length(.config$occ_mod)
+
         txt <- dplyr::case_when(.fit_out == 1 ~ paste0("no_detections_", .year,"_", .sp_code, ".txt"),
-                                .fit_out == 2 ~ paste0("less_than_5_pentads_", .year,"_", .sp_code, ".txt"),
+                                .fit_out == 2 ~ paste0("less_than_", min_pentads, "_pentads_", .year,"_", .sp_code, ".txt"),
                                 .fit_out == 3 ~ paste0("model_fit_failed_", .year,"_", .sp_code, ".txt"))
 
         conv_file <- file.path(.config$out_dir, "reports", txt)
