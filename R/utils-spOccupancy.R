@@ -770,9 +770,16 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
 
     } else {
 
-        filename <- paste0("occu_fit_", config$package, "_", year_sel-1, "_", sp_code, ".rds")
+        # Look for the most recent model fit in the last 10 years
+        filenames <- paste0("occu_fit_", config$package, "_", year_sel-c(1:10), "_", sp_code, ".rds")
+        files_exist <- file.exists(file.path(config$out_dir, sp_code, filenames))
+        if(any(files_exist)){
+            filename <- file.path(config$out_dir, sp_code, filenames[min(which(files_exist))])
+        } else {
+            filename <- NULL
+        }
 
-        if(file.exists(file.path(config$out_dir, sp_code, filename))){
+        if(!is.null(filename)){
 
             # Load previous fit
             prev_fit <- readRDS(file.path(config$out_dir, sp_code, filename))
