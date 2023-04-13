@@ -9,7 +9,7 @@
 #' @export
 #'
 #' @examples
-prepGEESiteData <- function(config, monitor = monitor){
+prepGEESiteData <- function(config, monitor = TRUE){
 
     # Load pentads to GEE -----------------------------------------------------
 

@@ -28,7 +28,8 @@
 #' @export
 #'
 #' @examples
-ppl_create_site_visit <- function(config, sp_code,
+ppl_create_site_visit <- function(config,
+                                  sp_code,
                                   force_gee_dwld = FALSE,
                                   force_site_visit = FALSE,
                                   force_abap_dwld = FALSE,
@@ -53,6 +54,7 @@ ppl_create_site_visit <- function(config, sp_code,
     if(prep_data){
 
         # Download ABAP data and annotate with Google Earth Engine ----------------
+
         geesitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
         geevisitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
 

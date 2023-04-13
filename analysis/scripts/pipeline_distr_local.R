@@ -21,7 +21,7 @@ for(y in seq_along(test_years)){
                                fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                               "dist_coast", "elev"),
                                package = "spOccupancy",
-                               server = TRUE)
+                               server = FALSE)
 
     if(y == 1){
         createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
