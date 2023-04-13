@@ -105,6 +105,7 @@ for(y in seq_along(test_years)){
             out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                           sp_name = sp_name,
                                           year = config$years[1],  # This year could be anything really
+                                          config = config,
                                           steps = c("data"),
                                           force_gee_dwld = FALSE,
                                           monitor_gee = FALSE,
