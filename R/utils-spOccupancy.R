@@ -788,7 +788,7 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
         if(!is.null(filename)){
 
             # Load previous fit
-            prev_fit <- readRDS(file.path(config$out_dir, sp_code, filename))
+            prev_fit <- readRDS(filename)
 
             # Define priors
             priors <- defineSpOccupancyPriors(prev_fit)
