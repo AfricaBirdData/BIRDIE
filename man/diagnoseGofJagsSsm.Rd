@@ -4,11 +4,7 @@
 \alias{diagnoseGofJagsSsm}
 \title{Diagnose goodness-of-fit for JAGS state-space model}
 \usage{
-diagnoseGofJagsSsm(fit, counts, config)
-}
-\arguments{
-\item{config}{A list with pipeline configuration parameters.
-See \link{configPreambJAGS}}
+diagnoseGofJagsSsm(fit, counts)
 }
 \value{
 A data frame with Rhat values for the different parameters estimated

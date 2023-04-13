@@ -502,7 +502,7 @@ diagnoseRhatJagsSsm <- function(fit, sp_code, config){
 #' @export
 #'
 #' @examples
-diagnoseGofJagsSsm <- function(fit, counts, config){
+diagnoseGofJagsSsm <- function(fit, counts){
 
     # Prepare posterior predictive distribution
     post_sims <- postPredDistJagsSsm(fit, counts, 500)
