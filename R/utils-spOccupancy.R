@@ -221,6 +221,11 @@ defineSpOccupancyPriors <- function(prev_fit){
 
     prior_mean_beta <- apply(prev_fit$beta.samples, 2, mean)
     prior_sd_beta <- apply(prev_fit$beta.samples, 2, sd) + 1
+
+    # We want the intercept to be freely estimated for each year (these are the default priors)
+    prior_mean_beta[1] <- 0
+    prior_sd_beta[1] <- sqrt(2.5)
+
     names(prior_mean_beta) <- names(prior_sd_beta) <- dimnames(prev_fit$beta.samples)[[2]]
 
     prior_mean_alpha <- apply(prev_fit$alpha.samples, 2, mean)
@@ -779,6 +784,7 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
             filename <- NULL
         }
 
+        # If there is one, set priors based on those posterior estimates
         if(!is.null(filename)){
 
             # Load previous fit
