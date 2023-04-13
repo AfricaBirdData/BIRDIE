@@ -16,7 +16,7 @@ ppl_diagnose_ssm <- function(fit, counts, sp_code, config){
     diag_df <- diagnoseRhatJagsSsm(fit, sp_code, config)
 
     # Diagnose model fit
-    gof <- diagnoseGofJagsSsm(fit, counts, sp_code, config)
+    gof <- diagnoseGofJagsSsm(fit, counts)
     gof <- round(gof, 3)
 
     diag_df$Tmean <- gof["Tmean"]
