@@ -41,6 +41,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
         # Upload to GEE
         ee_visit <- visit %>%
             dplyr::select(-c(StartDate, TotalHours)) %>%
+            dplyr::distinct(Date, Pentad, .keep_all = TRUE) %>%
             rgee::sf_as_ee(via = "getInfo")
 
 
@@ -58,13 +59,14 @@ prepGEEVisitData <- function(config, monitor = TRUE){
                                                      bands = c("NDVI"),
                                                      monitor = monitor)
 
+        # We need to be joining by pentad and date
         visit <- visit %>%
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_ndvi %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, NDVI_mean) %>%
+                                 dplyr::select(Pentad, Date, NDVI_mean) %>%
                                  dplyr::rename(ndvi = NDVI_mean),
-                             by = c("CardNo"))
+                             by = c("Pentad", "Date"))
         rm(visit_ndvi)
 
 
@@ -85,9 +87,9 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_prcp %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, pr_mean) %>%
+                                 dplyr::select(Pentad, Date, pr_mean) %>%
                                  dplyr::rename(prcp = pr_mean),
-                             by = c("CardNo"))
+                             by = c("Pentad", "Date"))
 
         rm(visit_prcp)
 
@@ -103,9 +105,9 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_tmmn %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, tmmn_mean) %>%
+                                 dplyr::select(Pentad, Date, tmmn_mean) %>%
                                  dplyr::rename(tmmn = tmmn_mean),
-                             by = c("CardNo"))
+                             by = c("Pentad", "Date"))
 
         rm(visit_tmmn)
 
@@ -121,9 +123,9 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_tmmx %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, tmmx_mean) %>%
+                                 dplyr::select(Pentad, Date, tmmx_mean) %>%
                                  dplyr::rename(tmmx = tmmx_mean),
-                             by = c("CardNo"))
+                             by = c("Pentad", "Date"))
 
         rm(visit_tmmx)
 
@@ -146,9 +148,9 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_pop %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(CardNo, population_mean) %>%
+                                 dplyr::select(Pentad, Date, population_mean) %>%
                                  dplyr::rename(hum.km2 = population_mean),
-                             by = c("CardNo"))
+                             by = c("Pentad", "Date"))
 
         rm(visit_pop)
 
