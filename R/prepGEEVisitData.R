@@ -65,6 +65,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_ndvi %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(Pentad, Date, NDVI_mean) %>%
+                                 dplyr::mutate(Date = as.character(Date)) %>%
                                  dplyr::rename(ndvi = NDVI_mean),
                              by = c("Pentad", "Date"))
         rm(visit_ndvi)
@@ -88,6 +89,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_prcp %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(Pentad, Date, pr_mean) %>%
+                                 dplyr::mutate(Date = as.character(Date)) %>%
                                  dplyr::rename(prcp = pr_mean),
                              by = c("Pentad", "Date"))
 
@@ -106,6 +108,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_tmmn %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(Pentad, Date, tmmn_mean) %>%
+                                 dplyr::mutate(Date = as.character(Date)) %>%
                                  dplyr::rename(tmmn = tmmn_mean),
                              by = c("Pentad", "Date"))
 
@@ -124,6 +127,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_tmmx %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(Pentad, Date, tmmx_mean) %>%
+                                 dplyr::mutate(Date = as.character(Date)) %>%
                                  dplyr::rename(tmmx = tmmx_mean),
                              by = c("Pentad", "Date"))
 
@@ -149,6 +153,7 @@ prepGEEVisitData <- function(config, monitor = TRUE){
             dplyr::left_join(visit_pop %>%
                                  sf::st_drop_geometry() %>%
                                  dplyr::select(Pentad, Date, population_mean) %>%
+                                 dplyr::mutate(Date = as.character(Date)) %>%
                                  dplyr::rename(hum.km2 = population_mean),
                              by = c("Pentad", "Date"))
 
