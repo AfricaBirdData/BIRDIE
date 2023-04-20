@@ -6,13 +6,14 @@
 #' @param .year Year to run to the pipeline for
 #' @param .spatial Whether a spatial model should be fit. Defaults to FALSE.
 #' @param .config Config object from \link{configPreambOccu}
+#' @param time_limit Computation time limit for each core in seconds.
 #'
 #' @export
 #' @keywords internal
 #' @noRd
 #' @example
 #' \dontrun{}
-pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
+pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config, time_limit = NULL){
 
     # Species name
     sp_name <- BIRDIE::barberspan %>%
@@ -22,7 +23,16 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
         dplyr::pull(name) %>%
         unique()
 
+    if(!is.null(time_limit)){
+        setTimeLimit(cpu = Inf, elapsed = time_limit, transient = TRUE)
+        on.exit({
+            setTimeLimit(cpu = Inf, elapsed = Inf, transient = FALSE)
+        })
+    }
+
+
     # Pipeline module 1
+    tryCatch({
     out_dst1 <- ppl_run_pipe_dst1(sp_code = .sp_code,
                                   sp_name = sp_name,
                                   year = .year,
@@ -34,6 +44,18 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config){
                                   force_abap_dwld = FALSE,
                                   spatial = .spatial,
                                   print_fitting = TRUE)
+    }, error = function(ex) {
+        msg <- ex$message
+        # Was it a timeout?
+        pattern <- gettext("reached elapsed time limit", "reached CPU time limit", domain="R")
+        pattern <- paste(pattern, collapse = "|")
+        if (regexpr(pattern, msg) != -1L) {
+            ex <- paste("Computation time exceeded:", time_limit/60, "minutes")
+            message(ex)
+        } else {
+            message(msg)
+        }
+    })
 
     message(paste("Pipeline DST1 status =", out_dst1))
 
