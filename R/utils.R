@@ -49,9 +49,16 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config, time_limit
         # Was it a timeout?
         pattern <- gettext("reached elapsed time limit", "reached CPU time limit", domain="R")
         pattern <- paste(pattern, collapse = "|")
+
         if (regexpr(pattern, msg) != -1L) {
-            ex <- paste("Computation time exceeded:", time_limit/60, "minutes")
-            message(ex)
+
+            ex <- paste("Computation_time_exceeded_sp", .sp_code, .year, sep = "_")
+            message(paste(ex, ":", round(time_limit/60), "minutes"))
+            conv_file <- file.path(.config$out_dir, "reports", paste0(ex, ".txt"))
+            sink(conv_file)
+            print(paste(ex, ":", round(time_limit/60), "minutes"))
+            sink()
+
         } else {
             message(msg)
         }
