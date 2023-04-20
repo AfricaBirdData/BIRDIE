@@ -93,6 +93,7 @@ ppl_run_pipe_dst1 <- function(sp_code, sp_name, year, config,
             filename <- paste0("occu_fit_", config$package, "_", year, "_", sp_code, ".rds")
             saveRDS(fit_out, file.path(config$out_dir, sp_code, filename))
         } else {
+            createLog(config, logfile, full_log = ppl_log)
             return(fit_status)
         }
 
