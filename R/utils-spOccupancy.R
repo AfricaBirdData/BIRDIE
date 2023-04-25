@@ -221,16 +221,15 @@ defineSpOccupancyPriors <- function(prev_fit){
 
     prior_mean_beta <- apply(prev_fit$beta.samples, 2, mean)
     prior_sd_beta <- apply(prev_fit$beta.samples, 2, sd) + 1
-
-    # We want the intercept to be freely estimated for each year (these are the default priors)
-    prior_mean_beta[1] <- 0
-    prior_sd_beta[1] <- sqrt(2.5)
-
     names(prior_mean_beta) <- names(prior_sd_beta) <- dimnames(prev_fit$beta.samples)[[2]]
 
     prior_mean_alpha <- apply(prev_fit$alpha.samples, 2, mean)
     prior_sd_alpha <- apply(prev_fit$alpha.samples, 2, sd) + 1
     names(prior_mean_alpha) <- names(prior_sd_alpha) <- dimnames(prev_fit$alpha.samples)[[2]]
+
+    # We want the intercepts to be freely estimated for each year (these are the default priors)
+    prior_mean_beta[1] <- prior_mean_alpha[1] <- 0
+    prior_sd_beta[1] <- prior_sd_alpha[1] <- sqrt(2.5)
 
     if(!is.null(prev_fit$sigma.sq.p.samples)){
         prior_mean_sigma.sq.p <- apply(prev_fit$sigma.sq.p.samples, 2, mean)
@@ -264,17 +263,13 @@ defineSpOccupancyPriors <- function(prev_fit){
                                       var = prior_sd_beta^2))
 
     # Add random effects
-    if(is.null(shape.psi.ig)){
-        priors <- c(priors,
-                    list(sigma.sq.psi.ig = list(shape = shape.psi.ig,
-                                                scale = scale.psi.ig)))
-    }
+    priors <- c(priors,
+                list(sigma.sq.psi.ig = list(shape = shape.psi.ig,
+                                            scale = scale.psi.ig)))
 
-    if(is.null(shape.p.ig)){
-        priors <- c(priors,
-                    list(sigma.sq.p.ig = list(shape = shape.p.ig,
-                                              scale = scale.p.ig)))
-    }
+    priors <- c(priors,
+                list(sigma.sq.p.ig = list(shape = shape.p.ig,
+                                          scale = scale.p.ig)))
 
     return(priors)
 
@@ -889,6 +884,8 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
 
         fit$occ.scale <- list(scale = attr(occu_data$occ.covs, "scaled:scale"),
                               center = attr(occu_data$occ.covs, "scaled:center"))
+
+        fit$priors <- priors
 
 
         return(fit)
