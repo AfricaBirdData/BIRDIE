@@ -9,7 +9,7 @@ ppl_create_data_ssm(
   year,
   catchment,
   config,
-  steps = c("missing", "gee", "subset", "model"),
+  steps = c("subset", "missing", "gee", "model"),
   ...
 )
 }
