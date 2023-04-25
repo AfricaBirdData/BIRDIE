@@ -1,0 +1,323 @@
+---
+title: "Statistical models for the BIRDIE pipeline"
+author: "Francisco Cervantes and Res Altwegg"
+date: "07/07/2021"
+subtitle: 'JRS Biodiversity Series'
+classoption: "aspectratio=169"
+header-includes:
+- \usepackage{caption}
+- \captionsetup[figure]{labelformat=empty} # This gets rid of figure numbering!
+- \titlegraphic{\centering \includegraphics[width=8cm]{SEEC_03_B.pdf} \includegraphics[width=2cm]{UCTNewCrest.JPG}}
+output: beamer_presentation
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "../output") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Data pipeline
+
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("birdie_str.png")
+```
+
+
+## The types of decisions that need to be supported
+
+
+- Site reports and management plans.
+
+- Provincial State of Biodiversity Report.
+
+- National State of Environment Report.
+
+- Red List and National Biodiversity Assessments.
+
+- Agreement on the Conservation of African-Eurasian Migratory Waterbirds.
+
+- ...
+
+## Objectives
+
+- Estimate metrics such as:
+
+    - distribution,
+    - abundance,
+    - population trend,
+    - species diversity.
+    
+- Integrate these metrics for different populations.
+
+- Model observation error.
+
+
+## State-space models
+
+  - Dynamic models describe how processes change over time.
+  
+  - Account for observation error.
+  
+\vspace{1cm}
+
+\begin{center}
+\includegraphics[height=3cm]{"ssm_diagram.png"}
+\end{center}
+
+
+## Observation error: abundance example
+
+
+```{r observationerror, out.width="50%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("abund_obs.png")
+```
+
+## A state-space model for CWAC
+
+\begin{columns}[]
+  \column{0.55\textwidth}{
+    
+    \begin{itemize}
+      \item Two counts per year: summer and winter.
+      \item + additional counts.
+      \item Sites must be well defined in terms of spatial limits.
+      \item Standardized counts in terms of: number of observers,
+      routes, time of day, viewing techniques, etc.
+    \end{itemize}
+    
+  }
+  \column{0.40\textwidth}{
+  \flushleft
+    \includegraphics[width=0.9\textwidth]{cwac_logo.png}
+    http://cwac.birdmap.africa
+  }
+\end{columns}
+
+## A state-space model for CWAC
+
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F, fig.cap = "Barshep et al. 2017. Global Ecology and Conservation, 12"}
+knitr::include_graphics("ssm_barshep.png")
+```
+
+
+## A state-space model for CWAC
+
+
+```{r, out.width="55%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("spp_83.png")
+```
+
+
+## Occupancy models
+
+\begin{columns}
+\column{.5\textwidth}{
+\includegraphics[width=\textwidth]{guru2017.png} 
+}
+{\footnotesize Guillera-Arroita 2017, Ecography}
+\column{.5\textwidth}{
+
+Information about the observation process:\\
+
+\vspace{0.5cm}
+
+\includegraphics[width=\textwidth]{guru2017b.png} 
+ }
+
+\end{columns}
+
+
+## Southern African Bird Atlas Project
+
+\begin{columns}
+\column{.3\textwidth}{
+After 1 year
+\includegraphics[width=\textwidth,angle=0]{sabap1year.png}
+}
+\column{.3\textwidth}{
+After 5 years
+\includegraphics[width=\textwidth,angle=0]{sabap5year.png}
+}
+\column{.3\textwidth}{
+After 10 years
+\includegraphics[width=\textwidth,angle=0]{sabap10year.png}
+}
+\end{columns}
+
+
+
+## The species is not detected in all occupied cells
+\begin{columns}[]
+\column{0.6\textwidth}{
+\includegraphics[height=6.5cm]{detections2.pdf}
+}
+\column{0.4\textwidth}{
+
+Repeated sampling
+
+\vspace{0.5cm}
+
+{\bf Assumptions:}
+\begin{itemize}
+\item Closure (no colonisation or extinction)
+\item No false detections
+%\item No unmodelled heterogeneity
+%\item Independence
+\end{itemize}
+}
+\end{columns}
+
+## Hierarchical model
+
+$\Psi_i =$ probability that site $i$ is occupied
+
+$z_i =$ true occupancy at site $i$: 1 = occupied, 0 = not occupied
+
+$p_{ij} =$ prob of detecting the species at site $i$ during survey $j$
+
+$y_{ij} =$ detection (1) or non-detection (0)  at site $i$ during survey $j$
+
+
+\vspace{1cm}
+
+$$z_i | \Psi_i \sim Bern(\Psi_i)$$
+
+$$y_{ij} | z_i,p_{ij} \sim Bern(z_ip_{ij})$$
+
+
+## Covariate modelling
+
+Want to know how occupancy and detection vary among sites, $i$, and visits, $j$.
+
+\vspace{0.5cm}
+
+$logit(\Psi_i) = \alpha_0 + \alpha_1 x_{i1} + \ldots + \alpha_U x_{iU}$
+
+$logit(p_{ij}) = \beta_0 + \beta_1 x_{i1} + \ldots + \beta_U x_{iU} + \beta_{U+1} y_{ij1} +\ldots + \beta_{U+V} y_{ijV}$
+
+\vspace{0.5cm}
+
+$U$ site-level covariates: $x_{i1}, \ldots, x_{iU}$
+
+$V$ survey-specific covariates: $y_{ij1}, \ldots, y_{ijV}$
+
+## Covariates we used:
+
+\begin{columns}[T]
+\column{.6\textwidth}{
+Occupancy:
+
+\vspace{0.5cm}
+
+\includegraphics[width=\textwidth]{huntleycovariates.pdf}
+Review: Altwegg and Nichols 2019, MEE
+}
+
+\column{.4\textwidth}{
+Detection:
+\begin{itemize}
+\item hours spent birding
+\item season
+\item length of list
+\end{itemize}
+}
+\end{columns}
+
+## Dynamic occupancy models
+
+\begin{center}
+\includegraphics[width=0.8\textwidth]{dynoc.png}\\
+\end{center}
+
+<!--
+
+$$ z_{i,1} \sim Bern(\Psi_{i,1}), logit(\Psi_{i,1}) = x_i^T\alpha$$
+
+$$ \Psi_{i,t} = z_{i,t-1} \times (1-\epsilon) + (1-z_{i,t-1}) \times \gamma$$
+
+$$ logit(\epsilon_{i}) = x_i^T\beta_{\epsilon} \color{red} + \beta_{\epsilon}^{'} \times D_i$$
+
+$$ logit(\gamma_{i}) = x_i^T\beta_{\gamma} \color{red} + \beta_{\gamma}^{'} \times D_i$$
+-->
+
+## Common myna expansion
+
+\begin{columns}
+\column{.5\textwidth}{
+\begin{itemize}
+\item Invasive in South Africa
+\item Occupancy lower away from cities
+\item Neighbourhood colonisation more important
+\item Colonisation most likely from south
+\item Expanding north-east
+\end{itemize}
+\vspace{3mm}
+\hspace{1cm} \includegraphics[width=0.4\textwidth]{Common-Myna_Clement-Tang_21.jpg}\\
+}
+\column{.5\textwidth}{
+\includegraphics[width=0.85\textwidth]{Broms_etal2016_fig.png}\\
+Broms et al 2016, Ecology
+}
+\end{columns}
+
+
+## Aggregate indices: $\alpha$ Diversity 
+
+
+- Species richness: $$\sum_{i=1}^{N} \Psi_i$$
+- Hill numbers $$^q\Delta = exp \left(\sum_{i=1}^{N} \left(\frac{\Psi_i}{\sum_{i=1}^{N} \Psi_i}\right)^q \right)^{\frac{1}{1-q}}$$
+    - $q = 0$: species richness
+    - $q = 1$ (limit): Shannon diversity
+    - $q = 2$: Simpson diversity
+    
+\vspace{1cm}
+Hill 1973, Ecology
+    
+## Aggregate indices: trends
+::: columns
+
+:::: column
+\includegraphics[width=0.7\textwidth]{Leung_2020.png}
+\includegraphics[width=0.7\textwidth]{JSE-All-Share-Index.png}
+
+::::
+
+:::: column
+- Trends of clusters of species / populations
+
+- Weighted Living Planet Index $$\overline{d_t} = \frac{1}{n_t}\sum_{i=1}^{n_t}d_{it} w_i$$ 
+<!--
+$$I_t = I_{t-1} 10^{d_t}$$
+-->
+::::
+
+:::
+
+## Communicating uncertainty
+
+::: columns
+
+:::: column
+
+::::
+
+:::: column
+\begin{center}
+\includegraphics[width=0.7\textwidth]{VanDerBles_2019.png}
+
+\tiny Van Der Bles et al 2019
+\end{center}
+
+::::
+
+:::
+
+## Questions?
+
+
+```{r, out.width="70%", include=TRUE, fig.align="center", echo=F}
+knitr::include_graphics("birdie_str.png")
+```

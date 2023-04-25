@@ -1,0 +1,141 @@
+---
+title: "Developing a flexible pipeline that accommodates multiple needs"
+author: "Pachi Cervantes"
+institute: "BIRDIE indicator workshop"
+date: "11-02-2022"
+output:
+  xaringan::moon_reader:
+    css: xaringan-themer_tuned.css
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+
+---
+
+
+```{r xaringan-themer, include=FALSE, warning=FALSE}
+library(xaringanthemer)
+style_mono_accent(
+  base_color = "#1c5253",
+  header_font_google = google_font("Josefin Sans"),
+  text_font_google   = google_font("Montserrat", "300", "300i"),
+  code_font_google   = google_font("Fira Mono")
+)
+```
+
+# Objectives
+
+Provide indicators that help:
+
+- National and international reporting
+
+- Site managers
+
+- Researchers
+
+- Birders
+
+- Local conservation authorities
+
+- …
+
+
+---
+
+# Challenges
+
+Users with different objectives:
+
+- Different ecological levels of organization
+
+- Different spatial and temporal scales
+
+- Different contexts
+
+- Use a reduced but comprehensive set of indicators **(jamboard!)**
+
+
+---
+background-image:url(cwac_logo.png), url(SABAP2_logo.png), url(GoogleEarthEngine_Grey_108.png)
+background-position:top 80px right 30%, top 290px right 30%, bottom 70px right 30%
+background-size:25%, 15%, 35%
+
+# Data inputs
+
+- **Coordinated Waterbird Counts**
+
+  - Count data
+  - Species abundance
+
+- **Southern African Bird Atlas Project**
+  - Detection/non-detection data
+  - Species distribution
+
+- **Ancillary data**
+  - Environmental data
+
+
+---
+
+# Indicators
+
+- Abundance
+
+- Distribution
+
+- Diversity
+
+- Ancillary
+
+
+---
+
+background-image:url(comb_abund.png)
+background-size: 45%
+background-position: center right 10%
+
+# Indicators
+
+- Define a set of indicators to
+
+  be used broadly
+
+- Build indicators "granularly" and
+
+  scale them up by aggregation
+
+- Make fine-grain components available
+
+- Let the user decide how to use them
+
+---
+
+# How do we aggregate?
+
+Defining groups by carefully classifying:
+
+- species
+
+- sites
+
+**(jamboard!)**
+
+
+---
+
+background-image:url(all_graph_comb.png)
+background-size: 48%
+background-position: center right 10%
+
+# Queries
+
+A roadmap to user needs
+
+**(jamboard!)**
+
+---
+
+# Thank you!

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.2 (dc2aedaf03, 2022-05-15)"
+   sodipodi:docname="ioc_poster_birdie.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.72515432"
+     inkscape:cx="397.15684"
+     inkscape:cy="561.94935"
+     inkscape:window-width="1920"
+     inkscape:window-height="1001"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs2">
+    <rect
+       x="66.192807"
+       y="524.02639"
+       width="466.10768"
+       height="89.636093"
+       id="rect301" />
+    <rect
+       x="99.28921"
+       y="441.28538"
+       width="583.32411"
+       height="70.329857"
+       id="rect187" />
+    <rect
+       x="52.402639"
+       y="308.89977"
+       width="592.97723"
+       height="62.055757"
+       id="rect181" />
+    <rect
+       x="46.886572"
+       y="202.71547"
+       width="608.14642"
+       height="55.160673"
+       id="rect125" />
+    <rect
+       x="489.55097"
+       y="114.4584"
+       width="256.49713"
+       height="67.571824"
+       id="rect119" />
+    <rect
+       x="45.507555"
+       y="62.055757"
+       width="326.82698"
+       height="114.4584"
+       id="rect63" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text61"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect63);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="45.507812"
+         y="98.549853"
+         id="tspan327">DATA FEED</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text117"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect119);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="489.55078"
+         y="150.9522"
+         id="tspan329">ECOLOGY</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text123"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect125);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="46.886719"
+         y="239.20806"
+         id="tspan331">STATISTICAL MODELLING</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text179"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect181);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="52.402344"
+         y="345.3936"
+         id="tspan333">OUTPUT STORAGE</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="matrix(0.26458333,0,0,0.26458333,72.243243,-9.1216216)"
+       id="text185"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect187);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="99.289062"
+         y="477.77837"
+         id="tspan335">VISUALIZATION</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text299"
+       style="font-style:normal;font-weight:normal;font-size:40px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect301);fill:#000000;fill-opacity:1;stroke:none"><tspan
+         x="66.193359"
+         y="560.52056"
+         id="tspan337">OUTPUT ACCESIBILITY</tspan></text>
+  </g>
+</svg>
