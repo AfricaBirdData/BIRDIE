@@ -62,6 +62,9 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config, time_limit
         } else {
             message(msg)
         }
+
+        return(3)
+
     })
 
     message(paste("Pipeline DST1 status =", out_dst1))
