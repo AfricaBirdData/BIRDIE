@@ -22,7 +22,7 @@ comms/**/*.snm
 comms/**/*.toc
 comms/**/*.aux
 comms/**/*.log
-comms/**/*.mp4 # These are usually too large
+comms/**/*.mp4
 comms/**/*.synctex.gz
 
 # Also old presentation's files
