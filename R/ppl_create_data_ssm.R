@@ -18,7 +18,7 @@
 #'
 #' @examples
 ppl_create_data_ssm <- function(sp_code, year, catchment, config,
-                                steps = c("missing", "gee", "subset", "model"),
+                                steps = c("subset", "missing", "gee", "model"),
                                 ...){
 
     varargs <- list(...)
@@ -323,21 +323,6 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
         counts_mod <- counts_mod %>%
             dplyr::filter(season_id != 3)
 
-        # Add counts that come from the same site, season and year
-        gen_vars <- counts_mod %>%
-            dplyr::select(year, Season, spp, LocationCode, UNIT_ID,
-                          season_id, site_id, year_id) %>%
-            dplyr::distinct()
-
-        counts_mod <- counts_mod %>%
-            dplyr::group_by(site_id, year_id, season_id) %>%
-            dplyr::summarise(count = sum(count, na.rm = TRUE),
-                             dplyr::across(.cols = c(prcp_mean, tmmn_mean, tmmx_mean, pdsi_mean, watext_count, watrec_mean),
-                                           ~mean(.x))) %>%
-            dplyr::ungroup()
-
-        counts_mod <- counts_mod %>%
-            dplyr::left_join(gen_vars, by = c("site_id", "year_id", "season_id"))
 
         return(counts_mod)
 
