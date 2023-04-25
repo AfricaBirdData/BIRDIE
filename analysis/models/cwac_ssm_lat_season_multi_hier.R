@@ -14,15 +14,15 @@ model {
     for(s in 1:nsites){
 
         # Priors for initial states
-        zeta_ini[s] ~ dnorm(0, 3)              # prior for initial extra log abundance uncertainty
-        lambda_ini[s] ~ dnorm(0, 3)             # prior for log summer to winter ratio extra uncertainty
+        zeta_ini[s] ~ dnorm(0, 10)              # prior for initial extra log abundance precision
+        lambda_ini[s] ~ dnorm(0, 10)             # prior for log summer to winter ratio extra precision
         stt_w[s, 1] = stt_s[s, 1] + lambda[s, 1]  # This is not a prior but inherits directly from two priors
 
         phi.mu[s] ~ dbeta(2, 2)
-        phi.lambda[s] ~ dbeta(2, 2)
+        #phi.lambda[s] ~ dbeta(2, 2)
 
-        tau.alpha[s] ~ dgamma(2, 0.5)
-        tau.e[s] ~ dgamma(2, 0.5)
+        tau.alpha[s] ~ dscaled.gamma(0.5, 30)   # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
+        tau.e[s] ~ dscaled.gamma(0.5, 30)       # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
 
         sig.alpha[s] = sqrt(1/tau.alpha[s])   # observer error standard deviation summer
         sig.e[s] = sqrt(1/tau.e[s])           # observer error standard deviation winter
@@ -35,28 +35,36 @@ model {
         # Prior for expected population change coefficients
         # G[s, 1] ~ dnorm(0, 0.5)
 
-        for(m in 1:M){
-            G[s, m] ~ dnorm(0, 1)
+    }
+
+    for(m in 1:M){
+
+        mu_g[m] ~ dnorm(0, 3)
+        sig_g[m] ~ dnorm(0, 1) T(0,)
+
+        for(s in 1:nsites){
+            G[s, m] ~ dnorm(mu_g[m], sig_g[m])
         }
+
     }
 
     # Priors for stochastic summer population changes
-    for(y in 1:nyears){
-        tau.zeta[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
+    for(s in 1:nsites){
+        tau.zeta[s] ~ dscaled.gamma(0.5, 6)   # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
         # tau.zeta[y] ~ dgamma(6, 3)
-        sig.zeta[y] = sqrt(1/tau.zeta[y])
-        for(s in 1:nsites){
-            zeta[s, y] ~ dnorm(0, tau.zeta[y])
+        sig.zeta[s] = sqrt(1/tau.zeta[s])
+        for(y in 1:nyears){
+            zeta[s, y] ~ dnorm(0, tau.zeta[s])
         }
     }
 
     # Priors for changes in winter-to-summer abundance ratio
-    for(y in 1:nyears){
-        tau.eps[y] ~ dscaled.gamma(3, 4)    # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.eps!
+    for(s in 1:nsites){
+        tau.eps[s] ~ dscaled.gamma(0.5, 6)   # same as Student-t with 4 degrees of freedom and standard deviation 1 for sig.zeta!
         # tau.eps[y] ~ dgamma(6, 3)
-        sig.eps[y] = sqrt(1/tau.eps[y])
-        for(s in 1:nsites){
-            eps[s, y] ~ dnorm(0, tau.eps[y])
+        sig.eps[s] = sqrt(1/tau.eps[s])
+        for(y in 1:nyears){
+            eps[s, y] ~ dnorm(0, tau.eps[s])
         }
     }
 
@@ -96,7 +104,7 @@ model {
 
     for(y in 1:(nyears - 1)){
         for(s in 1:nsites){
-            lambda[s, y+1] = phi.lambda[s]*lambda[s, y] + (1-phi.lambda[s])*eps[s, y]                          # winter to summer ratio
+            lambda[s, y+1] = lambda[s, y] + eps[s, y]                          # winter to summer ratio
         }
     }
 

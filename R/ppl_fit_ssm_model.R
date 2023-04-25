@@ -22,10 +22,6 @@ ppl_fit_ssm_model <- function(counts, sp_code, config, ...){
         dplyr::mutate(intcp = 1) %>%
         dplyr::select(intcp, dplyr::everything())
 
-    # There is one NA at the end of each time series of covariates because they
-    # are lagged variables. Make this zero - it won't affect the results
-    # covts_u[is.na(covts_u)] <- 0
-
     # Convert to array of multiple sites
     U <- covts_u %>%
         dplyr::select(-year_id) %>%
@@ -57,15 +53,14 @@ ppl_fit_ssm_model <- function(counts, sp_code, config, ...){
              tau.alpha = rgamma(data$nsites, 3, 2),
              tau.e = rgamma(data$nsites, 3, 2),
              G = matrix(rnorm(data$M * data$nsites, 0, 1), ncol = data$M),
-             # mu.zeta = rnorm(data$nsites, 0, 0.5),
-             # mu.eps= rnorm(data$nsites, 0, 0.5),
-             tau.eps = rexp(data$nyears, 1),
-             tau.zeta = rexp(data$nyears, 1),
-             phi.mu = runif(data$nsites, 0.2, 0.8),
-             phi.lambda = runif(data$nsites, 0.2, 0.8))
+             mu_g = rnorm(data$M, 0, 0.5),
+             sig_g = rexp(data$M, 1),
+             tau.eps = rexp(data$nsites, 1),
+             tau.zeta = rexp(data$nsites, 1),
+             phi.mu = runif(data$nsites, 0.2, 0.8))
     }
 
-    param = c("beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "stt_s", "stt_w", "summer", "phi.mu", "phi.lambda")
+    param = c("beta", "lambda", "sig.zeta", "sig.eps", "sig.alpha", "sig.e", "stt_s", "stt_w", "summer", "phi.mu")
 
     # param = c("beta", "mu.beta", "B", "G", "mu_t")
 
