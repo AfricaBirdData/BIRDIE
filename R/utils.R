@@ -44,6 +44,9 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config, time_limit
                                   force_abap_dwld = FALSE,
                                   spatial = .spatial,
                                   print_fitting = TRUE)
+
+    message(paste("Pipeline DST1 status =", out_dst1))
+
     }, error = function(ex) {
         msg <- ex$message
         # Was it a timeout?
@@ -63,11 +66,11 @@ pipe_prll_fit <- function(.sp_code, .year, .spatial = FALSE, .config, time_limit
             message(msg)
         }
 
-        return(3)
+        message(paste("Pipeline DST1 status =", 3))
 
     })
 
-    message(paste("Pipeline DST1 status =", out_dst1))
+
 
 }
 
