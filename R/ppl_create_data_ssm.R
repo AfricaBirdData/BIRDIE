@@ -272,8 +272,27 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
             gee_catchm <- utils::read.csv(geefile)
         }
 
-        counts <- prepGEESpCountData(counts, sp_code, catchment, config, varargs$monitor,
-                                     force_gee = varargs$force_gee)
+        # Find nearest catchment to site counts. Nearest because some sites are on the
+        # coast potentially falling offshore
+        counts <- counts %>%
+            dplyr::mutate(id_count = dplyr::row_number()) %>%
+            sf::st_as_sf(coords = c("X", "Y"), dim = "XY", crs = sf::st_crs(4326))
+
+        int_index <- counts %>%
+            sf::st_nearest_feature(catchment)
+
+        counts <- counts %>%
+            dplyr::mutate(UNIT_ID = catchment$UNIT_ID[int_index])
+
+        counts <- counts %>%
+            sf::st_drop_geometry()
+
+        names_long <- setdiff(names(gee_catchm)[grep("_", names(gee_catchm))], c("UNIT_ID", "area_km2", "watocc_ever", "dist_coast"))
+
+        catchm_long <- gatherYearFromVars(gee_catchm, names_long, sep = "_")
+
+        counts <- counts %>%
+            dplyr::left_join(catchm_long, by = c("UNIT_ID", "year"))
 
         attr(counts, "gee") <- TRUE
 
@@ -294,7 +313,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config,
 
     if("model" %in% steps){
 
-        outfile <- setSpOutFilePath("abu_gee_data", config, sp_code, ".csv")
+        outfile <- file.path(config$out_dir, paste0("catchm_dat_sa_gee_", config$years_ch, ".csv"))
 
         if(!exists("counts") & file.exists(outfile)){
             counts <- read.csv(outfile)
