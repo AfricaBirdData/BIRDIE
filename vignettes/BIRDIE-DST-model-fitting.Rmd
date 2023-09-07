@@ -1,0 +1,97 @@
+---
+title: "BIRDIE DST: Model fitting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE DST: Model fitting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup,echo=FALSE}
+library(BIRDIE)
+```
+
+
+## Introduction
+
+The species distributions module (DST) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species distributions* vignettes for general details
+about BIRDIE and about the DST module, respectively. In this vignette, we will go through
+the different tasks that are performed during the step of the DST module: **model fitting**.
+
+The main function used for model fitting is `ppl_fit_occu_model()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work. The output of
+`ppl_fit_occu_model()` is always a model fit but it will change depending on the
+package we have selected in the `configPipeline()` function. Currently, there are two
+options [`spOccupancy`](https://github.com/doserjef/spOccupancy) (preferred) and
+[`occuR`](https://github.com/r-glennie/occuR) (not maintained, so probably not working).
+
+In the following section, we explain the process of fitting a model using `spOccupancy`.
+
+## Fitting a model using the `spOccupancy` package
+
+The main function used for fitting occupancy models using the `spOccupancy` package is
+`fitSpOccu()`, which is found in the `R/utils-spOccupancy.R` file.
+
+The `spOccupancy` package gives us the option to fit single season and multi-season
+occupancy models. We are **currently only fitting single season models**, because
+there are quite a lot of data in a single season and therefore multi-season models
+would demand large amounts of computing resources. Although we could think of setting up analyses
+on a high-performance computing facility, we would like to keep hardware requirements
+at reasonable levels for any institution to be able to run the pipeline. In addition,
+we plan to update the pipeline yearly and therefore it seems reasonable to run
+single season models with the new data.
+
+We also have the option to run models with or without spatial random effects. We are
+**currently running models without spatial effects**. We are using around 10 environmental
+covariates in our models and our diagnostics indicate that are not necessary. The
+pipeline could accommodate spatial models and the code structure is there to implement
+them. However, it would require some work to finalise the code.
+
+The `fitSpOccu()` function with some helpers (also found in `R/utils-spOccupancy.R`)
+performs several tasks:
+
+1. Format the site and visit data to fit in the `spOccupancy` package. The function
+`prepSpOccuData_single()` does this at the moment, because we are running single-season
+models. There is an homologous `prepSpOccuData_multi()` for multi-season models, but
+it probably needs some edits to work. These functions are basically wrappers around
+[`ABAP::abapToSpOcc_single()`](https://github.com/AfricaBirdData/ABAP/blob/main/R/abapToSpOcc_single.R)
+and [`ABAP::abapToSpOcc_multi()`](https://github.com/AfricaBirdData/ABAP/blob/main/R/abapToSpOcc_multi.R).
+
+2. Define priors and initial values. For species we don't have any models fit, we use
+the default priors from `spOccupancy` (see `?spOccupancy::PGOcc` for details). However,
+if we have model fits for previous years, we center the priors in the previous parameter
+estimate (if it exists - we might have fitted a different model - more of this later)
+and use the standard deviation of the estimate plus one, unless it is larger than the 
+`spOccupancy` default (~ sqrt(2.5)), in which case we use the latter. An important
+function to this is `defineSpOccuPriors()` (in `R/utils-spOccupancy.R`).
+
+3. Run the model. We fit the model using `spOccupancy::PGOcc()` since we are not currently
+using spatial effects. If we did, then we would use `spOccupancy::spPGOcc()`. Finally,
+we add information about priors and covariate scales to the model fit to be used 
+in other operations later.
+
+
+## Different models for different species and years
+
+It might be the case that the first model we try does not converge or does not
+fit the data well (see vignette about diagnostics). At the moment of writing we have
+defined two models: one with random effects for observer,
+and one with random effects for observers and sites on detection probabilities. The
+idea is, we first try the simplest model and if there are issues we gradually increase complexity.
+These two models work fine for now, but in the future we might want to implement others.
+
+The procedure to run multiple models at the moment manual. We define the models we
+want to try in the control script (see the *BIRDIE: species distributions* vignette),
+we run the pipeline for all species in a given year with the first model, then we run diagnostics,
+select problem species, then run the pipeline for those problem species with the second model.
+This process can surely be automated, but the functionality still needs to be developed.

@@ -1,0 +1,50 @@
+## Connect to langau login node
+ssh fcervantes@lengau.chpc.ac.za
+
+## Connect to data transfer node (once logged in)
+ssh dtn
+
+## Send jobs to scheduler (PBS)
+qsub
+
+# Software available
+apps/
+module avail 2>&1 | less
+module avail 2>&1 | grep R
+
+
+## Interactive session (2 cores, 2 hours, this can be modified)
+qsub -I -l select=1:ncpus=2:mpiprocs=2 serial -P CSCI1608 -l walltime=2:00:00
+
+## Downloading files from other servers
+wget http://someserver.someuni.ac.za/pub/somefile.tgz
+
+## Pull reports from cluster to local
+scp fcervantes@scp.chpc.ac.za:/mnt/lustre/users/fcervantes/birdie/output/reports/* /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/nicis_chpc/reports/
+
+## Push scripts and data from local to cluster
+scp /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/nicis_chpc/data/* fcervantes@scp.chpc.ac.za:/home/fcervantes/birdie/data/
+scp /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/nicis_chpc/jobs/* fcervantes@scp.chpc.ac.za:/home/fcervantes/birdie/jobs/
+scp /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/nicis_chpc/scripts/* fcervantes@scp.chpc.ac.za:/home/fcervantes/birdie/scripts/
+
+## Find and rename
+find ./ -type f -name "*.rds" -exec rename '.rds' '_ZA.rds' '{}' \;
+
+or
+
+find . -name "*.rds" -exec bash -c 'mv "$0" "${0/.rds/_ZA.rds}"' {} \;
+
+## Pull diagnostic files from cluster to local
+rsync -ahR --files-from=/mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/out_nosync/output_filenames.txt fcervantes@scp.chpc.ac.za:/mnt/lustre/users/fcervantes/birdie/output/ /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/nicis_chpc/imports/
+
+
+## Load R modules
+module load chpc/BIOMODULES (this will load some extra modules that were not visible otherwise)
+module load R/4.2.0 (we can then choose our R module)
+
+
+## push latest fits (first we need to run the script file_newest_fits.R from Working/git/BIRDIE/analysis/scripts/misc)
+rsync -ahR --files-from=/home/birdie/analysis/files_to_keep.txt /drv_birdie/birdie_ftp/ fcervantes@scp.chpc.ac.za:/mnt/lustre/users/fcervantes/birdie/output
+
+## push outputs from BIRDIE server
+rsync -a /drv_birdie/birdie_ftp/ fcervantes@scp.chpc.ac.za:/mnt/lustre/users/fcervantes/birdie/output

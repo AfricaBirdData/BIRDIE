@@ -1,0 +1,170 @@
+---
+title: "BIRDIE: Species abundance"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE: Species abundance}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+There are two main analytical modules in BIRDIE: distribution and abundance.
+
+In this document we will see how to use the abundance (ABU) module. To do this we will 
+have a look at the control script used to run the module and then we will break down
+its different sections to understand what all the functions involved in this analysis do.
+
+## The control script
+
+The control script can be found at `/analysis/scripts/pipeline_script_abu.R`. This script
+has three parts:
+
+- Configuration
+- Create logs
+- Run modules
+
+We will go through each of these parts below.
+
+```{r, echo=FALSE, eval=FALSE}
+writeLines(readLines("../analysis/scripts/pipeline_script_abu.R"))
+```
+
+The script is really just a for loop over species in which the main pipeline function
+for the abundance module `ppl_run_pipe_abu1()` is executed. This means that if we are
+only interested in one species we can go ahead and use the `ppl_run_pipe_abu1()` function, directly.
+
+To run the abundance module of the pipeline, it is enough to just run (`source()`) the script.
+However, the default values will run the full pipeline for all species, and for
+several years, which might take quite long. We will now go through the different
+steps of the pipeline to better understand how to configure it to do what we want.
+
+Note that while this is the default script we use for running the pipeline, there
+is nothing special about it, and we could use something different that suits our needs.
+The functionality of the pipeline comes from its functions.
+
+
+### Configuration
+
+```{r, eval=FALSE}
+
+# Configure pipeline
+config <- configPipeline(
+    year = 2021,
+    dur = 29,
+    mod_file = "cwac_ssm_two_season_mean_rev_jump.R",
+    package = "jagsUI",
+    data_dir = "analysis/data",     # this might have to be adapted?
+    out_dir = "analysis/output",    # this might have to be adapted?
+    server = FALSE
+)
+
+# Read in catchment data. This should go as an argument
+catchment <- sf::read_sf(file.path(config$data_dir, "quinary_catchmt_22.shp"))
+
+# Re-project and simplify
+catchment <- catchment %>%
+    dplyr::select(QUATERNARY, Province, UNIT_ID) %>%
+    sf::st_simplify(preserveTopology = TRUE, dTolerance = 1000) %>%
+    sf::st_transform(crs = sf::st_crs(4326))
+
+```
+
+In the configuration section above we will create a `config` object using the `configPipeline()`
+function that will be used throughout the pipeline by several functions.
+
+The `configPipeline()` function, allows us to let the pipeline know what models
+we want to run, for what years, what packages we want to use, etc. For detailed
+information see `?configPipeline`.
+
+Rather than specifying the covariates that we will use in our models, like we did
+for the distribution module, here we only pass the model file name on to the function.
+`configPipeline()` will look for the model file in `analysis/models`.
+
+The only supported package at the moment is `jagsUI` and all package related functions
+written for BIRDIE are stored in the `R/utils-jags.R` file.
+
+(Note: there might be a better way of doing this, such as creating environment variables
+or something like this, but this works for now)
+
+The abundance module allow us to incorporate environmental covariates into the models,
+although we are not using any at the moment. When we use covariates, we do so at the 
+quinary catchment level. So rather than taking the value of the covariates at some specific
+location we take the average value observed across the quinary catchment at some time.
+We will see more of this on the *BIRDIE ABU: Data preparation* vignette. The important
+point here is that we need to load the quinary catchment spatial object here to pass it on to the 
+main pipeline function, so that it can be used during data preparation (edit the path
+to the file).
+
+### Create logs
+
+
+```{r, eval=FALSE}
+
+# Create log?
+createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+          year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+          package = NA, notes = "Log file created")
+```
+
+The pipeline has a system to log all its activity. This is useful to keep track
+of what species and years the pipeline has run for and whether there have been
+any problems (e.g., species with too few data points or model fit errors). All the
+activity is stored in .csv files that are saved to `analysis/output/reports`.
+
+For more information check the logging functions of the BIRDIE package that are
+stored on the `utils.R` file, notably see `?createLog()` for general logs and
+`?logFitStatus()` for logs of model runs.
+
+We see that for if we run the pipeline for several species, it makes sense to create
+a log file only for the first species, and then use this file to store information
+for all other species as well, each one in a row of the .csv file. Past this
+first setup phase, the pipeline will look for the most recent log file and add information
+to it, regardless of whether information is already present or not.
+
+
+### Run modules
+
+
+```{r, eval=FALSE}
+
+for(i in 1:length(config$species)){
+
+    sp_code <- config$species[i]
+
+    message(paste0("Working on species ", sp_code, " (", i, " of ", length(config$species), ")"))
+
+    # Run abudance pipeline module 1
+    status_abu1 <- ppl_run_pipe_abu1(sp_code, config,
+                                     steps = c("fit", "diagnose", "summary"),
+                                     prep_data_steps = c("subset", "missing", "gee", "model"),
+                                     summary_scale = "model",
+                                     catchment = catchment,
+                                     force_gee_upload = FALSE,
+                                     force_gee = FALSE,
+                                     monitor = TRUE)
+
+    message(paste("ABU1 status =", status_abu1))
+
+}
+
+```
+
+The final part of the script runs the main function of the abundance module of the pipeline,
+looping through all species. The `ppl_run_pipe_abu1()` can run all the steps of the module: data preparation, model fitting, model diagnostics and model summary, or it can run just some of them. It will use the `config` object to know what package it should use for model fitting and the paths to
+store model-ready data and model outputs. Note that some of the steps, may take quite long.
+For example, to prepare data the pipeline connects to Google Earth Engine and annotates
+data with environmental covariates, which can take a while. It also requires an internet
+connection. Keep this in mind and note that we can skip some of the steps using the right
+arguments. For more information see `?ppl_run_pipe_abu1`.

@@ -1,0 +1,15 @@
+#!/bin/bash
+#PBS -l select=3:ncpus=10:mpiprocs=10:nodetype=haswell_reg
+#PBS -P CSCI1608
+#PBS -q normal
+#PBS -l walltime=48:00:00
+#PBS -o /mnt/lustre/users/fcervantes/birdie/birdie.out
+#PBS -e /mnt/lustre/users/fcervantes/birdie/birdie.err
+#PBS -m abe
+#PBS -M f.cervantesperalta@gmail.com
+cd /mnt/lustre/users/fcervantes/birdie
+
+module load chpc/BIOMODULES R/4.2.0
+
+R CMD BATCH /mnt/lustre/users/fcervantes/birdie/scripts/pipeline_distr_hpc_parall.R
+

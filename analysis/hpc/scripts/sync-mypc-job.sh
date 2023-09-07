@@ -1,0 +1,1 @@
+rsync -ahR --files-from=/mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/out_nosync/output_filenames.txt crvfra001@hpc.uct.ac.za:/scratch/crvfra001/birdie/output/ /mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/hpc/imports/

@@ -1,0 +1,148 @@
+---
+title: "BIRDIE DST: Data preparation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE DST: Data preparation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup,echo=FALSE}
+library(BIRDIE)
+```
+
+
+## Introduction
+
+The species distributions module (DST) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species distributions* vignettes for general details
+about BIRDIE and about the DST module, respectively. In this vignette, we will go through
+the different tasks that are performed during the first step of the DST module: **data preparation**.
+
+The main function used for data preparation is `ppl_create_site_visit()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work.
+
+Its name makes reference to *site* and *visit* because it will create two separate datasets from
+[ABAP](https://www.birdmap.africa/) data: one with one entry for each site (pentad) visited,
+and one with one entry for each visit conducted (i.e., pentads can be visited more than once).
+In fact, this function will create a third dataset. For any particular year, sites and visits will
+be common for all species, so we need a third dataset with the detection information for each
+species.
+
+Data preparation has three main tasks: 
+
+- Download ABAP data
+- Annotate site and visit data with environmental covariates
+- Format site, visit and detection data
+
+By just running `ppl_create_site_visit()` all of the tasks will be performed and our
+data will be prepared. However, to understand what goes on "under the hood", we will
+explain each of these tasks, and how they are conducted, below.
+
+Note that data preparation can be time-consuming and it is more efficient to prepare
+data for multiple years at once. Therefore, while occupancy models are run for one
+year at a time, data preparation is done for several years at once. The number of 
+years prepared is given by the `dur` argument of the `configPipeline()` function.
+This means that we don't need to prepare data every time the pipeline runs. For example,
+the piece of code below would configure the pipeline to prepare data for the years
+2008, 2009, 2010, because we set `year = 2010` and `dur = 3`.
+
+```{r,eval=FALSE}
+config <- configPipeline(year = 2010,
+                         dur = 3,
+                         occ_mod = c("log_dist_coast", "elev"),
+                         det_mod = c("log_hours"),
+                         fixed_vars = c("dist_coast", "elev"),
+                         package = "spOccupancy",
+                         data_dir = "analysis/data",
+                         out_dir = "analysis/output",
+                         server = FALSE)
+```
+
+Then, the main pipeline function `ppl_run_pipe_dst1()` gives us the option to
+select which year we want to run models for with the argument `year` and we may
+skip data preparation by setting `force_gee_dwld = FALSE`, `force_site_visit = FALSE`,
+like so
+
+```{r, eval=FALSE}
+ppl_run_pipe_dst1(sp_code = sp_code,
+                  year = 2008, # this is the year models will run for
+                  config = config,
+                  steps = c("data"),
+                  force_gee_dwld = FALSE,
+                  monitor_gee = TRUE,
+                  force_site_visit = TRUE,
+                  force_abap_dwld = FALSE,
+                  spatial = FALSE,
+                  print_fitting = TRUE)
+```
+
+See more explanations about what *gee* and *site_visit* mean below.
+
+
+## Download ABAP data
+
+This process is facilitated by the use of the [`ABAP` R package](https://github.com/AfricaBirdData/ABAP).
+
+There isn't much to say that is not explained on the GitHub repository of the ABAP package (check it out).
+
+We will need to call the functions `ABAP::getAbapData()` and `ABAP::getRegionPentads()` several times during
+the data preparation process.
+
+## Annotate with environmental covariates
+
+We use environmental covariates to model occupancy and detection probabilities, which
+requires detection/non-detection data to be annotated with this information. To 
+facilitate the automation of this process and periodic updates when new data becomes
+available, we use the datasets and functionality offered by Google Earth Engine (GEE).
+
+The functionality to connect and transfer data to/from GEE is provided by the [`ABDtools` R package](https://github.com/AfricaBirdData/ABDtools).
+This package basically wraps functions from [`rgee`](https://github.com/r-spatial/rgee); another package on which
+it depends heavily. Therefore, it is a requirement to have `rgee` properly installed and configured
+to be able to perform data-annotation tasks. Check the GitHub repos for [`rgee`](https://github.com/r-spatial/rgee)
+and [`ABDtools`](https://github.com/AfricaBirdData/ABDtools).
+
+Once these two packages are installed and configured, we can use their functionality in the pipeline.
+There are two functions in BIRDIE that are used to annotate ABAP data: `prepGEESiteData()` and `prepGEEVisitData()`,
+which are used to annotate site and visit data, respectively.
+See `?prepGEESiteData()` and `?prepGEEVisitData()` for details.
+
+Annotating with different variables using GEE require different procedures. Therefore,
+there is no way to flexibly communicate to these functions which variables we want to
+annotate our data with. Instead, we have **hard-coded** the variables we are using for the
+BIRDIE pipeline. If we wanted to change the variables we use, then we would have to
+modify the `prepGEESiteData()` and `prepGEEVisitData()` functions. This is not ideal,
+but it is how it is set up currently. We also have to keep this in mind when we pass
+the covariates we want to use in the models to the `configPipeline()` function in the
+control script (see *BIRDIE-spp-distributions*). These
+covariates must be among those provided by `prepGEESiteData()` and `prepGEEVisitData()`
+and have the same names.
+
+This now brings us to the next part of the data preparation, which is the formatting
+of site, visit and detection data.
+
+## Format site, visit and detection data
+
+In the last step of data preparation, we need to take the data coming out of GEE
+and reformat it for occupancy modelling. Note that at this stage the data will not
+be formatted for any particular package, they will just take a good starting point
+for being used for occupancy modelling. The function we use for this is `createOccuData()`.
+
+Here, we create site and visit data frames that have the covariates specified in
+`configPipeline()`. Data coming from GEE will be in a wide format, meaning that each variable
+and year will be in a separate column. In general, we would like variables to be in one column
+and years in another column. This is one of the important tasks `createOccuData()` will do
+for us. We also use this function to create transformations of those variables
+coming from GEE (e.g. we sometimes use log transformations) and interactions. **`createOccuData()` is
+also hard-coded**, so if we decide to use some new variable transformation, we need to
+modify this function to create it explicitly. Interactions should be handled correctly
+as long as the variables involved in the interaction are present in the data.

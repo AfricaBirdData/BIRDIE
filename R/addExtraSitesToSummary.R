@@ -1,0 +1,61 @@
+#' Add raw counts to CWAC SSM predictions
+#'
+#' @description
+#' We only run state-space models for those CWAC sites that have enough data.
+#' See \code{\link{ppl_create_data_ssm}}. For those sites that don't have enough
+#' data, we present the raw data. This function is used to bind the output of
+#' \code{\link{ppl_summarise_ssm}} with the raw data from those sites that didn't
+#' have enough data to run an analysis.
+#'
+#' @param counts A dataframe with CWAC counts. It is preferable that the dataframe
+#' containd missing counts as well. See \code{\link{addMissingCwacCounts}}
+#' @param preds A dataframe with estimates from a state-space model fitted to
+#' CWAC data. See \code{\link{ppl_summarise_ssm}}
+#'
+#' @return A dataframe with predictions for sites with good data, together with raw counts
+#' for sites with not enough data to run an analysis.
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' sp_code <- 87
+#' config <- configPipeline(
+#'     year = 2022,
+#'     dur = 30,
+#'     module = "abu",
+#'     mod_file = "cwac_ssm_two_season_mean_rev_jump.R",
+#'     package = "jagsUI",
+#'     data_dir = NULL,     # this might have to be adapted?
+#'     out_dir = NULL,     # this might have to be adapted?
+#'     server = FALSE
+#' )
+#' counts <- read.csv(setSpOutFilePath("cwac_data_w_miss", config, config$years_ch, sp_code, ".csv"))
+#' preds <- setSpOutFilePath("ssm_pred", config, config$years_ch, sp_code, "_all.csv")
+#' preds_w_raw <- addExtraSitesToSummary(counts, preds)
+#' }
+addExtraSitesToSummary <- function(counts, preds){
+
+    bad_counts <- counts %>%
+        dplyr::filter(Season %in% c("S", "W"),
+                      !LocationCode %in% unique(preds$site)) %>%
+        dplyr::group_by(spp, LocationCode, year, Season) %>%
+        dplyr::summarise(count = mean(count, na.rm = TRUE)) %>%
+        dplyr::ungroup()
+
+    to_bind <- bad_counts %>%
+        tidyr::pivot_wider(names_from = "Season", values_from = "count") %>%
+        dplyr::mutate(species = unique(preds$species)) %>%
+        dplyr::rename(site = "LocationCode",
+                      summer.count = "S",
+                      winter.count = "W") %>%
+        dplyr::select("species", "site", "year", "summer.count", "winter.count") %>%
+        dplyr::mutate(good_site = 0)
+
+    out <- preds %>%
+        dplyr::mutate(good_site = 1) %>%
+        dplyr::bind_rows(to_bind)
+
+    return(out)
+
+
+}

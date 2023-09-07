@@ -1,0 +1,128 @@
+---
+title: "BIRDIE ABU: Model fitting"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE ABU: Model fitting}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(BIRDIE)
+```
+
+
+## Introduction
+
+The species abundance module (ABU) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species abundance* vignettes for general details
+about BIRDIE and about the ABU module, respectively. In this vignette, we will go through
+the different tasks that are performed during the first step of the ABU module: **data preparation**.
+
+The main function used for model fitting is `ppl_fit_ssm_model()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work. The output of
+`ppl_fit_ssm_model()` is always a model fit but it will change depending on the
+package we have selected in the `configPipeline()` function. At moment, there is only
+one option, and it is to fit a state-space model using JAGS (with the package `jagsUI`).
+
+In the following section, we explain the process of fitting a model using `jagsUI`.
+
+## Fitting a model using the `jagsUI` package
+
+At the moment there is only the option of fitting a state-space model using the 
+`jagsUI` package and therefore it is the main `ppl_fit_ssm_model()` that takes care
+of this (i.e., there is no package specific function for fitting the model - although
+we might want to change this).
+
+We use the `jagsUI::jags.basic()` function, which outputs raw `mcmc` samples. These
+outputs use less memory than the default `jagsUI` processed outputs that compute some
+additional elements, such posterior means and standard deviations.
+
+We do compute those additional elements when we need them, using the custom function
+`processJAGSoutput()`, which is very similar to the internal `jagsUI:::processoutput()`.
+It has just been slightly modified to remove some calculations that we don't need
+and make computations a bit lighter. This function and all other that are design
+to work with JAGS are stored in the `R/utils-jags.R` file.
+
+## Latest model specification
+
+State-space models  are used to describe and understand dynamic systems that may not be perfectly observed. Within this framework, we consider waterbird abundance to be a process that evolves over time, and which we observe during visits to CWAC sites. However, counts conducted by observers are distorted by imperfect detection that translates into counting errors. By counting repeatedly over time, and assuming that abundance evolves smoothly over time compared to observation error, we can disentangle these two processes.
+
+We consider that the log of the observed counts ($y_i$) at sampling occasion $i$ (generally there were two sampling occasions per year, one in mid-summer and one in mid-winter), at any given site, arise from a normal distribution, such that
+ 
+$$\log{(y_i)} \sim N(\mu_i, \sigma_i^2)$$
+
+where $\mu_i$is the latent (unobserved) log abundance of waterbirds present at a site on sampling occasion $i$ and $\sigma^2$ is the corresponding variance of the observers counting error, also in the log scale. Therefore, counts depend both on the number of waterbirds present on site, and on errors in the counts of these birds.
+
+To model changes in waterbird abundance between the two-seasons of year $t$, we define $s_t$ to be the summer abundance and $w_t$ the winter abundance. Note that, although we currently consider only one count per season, there could potentially be multiple counts in a single year and season. However, the underlying true abundance is considered to stay constant in any given year and season (for clarity, note also that while sampling occasions were indexed by $i$, years are indexed by $t$). Thus, the expected (log) abundance for any given count can be written as
+
+$$\mu_{i} = s_t \textrm{summer} + w_t \textrm{winter}$$
+ 
+where 'summer' is an indicator variable that takes on the value 1 in summer and 0 in winter, and 'winter' is the opposite.
+We then define abundance dynamics as:
+ 
+$$s_t = s_{t-1} + \beta_t$$
+$$w_t = s_t + \xi_t$$
+
+where $\beta_t$ corresponds to the change in summer abundance from year $t-1$ to year $t$, and $\xi_t$ is the difference between summer and winter abundance, both in the log scale. If exponentiated, these parameters can be interpreted as the rate of change in the population and the winter-to-summer ratio of the population, respectively.
+
+We impose relatively smooth changes in abundance by defining autocorrelation in $\beta_t$ and $\xi_t$ terms over time. In addition, we define a mean reverting process whereby the populations at a certain site tend to revert to a site-specific mean or "preferred" abundance $\psi_{(s)t}$ in summer and $\psi_{wt}$ in winter.
+This specification is important to prevent estimated populations to explode in periods with missing data. These mean abundances may change occasionally, as we will see below.
+
+We then define the expected change in summer population (the winter population evolves similarly) as
+$$\zeta_t' = \psi_{(s)t} - s_t$$
+We define certain persistence in population trends such that
+$$\beta_{t+1} = \beta_t + \phi_s(\zeta_t' - \beta_t) + \zeta_t$$
+where $\zeta_t \sim N(0, \sigma_{\zeta}^2)$ and $\phi_s$ lies between zero and one, and controls how quickly the population reverts back to the mean.
+
+Finally, we define a jump process, whereby population can present sudden changes in abundance that do not conform to the general temporal pattern. These
+changes are frequent in waterbird populations and, although possibly associated the conditions at the sites, it is challenging to 
+understand the drivers behind them. We define
+
+$$\textrm{jump}_{(s)t} = \textrm{I}_{(s)t}z_{(s)t}$$
+where $\textrm{I}_{(s)t} \sim \textrm{Bernoulli}(p_s)$ and $z_{(s)t} \sim N(0, \sigma_{jump_s}^2)$. We make $p_s$ be a small probability (with its prior) and 
+$\sigma_{jump_s}$ large relative to $\sigma_{\zeta}$ to favour few, large jumps rather than frequent small ones.
+
+These jumps in the population may stick for some time, meaning that they affect the mean abundance of the sites. Therefore, once a jump in a population is
+observed, the new level becomes the mean and we need a new jump to go back to the original mean. In this way we ensure that deviating from the mean and coming
+back to it are captured as two separate jumps and not necessarily as a jump and a mean reversion. Therefore,
+
+$$\psi_{(s)t+1} = \psi_{(s)t} + \textrm{jump}_{(s)t}$$
+In order to capture population jumps in the changes represented by $\beta$ we set
+
+$$\beta_{t} = \beta_{t} + \textrm{jump}_{(s)t}$$
+
+Note that this is for reporting purposes only, which is important because we don't want
+jumps to be considered in the update step for $\beta_t$ (see expression above for \beta_{t+1}).
+
+The model for the winter population is similar to the summer one
+
+$$\xi_t' = \psi_{(w)t} - s_{t+1}$$
+
+represents the expected change in winter population on year $t+1$, and the actual change
+is given by
+
+$$\lambda_{t+1} = \lambda_t + \phi_w(\xi_t' - \lambda_t) + \xi_t$$
+where $\xi_t \sim N(0, \sigma_{\xi}^2)$ and $\phi_w$ lies between zero and one, and controls how quickly the population reverts back to the mean.
+
+There can also be jumps in the winter populations given by
+
+$$\textrm{jump}_{(w)t} = \textrm{I}_{(w)t}z_{(w)t}$$
+where $\textrm{I}_{(w)t} \sim \textrm{Bernoulli}(p_w)$ and $z_{(w)t} \sim N(0, \sigma_{jump_w}^2)$. We make $p_w$ be a small probability (with its prior) and 
+$\sigma_{jump_s}$ large relative to $\sigma_{\xi}$.
+
+These jumps may also stick to the population as
+
+$$\psi_{(w)t+1} = \psi_{(w)t} + \textrm{jump}_{(w)t}$$
+And they are incorporated into $\lambda_t$ for reporting purposes, such that
+
+$$\lambda_{t} = \lambda_{t} + \textrm{jump}_{(w)t}$$

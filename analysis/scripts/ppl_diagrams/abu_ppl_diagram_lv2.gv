@@ -1,0 +1,29 @@
+digraph {
+
+graph [layout = dot, rankdir = TB, splines = ortho, nodesep = 0.5,
+label = "Total abundance for each site", labelloc = "t", fontsize = 24]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = rectangle, style = filled, fillcolor = Linen]
+
+# Databases
+
+sp_abu [label = "<f0> Abundance| site 1 sp 1 | site 1 sp 2 | site 2 sp 1 | ...", shape = record, fillcolor = DodgerBlue, width = 1.3]
+
+# Data input/output
+site_abu [label = 'total site abu', shape = parallelogram, fillcolor = PaleTurquoise1, width = 2]
+
+# Functions
+sum_spp [label =  'ppl_sum_spp_site()', width = 2]
+
+# Decisions
+select_site [label = 'select site i', shape = diamond, fillcolor = MediumPurple, width = 2]
+
+# Edges
+select_site -> sum_spp
+sp_abu -> sum_spp
+sum_spp -> site_abu
+
+{rank = same; sum_spp select_site}
+
+}

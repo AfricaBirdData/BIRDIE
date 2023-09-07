@@ -1,0 +1,49 @@
+Package: BIRDIE
+Title: South African Biodiversity Data Pipeline for Wetlands and Waterbirds
+Version: 0.0.0.9000
+Authors@R: 
+    person(given = "First",
+           family = "Last",
+           role = c("aut", "cre"),
+           email = "first.last@example.com",
+           comment = c(ORCID = "YOUR-ORCID-ID"))
+Description: This repository contains code and documentation related to the
+       South Africa Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) project
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.3
+Imports: 
+    ABAP,
+    ABDtools,
+    coda,
+    CWAC,
+    dplyr,
+    ggplot2,
+    grDevices,
+    gridExtra,
+    lubridate,
+    magrittr,
+    purrr,
+    readr,
+    rgee,
+    rlang,
+    rnaturalearth,
+    sf,
+    spOccupancy,
+    stats,
+    tidyr,
+    tidyselect,
+    units,
+    utils
+Depends: 
+    R (>= 2.10)
+Suggests: 
+    knitr,
+    rmarkdown,
+    occuR,
+    future,
+    furrr,
+    jagsUI
+VignetteBuilder: knitr

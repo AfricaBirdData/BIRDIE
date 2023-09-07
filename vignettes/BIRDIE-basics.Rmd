@@ -1,0 +1,137 @@
+---
+title: "BIRDIE: Basics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE: Basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+BIRDIE is a biodiversity data pipeline for wetlands and waterbirds, and it is organized
+as an R package with some additional tools and elements.
+
+BIRDIE is a high-level utility, and therefore it has quite a few dependencies, notably:
+the `ABAP`, `CWAC` and `ABDtools` packages, which provide the functionality needed to
+acquire data from the main databases used by the pipeline. The pipeline also makes heavy
+use of some of the `tidyverse` packages, such as `dplyr` and `tidyr`, as well as 
+the `sf` and `raster` packages to handle spatial data. It also uses packages for 
+fitting occupancy and state-space models such as `spOccupancy` and `jagsUI`, respectively.
+
+The main objective of the pipeline is to process ABAP and CWAC data into meaningful
+waterbird abundance and distribution estimates. Therefore, the code is organized
+in two main modules: abundance (ABU1) and distribution (DST1). These modules have
+four distinct steps each: data preparation, model fit, model diagnostics and model
+summary. Inside each of these modules there are multiple functions that perform
+different tasks. This results in a hierarchical structure that we describe later.
+The important thing to keep in mind for now is that there are high-level functions that control
+whole modules, and there are other lower-level functions that perform tasks within 
+each module.
+
+Note that the BIRDIE pipeline can run locally on our personal machine or remotely,
+in a dedicated server. To be able to transfer the functionality to multiple environments
+we need to keep some structure in the directories we use to store data, models, outputs and scripts.
+
+Make an intro for users that might want to modify the pipeline
+Explain who is the intended user for this documentation
+
+## Directory structure
+
+The BIRDIE repository has the typical structure of an R package, because it is indeed
+an R package, with a few additional directories.
+
+```{r, echo=FALSE}
+fs::dir_tree(path = gsub("/vignettes", "", getwd()), recurse = FALSE, type = "directory")
+```
+
+- The directories: `R`, `data`, `man` and `vignettes`, are standard R-package directories
+- `beta` is a place to test new functionality and it can get quite messy
+- `deprecated` has functions that were used at some point but that are not longer used. These may be deleted periodically.
+- `analysis` is a space where we store all the data (those that don't come with the package), scripts and outputs that 
+the pipeline uses or produces.
+- `comms` contains the code used in BIRDIE presentations, papers and other communications.
+
+The structure of the BIRDIE root directory is important for the repository to work as a package.
+Maintaining the structure of the `analysis` directory is also important, because it allows us to
+use the pipeline in different machines and find what we need.
+
+
+```{r, echo=FALSE}
+fs::dir_tree(path = gsub("/vignettes", "/analysis", getwd()), recurse = FALSE, type = "directory")
+```
+
+In particular, there are some sub-directories: `data`, `output`, `models` and `scripts` 
+that are needed to be able to run the pipeline. Some pipeline functions use paths to these directories, so
+it is important to keep these names unchanged. We can configure the pipeline through
+the `configPipeline()` function to let it know what the full path to these directories is
+(from the home directory in our computer). We will see more of this later.
+
+The `analysis/output` directory is important because it will store all of our model
+outputs. Inside of this directory we need sub-directories named with the SAFRING code
+(ABAP and CWAC code) of each of the species we want to run the pipeline for. For example,
+if we wanted to run the pipeline for species 6 (Little Grebe) we would need to have
+a directory `analisys/output/6` before running the pipeline. Inside of `analysis/output`
+we also need two other directories: `analysis/reports` and `analysis/export`. The first
+one will be used to store different report files created by the pipeline and the
+second one stores the outputs that will be transferred to the BIRDIE database.
+
+
+## Types of functions
+
+There are two basic types of functions in the BIRDIE package:
+
+- Pipeline functions: the name of these functions start with `ppl_` and they control
+the flow of the pipeline. In other words, their role is to execute other functions
+that run specific steps for data processing, such as preparing data or running models.
+Pipeline functions don't do any data processing per se other than reading and writing to disk.
+The pipeline functions correspond roughly to the main pipeline modules: species distribution and
+species abundance, and with the different processing steps of the pipeline:
+prepare data, fit models, diagnose fits and summarise results. There will be at least
+one pipeline function for each of these modules and steps.
+
+- Processing functions: they don't have any naming convention other that they don't start
+with `ppl_`. These are the core workforce functions of the package and they run the
+different data-processing steps of the pipeline. These functions are divided into two
+groups, those that need a specific package to run (e.g., `JAGS` or `spOccupancy`) and those
+that are package "agnostic" and can be used regardless of what package the pipeline is
+using at the moment. Package-specific functions are all packaged under the same file
+named `utils-packagename.R`. We made this distinction to facilitate the modularity of the pipeline.
+If we were to substitute a package used in the pipeline it will be easier to find all the 
+functions that we need to replace if they are all in the same file. So far we have utils
+for the packages:`jags`, `spOccupancy` and `occuR`. There are some generic utils as well.
+These functions are used for administrative tasks, such as producing log files, setting up
+file paths or managing export files.
+
+Another way of looking at this distinction is thinking that "pipeline functions" don't
+really have any value out of the BIRDIE pipeline, because they perform configuration
+tasks for the pipeline. Conversely, non-pipeline functions could also be used in other
+settings and would still be useful (e.g., they could be used to annotate data with
+environmental variables or to fit models).
+
+NOTE: This is the general idea, but there might be a few things that are missplaced or that
+could be better organized, so don't take this structure as carved in stone!
+
+## Control scripts
+
+While BIRDIE functions do all the heavy lifting, we have set up a few scripts that allow
+the user to start specific pipeline workflows. The main scripts are:
+
+- `pipeline_script_dst.R` that initialises the distribution module
+- `pipeline_script_abu.R` that initialises the abundance module
+
+There is a useful script that allows running the distribution module parallelising
+computations over species (currently, up until model fitting) named `pipeline_script_dst_parall.R`.
+There are some other useful scripts (that might get outdated) under the `scripts/misc`
+directories.

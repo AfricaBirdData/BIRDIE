@@ -1,0 +1,79 @@
+---
+title: "BIRDIE-DST: Model summary"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE-DST: Model summary}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+The species distributions module (DST) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species distributions* vignettes for general details
+about BIRDIE and about the DST module, respectively. In this vignette, we will go through
+the different tasks that are performed during the step of the DST module: **model summary**.
+
+The main function used for summarising a model fit is `ppl_summarise_occu()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work.
+
+This step is relatively simple. Here we need to conduct two tasks: predict occurrence and
+detection probabilities for all pentads in South Africa from a fitted model and summarise
+these predictions.
+
+## Predicting from a model fit
+
+`predictSpOccu()` is used for predicting from a model fit and it is basically a wrapper
+around `spOccupancy::predict.PGOcc()`. However, it has a few data preparation steps
+to make sure the data we pass on to the predict function has the same variables and
+on the same scale as the data we used for fitting the model. Model are fitted using
+only those pentads that were visited in any given year, but we want to predict for all
+pentads in South Africa. To maintain the same scale, we make use of the covariate
+scale information that we stored in the model fit object (see *BIRDIE DST: model fitting* vignette).
+
+The output of `predictSpOccu()` is a list with two elements containing posterior
+predictive samples for $\psi$ (psi, probability of occurrence) and $p$ (probability of
+detection) for each pentad.
+
+
+## Summarising predictions
+
+In this step, we use the function `summariseSpOccu()` to extract the 0.025, 0.5 and 0.975
+quantiles of the predictive samples for $\psi$ and $p$ obtained from `predictSpOccu()`.
+We will store these quantiles to display on the BIRDIE website rather than all of the
+posterior predictive samples.
+
+We also compute the realized occupancy from the posterior predictive samples and the
+data. The realized occupancy is the probability of occurrence conditional on the
+observed data, such that
+
+$$P[occu | obs = 1] = 1$$
+$$P[occu | obs = 0] = \frac{\psi q}{(1 - \psi + \psi q)}$$
+where $obs = 1$ when the species was detected at a site on any visit, and $obs = 0$
+when the species was not detected at a site on any visit, $\psi$ is the probability of
+occurrence estimated by our model and $q = \prod_{i=1}^N (1 - p_i)$, with $p_i$ being
+the probability of detection on visit $i$ and $N$ the total number of visits to 
+a given site.
+
+All these summaries are stored in a file called `analysis/output/occu_pred_spOccupancy_YYYY_sp_code.csv`,
+where `YYYY` is the year of the data we are fitting a model to and `sp_code` is the
+species code. These files will be exported to the database for storage and display
+on the BIRDIE website.
+
+If no model could be fitted because of lack of enough data, then, we
+use the raw data to create the prediction file mentioned above
+The file still has the exact same structure, but now $\psi$ and $p$ will be `NA` for all
+pentads (because they could not be calculated). Raw data will be treated as realized occupancy and no confidence limits will be estimated. The function that performs these tasks is `createPredFromAbap()`.

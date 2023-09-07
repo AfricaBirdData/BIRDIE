@@ -1,0 +1,169 @@
+---
+title: "BIRDIE: species distributions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE-spp-distributions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+There are two main analytical modules in BIRDIE: the distribution and abundance
+modules.
+
+In this document we will see how to use the distribution (DST) module. To do this we will 
+have a look at the control script used to run the module and then we will break down
+its different sections to understand what all the functions involved in this analysis do.
+
+## The control script
+
+The control script can be found at `/analysis/scripts/pipeline_script_dst.R`. This script
+has three parts:
+
+- Configuration
+- Create logs
+- Run modules
+
+We will go through each of these parts below.
+
+```{r, echo=FALSE, eval=FALSE}
+writeLines(readLines("../analysis/scripts/pipeline_script_dst.R"))
+```
+
+The script is really just a for loop over species in which the main pipeline function
+for the distribution module `ppl_run_pipe_dst1()` is executed. This means that we are
+only interested in one species we can go ahead and use the `ppl_run_pipe_dst1()` function.
+
+To run the distribution module of the pipeline, it is enough to just run the script.
+However, the default values will run the full pipeline for all species, and for
+several years, which might take quite long. We will now go through the different
+steps the pipeline goes through to better understand how to configure it to do
+what we want.
+
+Note that while this is the default script we use for running the pipeline, there
+is nothing special about it, and we could use something different that suits our needs.
+
+### Configuration
+
+```{r, eval=FALSE}
+
+# We are currently working with several detection models
+det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
+                 det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
+
+# Configure pipeline
+config <- configPipeline(year = 2010,
+                         dur = 3,
+                         occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
+                                     "watrec", "watext", "log_watext", "watext:watrec",
+                                     "ndvi", "prcp", "tdiff"),
+                         det_mod = det_mods$det_mod1,
+                         fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
+                                        "dist_coast", "elev"),
+                         package = "spOccupancy",
+                         data_dir = "analysis/data",     # this might have to be adapted?
+                         out_dir = "analysis/output",    # this might have to be adapted?
+                         server = FALSE)
+```
+
+
+In the piece of code above, we list a couple of possible detection models that we
+can choose from (handy if we are planning of conducting several runs of the pipeline
+with different models), and then we create a `config` object that will be used
+throughout the pipeline by several functions.
+
+The `configPipeline()` function, allows us to let the pipeline know what models
+we want to run, for what years, what packages we want to use, etc. For detailed
+information see `?configPipeline`.
+
+(Note: there might be a better way of doing this, such as creating environment variables
+or something like this, but this works for now)
+
+
+### Create logs
+
+
+```{r, eval=FALSE}
+
+# Create log?
+    if(i == 1){
+        createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
+                  year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
+                  package = NA, notes = "Log file created")
+    }
+```
+
+The pipeline has a system to log all its activity. This is useful to keep track
+of what species and years the pipeline has run for and whether there have been
+any problems (e.g., species with too few data points or model fit errors). All the
+activity is stored in .csv files that are saved to `analysis/output/reports`.
+
+For more information check the logging functions of the BIRDIE package that are
+stored on the `utils.R` file, notably see `?createLog()` for general logs and
+`?logFitStatus()` for logs of model runs.
+
+We see that for if we run the pipeline for several species, it makes sense to create
+a log file only for the first species (that is why `if(i == 1)`), and then use this file to store information
+for all species, each in one row of the .csv file. If we just created one log for
+each species, then there would be one .csv log file for each species. The past this
+first setup phase, the pipeline will look for the most recent log file and add information
+to it, regardless of whether information is already present or not.
+
+
+### Run modules
+
+
+```{r, eval=FALSE}
+
+for(t in seq_along(config$years)){
+    
+    year_sel <- config$years[t]
+    
+    out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
+                                  year = year_sel,
+                                  config = config,
+                                  steps = c("data", "fit", "summary", "diagnose"),
+                                  force_gee_dwld = FALSE,
+                                  monitor_gee = TRUE,
+                                  force_site_visit = TRUE,
+                                  force_abap_dwld = FALSE,
+                                  spatial = FALSE,
+                                  print_fitting = TRUE)
+    
+    message(paste("Pipeline DST1 status =", out_dst1))
+    
+    if(out_dst1 != 0){
+        next
+    }
+    
+}
+
+```
+
+The final part of the script runs the modules of the pipeline that we are interested in
+(currently there is only one, because "module 2 - Area of Occupancy and other derived
+indicators", is now run by the data base).
+It will loop through the different years that we have set during the configuration
+phase and it will run the main function of the distribution module `ppl_run_pipe_dst1()`.
+This function can run all the steps of the module: data preparation, model fitting, 
+model diagnostics and model summary, or it can run just some of them. It will use the
+`config` object to know what package it should use for model fitting and the paths to
+store model-ready data and model outputs. Note that some of the steps, may take quite long.
+For example, to prepare data the pipeline connects to Google Earth Engine and annotates
+data with environmental covariates, which can take a while. It also requires an internet
+connection. Keep this in mind and note that we can skip some of the steps using the right
+arguments. For more information see `?ppl_run_pipe_dst1`.

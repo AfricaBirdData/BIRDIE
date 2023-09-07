@@ -1,0 +1,8 @@
+# Get IP of our connection
+NEWIP=$(echo $SSH_CLIENT | cut -d' ' -f1)
+
+# Copy the contents of a directory
+scp /scratch/crvfra001/birdie/output/reports/* pachorris@$NEWIP:/mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/hpc/reports/
+
+# Sync directories specified in a file
+rsync -r --files-from=/home/crvfra001/birdie/scripts/spp_codes.txt /scratch/crvfra001/birdie/output pachorris@$NEWIP:/mnt/DATA/Documentos/mis_trabajos/Academic/BIRDIE/BIRDIE/analysis/hpc/imports/

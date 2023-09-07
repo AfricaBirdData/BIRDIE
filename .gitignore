@@ -1,0 +1,49 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Ignore output files in out_nosync
+analysis/out_nosync/*
+
+# And downloaded files
+analysis/downloads/*
+
+# And potentially large data files
+analysis/data/*
+
+# Ignore compiled models
+analysis/models/*.rds
+
+# Ignore output and auxiliary files in the communications folder
+comms/output/*
+comms/**/*.nav
+comms/**/*.snm
+comms/**/*.toc
+comms/**/*.aux
+comms/**/*.log
+comms/**/*.mp4
+comms/**/*.synctex.gz
+
+# Also old presentation's files
+#comms/archived_comms/*
+
+# Ignore beta functions
+beta/*
+
+# Ignore miscellaneous scripts (some are useful, so not ignoring for now)
+# analysis/scripts/misc/*
+analysis/scripts/old/*
+inst/doc
+/doc/
+/Meta/
+
+
+# Ignore imports from HPC
+analysis/hpc/imports
+analysis/hpc/reports
+analysis/hpc/data
+
+analysis/nicis_chpc/imports
+analysis/nicis_chpc/reports
+analysis/nicis_chpc/data

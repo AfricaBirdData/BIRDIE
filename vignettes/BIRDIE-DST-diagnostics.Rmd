@@ -1,0 +1,91 @@
+---
+title: "BIRDIE DST: Model diagnostics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE DST: Model diagnostics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+
+## Introduction
+
+The species distributions module (DST) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species distributions* vignettes for general details
+about BIRDIE and about the DST module, respectively. In this vignette, we will go through
+the different tasks that are performed during the step of the DST module: **model diagnostics**.
+
+The main function used for model diagnosis is `ppl_diagnose_occu()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work.
+
+During the diagnostics step we look at two indicators: the Gelman-Rubin convergence
+diagnostic ($\hat{R}$) and a goodness-of-fit Bayesian p-value. The first diagnostic is
+computed by the function `diagnoseRhatSpOccu()` and the second one by the function
+`diagnoseGofSpOccu()` (both functions are found in `R/utils-spOccupancy.R`).
+
+`ppl_diagnose_occu()` combines the output of these two functions into a single table
+that is stored in `analysis/output/sp_code/occu_diagnostics_spOccupancy_YYYY_sp_code.csv`,
+where `YYYY` is the year of the data we are fitting a model to and `sp_code` is the
+species code. In this way, it is easy to extract all diagnostic files from the different
+directories, combine them into a table and quickly explore potential issues.
+
+## Diagnosing convergence
+
+The function `diagnoseRhatSpOccu()` extracts $\hat{R}$ values computed by `spOccupancy`
+for each of the estimated parameters and tabulates them. In this table, each parameter
+appears in one column and gets a 0 if $|1 - \hat{R}| < 0.1$ and a 1 otherwise. Some
+extra columns are added, such as number of non-convergent parameters, number of detections
+observed, number of sites visited, etc.
+
+## Diagnosing goodness-of-fit
+
+The function `diagnoseGofSpOccu()` conducts posterior predictive checks (PPC) and calculates
+a Bayesian p-value. This function is a modification of the `spOccupancy::ppcOcc()`
+making a slightly more efficient use of RAM memory, but at the expense of adding
+some dependencies (on which BIRDIE already depended anyway, notably [`dplyr`](https://github.com/tidyverse/dplyr)).
+
+The procedure to estimate the Bayesian p-value is the same used by `spOccupancy::ppcOcc()`.
+However `diagnoseGofSpOccu()` only conducts chi-squared test at the moment, and it
+only aggregates data per site and not per visit. With `spOccupancy::ppcOcc()` one
+can aggregate data per site or visit and conduct Freeman-Tuckey and Chi-squared tests.
+
+The procedure consists of simulating a number of detection/non-detection data sets
+from the posterior distribution and comparing the number of simulated detections, with
+the number of detections actually observed in the data (see Doser et al. 2022 and references
+therein). Each visit results in either
+detection or non-detection, so what we really compare is the number of detections
+in each site (i.e., we aggregate detections by site).
+
+To make the comparison we first calculate a Chi-squared statistic for the data, for each
+Monte Carlo Markov Chain (MCMC) iteration $i$
+
+$$\chi_{obs}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{Observed}_y - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}$$
+where $\textrm{Observed}_y$ is the number of detections observed at site $y$ and 
+$\textrm{Expected}_y^{(i)}$ is the expected number of detections estimated for site
+$y$ during MCMC iteration $i$.
+
+We do the same thing with the simulated data sets. For the data set simulated from 
+MCMC iteration $i$ we compute
+
+$$\chi_{sim}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{sim}_y^{(i)} - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}$$
+A Bayesian p-value is computed as the proportion of $\chi_{sim}^{2} > \chi_{obs}^{2}$.
+
+
+## Shiny apps
+
+We have developed a Shiny app that allows us to extract diagnostics for any species
+and year and explore them in an interactive way. The app is still experimental and
+can be found at `analysis/tools/diagnose_dst`

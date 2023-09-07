@@ -1,0 +1,46 @@
+---
+title: "BIRDIE-ABU: Model summary"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE-ABU: Model summary}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+The species abundance module (ABU) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species abundance* vignettes for general details
+about BIRDIE and about the ABU module, respectively. In this vignette, we will go through
+the different tasks that are performed during the first step of the ABU module: **model summary**.
+
+The main function used for summarising a model fit is `ppl_summarise_ssm()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work.
+
+Model predictions for latent population states (abundance and rates of change) are prepared by JAGS during
+model fitting. Therefore, the only task that needs to be performed here is preparing
+these predictions as a dataframe and get them ready for plotting. As side products
+we will produce `.png` images for each species and site that will help in model
+assessment.
+
+The function that performs these tasks is `plotJagsSsm2ss()`, which is found in
+`R/utils-jags.R`. For more details on how this function works see `?plotJagsSsm2ss`.
+The output of this function give us a dataframe with predictions on the estimated abundance and rate
+of change of the summer and winter populations for each species. Each dataframe
+contains all the suitable sites (see *BIRDIE ABU: data preparation*) the species was counted at.
+We are currently predicting abundance in the linear scale (the scale of the data),
+but there is also the option to produce these estimates in the log scale. This is a
+better option to assess model fit.

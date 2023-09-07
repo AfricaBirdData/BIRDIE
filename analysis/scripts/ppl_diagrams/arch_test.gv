@@ -1,0 +1,32 @@
+
+
+digraph {
+  compound=true
+  graph [fontname="Arial", rankdir=LR, ranksep=1.0, nodesep=1.0]
+  node [fontname="Arial", shape=box, margin="0.4,0.3"]
+  edge [fontname="Arial"]
+  label=<<br /><font point-size="34">Software System - Containers</font>>
+
+  1 [id=1,
+  shape=rect,
+  label=<<font point-size="34">BIRDIE User</font><br/>
+    <font point-size="19">[Person]</font><br/><br/>
+    <font point-size="19">BIRDIE user interested in wetlands and waterbirds</font>>,
+  style=filled, color="#052e56", fillcolor="#08427b", fontcolor="#ffffff"]
+
+  subgraph cluster_2 {
+    margin=25
+    label=<<font point-size="24"><br />Software System</font><br /><font point-size="19">[Software System]</font>>
+    labelloc=b
+    color="#444444"
+    fontcolor="#444444"
+    fillcolor="#444444"
+
+    3 [id=3,shape=rect, label=<<font point-size="34">Web Application</font><br /><font point-size="19">[Container]</font>>, style=filled, color="#2e6295", fillcolor="#438dd5", fontcolor="#ffffff"]
+    6 [id=6,shape=rect, label=<<font point-size="34">Database</font><br /><font point-size="19">[Container]</font>>, style=filled, color="#2e6295", fillcolor="#438dd5", fontcolor="#ffffff"]
+  }
+
+  1 -> 3 [id=4, label=<<font point-size="24">Uses</font>>, style="dashed", color="#707070", fontcolor="#707070"]
+  3 -> 6 [id=7, label=<<font point-size="24">Reads from and writes to</font>>, style="dashed", color="#707070", fontcolor="#707070"]
+}
+

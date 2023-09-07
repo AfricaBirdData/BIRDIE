@@ -1,0 +1,85 @@
+
+
+digraph {
+  compound=true
+  graph [fontname="Arial", rankdir=TB, splines = ortho, ranksep=1.0,
+  nodesep=1.0, center=true]
+  node [fontname="Arial", shape=box, margin="0.4,0.3", width=3, height=2.5]
+  edge [fontname="Arial"]
+
+  user [
+      shape=oval,
+      margin="0.1,0.05",
+      label=<<font point-size="34">BIRDIE user</font><br/>
+      <font point-size="19">[Person]</font><br/><br/>
+      <font point-size="19">Person interested in</font><br/>
+      <font point-size="19">wetlands and waterbirds</font>>,
+      style=filled, fillcolor="#083F75", color="#00000", fontcolor="#ffffff"
+      ]
+
+  b1 [
+      shape=rect,
+      label=<<font point-size="34">BIRDIE server A</font><br/>
+      <font point-size="19">[Software system RBINS]</font><br/><br/>
+      <font point-size="19">Hosts datamart</font>>,
+      style=filled, fillcolor="#0D5091", color="#00000", fontcolor="#ffffff"
+      ]
+
+  b2 [
+      shape=rect,
+      label=<<font point-size="34">BIRDIE server B</font><br/>
+      <font point-size="19">[Software system UCT]</font><br/><br/>
+      <font point-size="19">Runs models and</font><br/>
+      <font point-size="19">stores modelling output</font>>,
+      style=filled, fillcolor="#0D5091", color="#00000", fontcolor="#ffffff"
+      ]
+
+  b3 [
+      shape=cylinder,
+      label=<<font point-size="30">Africa Bird Data</font><br/>
+      <font point-size="30">server</font><br/>
+      <font point-size="19">[Software system UCT]</font><br/><br/>
+      <font point-size="19">Hosts ABAP and CWAC</font><br/>
+      <font point-size="19">database</font>>,
+      style=filled, fillcolor="#0D5091", color="#00000" fontcolor="#ffffff"
+      ]
+
+  gee [
+      shape=cylinder,
+      label=<<font point-size="30">Google Earth</font><br/>
+      <font point-size="30">Engine server</font><br/>
+      <font point-size="19">[Software system Google]</font><br/><br/>
+      <font point-size="19">Hosts environmental data</font>>,
+      style=filled, fillcolor="#8C8496", color="#00000", fontcolor="#00000"
+      ]
+
+  b1 -> user [
+      label=<<font point-size="24">Serves information about<br/>conservation indicators</font>>,
+      style="dashed", color="#707070", fontcolor="#707070"
+      ]
+
+  b2 -> b1 [
+      dir = to,
+      label=<<font point-size="24">Sends pipeline outputs</font>>,
+      style="dashed", color="#707070", fontcolor="#707070"
+      ]
+
+  b3 -> b2 [
+      dir = to,
+      xlabel=<<font point-size="24">Where is this</font>>,
+      style="dashed", color="#707070", fontcolor="#707070"
+      ]
+
+  gee -> b2 [
+      dir = to,
+      xlabel=<<font point-size="24">Where is this</font>>,
+      style="dashed", color="#707070", fontcolor="#707070"
+      ]
+
+  ## Edge labels
+  #lab1
+
+  {rank = sink; user}
+  {rank = same; b3 gee}
+
+}

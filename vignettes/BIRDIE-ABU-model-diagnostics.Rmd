@@ -1,0 +1,74 @@
+---
+title: "BIRDIE ABU: Model diagnostics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BIRDIE ABU: Model diagnostics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(BIRDIE)
+```
+
+## Introduction
+
+The species abundance module (ABU) of the BIRDIE pipeline has four main steps:
+data preparation, model fitting, model diagnostics and model summary. See the 
+*BIRDIE: basics* and *BIRDIE: species abundance* vignettes for general details
+about BIRDIE and about the DST module, respectively. In this vignette, we will go through
+the different tasks that are performed during the step of the DST module: **model diagnostics**.
+
+The main function used for model diagnosis is `ppl_diagnose_ssm()`. This is a
+`ppl_` function, and therefore it doesn't do much processing itself (see *BIRDIE: basics* if
+this is confusing), but it does call the right functions to do the work.
+
+During the diagnostics step we look at two indicators: the Gelman-Rubin convergence
+diagnostic ($\hat{R}$) and a goodness-of-fit Bayesian p-value. The first diagnostic is
+computed by the function `diagnoseRhatJagsSsm()` and the second one by the function
+`diagnoseGofJagsSsm()` (both functions are found in `R/utils-jags.R`).
+
+`ppl_diagnose_ssm()` combines the output of these two functions into a single table
+that is stored in `analysis/output/sp_code/abu_diagnostics_spOccupancy_YYYY_sp_code.csv`,
+where `YYYY` is the year of the data we are fitting a model to and `sp_code` is the
+species code. In this way, it is easy to extract all diagnostic files from the different
+directories, combine them into a table and quickly explore potential issues.
+
+## Diagnosing convergence
+
+The function `diagnoseRhatJagsSsm()` extracts $\hat{R}$ values computed by `JAGS`
+for each of the estimated parameters and tabulates them. In this table, each parameter
+appears in one column and gets a 0 if $|1 - \hat{R}| < 0.1$ and a 1 otherwise. Some
+extra columns are added, such as number of non-convergent parameters, number of detections
+observed, number of observations, etc.
+
+## Diagnosing goodness-of-fit
+
+The function `diagnoseGofJagsSsm()` conducts posterior predictive checks (PPC) and calculates
+a Bayesian p-value.
+
+The procedure consists of simulating a number of count data sets
+from the posterior distribution and comparing them with
+the observed data. 
+
+We calculate the mean and standard deviation for each of the simulated data sets. Then,
+we calculate the number of data sets that are below and above the mean observed in the
+data ("Tmean"). If we obtain proportions close to 0.5 it means that our predictions are unbiased.
+We follow a similar procedure with the standard deviations ("Tsd") to see if our predictions
+have a similar dispersion as that observed in the data. Finally, for each simulation we
+calculate the mean difference observed with the data ("Tdiff"), which should give us an idea of the
+magnitude of the bias, should it exist.
+
+
+## Shiny apps
+
+We have developed a Shiny app that allows us to extract diagnostics for any species
+and year and explore them in an interactive way. The app is still experimental and
+can be found at `analysis/tools/diagnose_dabu`

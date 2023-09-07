@@ -1,0 +1,101 @@
+
+Very good documentation on how to use the HPC at https://ucthpc.uct.ac.za/
+READ THE DOCUMENTAION BEFORE USING THE CLUSTER!
+
+Manager: Andrew Lewis (andrew.lewis@uct.ac.za)
+
+## LOG INTO HPC
+
+ssh crvfra001@hpc.uct.ac.za
+
+
+## Start interactive job
+sintx
+
+## Install packages (after starting interactive job)
+module load software/R-4.2.0
+R
+install.packages("xyz")
+q() # to quit R
+
+# Install packages from GitHub
+install.packages("devtools")
+install.packages(c("fs", "cli", "ellipsis", "dplyr")) # I also had to install these and other packages although it is not in the instructions
+
+# To install BIRDIE we need to load certain libraries first in addition to R:
+module load software/R-4.2.0 software/geos-3.10.2 software/gdal-2.4.2 software/jags-4.3.0
+
+library(devtools)
+withr::with_libpaths(new="/home/myusername/R/x86_64-pc-linux-gnu-library/4.2", remotes::install_github('AUTHOR/PACKAGE') )
+
+withr::with_libpaths(new="/home/crvfra001/R/x86_64-pc-linux-gnu-library/4.2", remotes::install_github('AfricaBirdData/BIRDIE', auth_token = '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') )
+
+
+
+## CONFIGURE DIRECTORIES
+
+We need to create the following directories:
+/home/myusername/birdie/data
+/home/myusername/birdie/scripts
+/home/myusername/birdie/jobs
+
+The above directories should be syncronized with the directories of the same name in 'BIRDIE/analysis/hpc'.
+
+To do this we have created a script that does this automatically, but it needs to be uploaded manually to the HPC once. Once we have logged into the HPC we can do something like:
+scp myname@myIP:/path/to/file path/to/transferred/file
+
+It is recommended to transfer all files in 'analysis/hpc/jobs' first and then work with them.
+
+Once we have all our HPC jobs uploaded we can run:
+sbatch upload-job.sh
+
+The /home drive at the HPC has long-term storage, but it's capacity is limited. To store large outputs that should be exported quickly, we should use the /scratch drive instead, which has more capacity:
+/scratch/myusername/birdie/output
+/scratch/myusername/birdie/output/reports # this one is necessary because the pipeline needs to store the reports somewhere
+
+
+There is a job that uploads all files in 'analysis/hpc/data', 'analysis/hpc/jobs', and 'analysis/hpc/scripts'. For this to work we need to configure a public/private key pair. Otherwise, everytime we try to transfer files the script will need a password and will fail.
+See https://wiki.centos.org/HowTos/Network/SecuringSSH#Use_Public.2FPrivate_Keys_for_Authentication
+
+
+## SUBMIT JOBS TO THE CLUSTER
+
+You can submit a job by typing: sbatch myscript.sh
+
+NB: Do not run: bash myscript.sh  as this just runs the script on the head node. The command to launch the job is sbatch.
+
+
+## FITTING OCCUPANCY MODELS
+
+Note that the HPC scripts should not have to prepare site and visit occupancy data, it only runs models. Therefore, the site and visit data needs to be provided, and should be stored at '/scratch/myusername/birdie/output' for it to be available to BIRDIE functions.
+
+# Export all .rds files
+scp -r user@host:/path/to/files/"*.rds" /your/local/path
+
+
+## SYNC BIRDIE SERVER WITH HPC
+
+To transfer model outputs from the HPC to the BIRDIE server we need to log into the
+BIRDIE server and run the following code (the HPC cluster account might have to be
+changed depending on who is using it):
+
+- it is recommended to make "dry run", just check that we are giving the correct command (note the "n" flag)
+rsync -anv crvfra001@hpc.uct.ac.za:/scratch/crvfra001/birdie/output/ /drv_birdie/birdie_ftp/
+
+We can then run the real thing (the P flag adds progress info):
+rsync -aP crvfra001@hpc.uct.ac.za:/scratch/crvfra001/birdie/output/ /drv_birdie/birdie_ftp/
+
+It is recommended that this is done from a linux "screen" to allow it to run in the background
+because it might take some time.
+
+
+## DELETING OLD FITS FROM HPC
+
+Model fits can take up considerable space on the HPC drive. Since we only need
+the most recent model fit to extract priors, we can delete older fits. We have
+prepared a script to do this. See `jobs/delete_old_fits-job.sh`.
+
+
+## RESET GIT AND PULL
+sudo git reset --hard HEAD
+sudo git pull https://github.com/AfricaBirdData/BIRDIE.git
