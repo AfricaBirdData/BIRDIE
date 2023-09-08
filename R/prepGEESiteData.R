@@ -113,6 +113,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
     # Sites with no wetland condition are set to 0
     sitedata$wetcon_2018[is.na(sitedata$wetcon_2018)] <- 0
 
+
     # Annotate with yearly surface water occurrence --------------------------------
 
     message("Annotating ABAP site data with JRC surface water")
@@ -208,18 +209,84 @@ prepGEESiteData <- function(config, pentads, asset_id,
     ee_collection <- rgee::ee$ImageCollection("WorldPop/GP/100m/pop")
     ee_collection <- ee_collection$filterMetadata('country','equals','ZAF')
 
-    # Find mean human density for each pixel and year
     band <- "population"
-    stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
-                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                         band = band,
-                                                         group_type = "year",
-                                                         groups = config$years,
-                                                         reducer = "mean",
-                                                         unmask = FALSE)
 
-    # Find mean (mean) human density for each pentad and year
-    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+    if(any(config$years > 2020)){
+
+        message("Using 2020 population density for years after 2020")
+
+        years_after <- config$years[config$years > 2020]
+        years_before <- config$years[!config$years > 2020]
+
+        # Add year 2020 to retrieve info from the last year available
+        if(length(years_before) == 0){
+            years_before <- 2020
+        }
+
+        if(length(years_before) == 1){
+
+            dates <- paste0(range(years_before) + c(0,1), "-01-01")
+
+            ee_layer <- ee_collection$
+                select(band)$
+                filterDate(dates[1], dates[2])$
+                first()
+
+            out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                           image = ee_layer,
+                                           reducer = "mean",
+                                           bands = band,
+                                           monitor = monitor)
+
+            # Rename because variables are named after reducer when annotated with
+            # images and not with year, like when annotated with collections
+            var_name <- paste0(band, "_", years_before)
+
+            out <- out %>%
+                dplyr::rename(!!var_name := population_mean)
+
+        } else {
+
+            yr_range <- c(min(years_before), max(years_before))
+
+            # Find mean human density for each pixel and year
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                                 dates = paste0(yr_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = years_before,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
+
+            # Find mean (mean) human density for each pentad and year
+            out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+        }
+
+        # Create columns for years > 2020
+        for(y in seq_along(years_after)){
+
+            var_name <- paste0(band, "_", years_after[y])
+
+            out <- out %>%
+                dplyr::mutate(!!var_name := population_2020)
+        }
+
+    } else {
+
+        # Find mean human density for each pixel and year
+        stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                             band = band,
+                                                             group_type = "year",
+                                                             groups = config$years,
+                                                             reducer = "mean",
+                                                             unmask = FALSE)
+
+        # Find mean (mean) human density for each pentad and year
+        out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+    }
 
     # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%

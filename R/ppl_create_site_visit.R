@@ -75,7 +75,7 @@ ppl_create_site_visit <- function(config,
 
             geesitedata <- prepGEESiteData(config = config,
                                            pentads = pentads_sa,
-                                           asset_id = "birdie_pentads_sa",
+                                           asset_id = "birdie_pentads_sa",  # HARD CODED
                                            upload_asset = TRUE,
                                            monitor = monitor_gee)
 
