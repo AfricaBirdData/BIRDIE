@@ -156,6 +156,8 @@ prepGEEVisitData <- function(config, visits, asset_id,
         # for those visits that occur later on
         if(year_sel > 2020){
 
+            message("Using 2020 population density for years after 2020")
+
             # make sure dates match 2020 images. There is only one image for each year,
             # so we set Date to be the beginning of the year 2020
             visit <- visit %>%
