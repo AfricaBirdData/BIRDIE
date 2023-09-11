@@ -172,16 +172,19 @@ prepGEEVisitData <- function(config, visits, asset_id,
                 dplyr::left_join(gm, by = "Pentad") %>%
                 sf::st_sf()
 
+            # Upload asset
+            if(upload_asset){
+                visit_2020 %>%
+                    dplyr::select(year, CardNo, Date, Pentad, ObserverNo) %>%
+                    dplyr::distinct(Date, Pentad) %>%
+                    ABDtools::uploadFeaturesToEE(asset_id = eeid,
+                                                 load = FALSE,
+                                                 monitor = monitor)
+            } else {
+                warning("Cannot annotate visits with data newer than 2020. Setting upload asset = TRUE would help, but read documentation first.")
+            }
 
-        }
 
-        if(upload_asset){
-            visit_2020 %>%
-                dplyr::select(year, CardNo, Date, Pentad, ObserverNo) %>%
-                dplyr::distinct(Date, Pentad) %>%
-                ABDtools::uploadFeaturesToEE(asset_id = eeid,
-                                             load = FALSE,
-                                             monitor = monitor)
         }
 
         # Load pentads from GEE
