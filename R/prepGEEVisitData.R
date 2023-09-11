@@ -43,6 +43,10 @@ prepGEEVisitData <- function(config, visits, asset_id,
         visit <- visits %>%
             dplyr::filter(year == year_sel)
 
+        # Save geometry for later
+        gm <- visit %>%
+            dplyr::distinct(Pentad)
+
         # Set a name for the asset
         eeid <- file.path(rgee::ee_get_assethome(), asset_id)
 
@@ -160,15 +164,21 @@ prepGEEVisitData <- function(config, visits, asset_id,
 
             # make sure dates match 2020 images. There is only one image for each year,
             # so we set Date to be the beginning of the year 2020
-            visit <- visit %>%
+            visit_2020 <- visit %>%
                 dplyr::mutate(Date = "2020-02-01")
+
+            # Add geometry
+            visit_2020 <- visit_2020 %>%
+                dplyr::left_join(gm, by = "Pentad") %>%
+                sf::st_sf()
+
 
         }
 
         if(upload_asset){
-            visit %>%
-                dplyr::select(-c(StartDate, TotalHours)) %>%
-                dplyr::distinct(Date, Pentad, .keep_all = TRUE) %>%
+            visit_2020 %>%
+                dplyr::select(year, CardNo, Date, Pentad, ObserverNo) %>%
+                dplyr::distinct(Date, Pentad) %>%
                 ABDtools::uploadFeaturesToEE(asset_id = eeid,
                                              load = FALSE,
                                              monitor = monitor)
@@ -192,10 +202,9 @@ prepGEEVisitData <- function(config, visits, asset_id,
             sf::st_drop_geometry() %>%
             dplyr::left_join(visit_pop %>%
                                  sf::st_drop_geometry() %>%
-                                 dplyr::select(Pentad, Date, population_mean) %>%
-                                 dplyr::mutate(Date = as.character(Date)) %>%
+                                 dplyr::select(CardNo, population_mean) %>%
                                  dplyr::rename(hum.km2 = population_mean),
-                             by = c("Pentad", "Date"))
+                             by = c("CardNo"))
 
         rm(visit_pop)
 
