@@ -27,3 +27,11 @@ by \code{rgee} will displayed. If FALSE, only high-level messages will be displa
 \description{
 Prepare Google Earth Engine site data
 }
+\details{
+Note that some GEE layers don't have information past a certain date. At the time
+of writing surface water layers only have information up until 2021 and human
+population density up until 2020. We have set up the code in such a way that
+data past the last date of the layer get annotated with the latest available
+information. Take this into consideration for the analyses. Code should be updated
+as more information becomes available.
+}

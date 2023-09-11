@@ -14,6 +14,13 @@
 #' and `visits` will not be uploaded.
 #' @param monitor Logical. If TRUE (default) monitoring printed messages produced
 #' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
+#' @details
+#' Note that some GEE layers don't have information past a certain date. At the time
+#' of writing surface water layers only have information up until 2021 and human
+#' population density up until 2020. We have set up the code in such a way that
+#' visits past the last date of the layer get annotated with the latest available
+#' information. Take this into consideration for the analyses. Code should be updated
+#' as more information becomes available.
 #'
 #' @return
 #' @export
@@ -144,6 +151,29 @@ prepGEEVisitData <- function(config, visits, asset_id,
         # Annotate data with human population -------------------------------------
 
         message("Annotating ABAP visit data with WorldPop")
+
+        # Upload to EE with new dates if necessary. We will use data from 2020
+        # for those visits that occur later on
+        if(year_sel > 2020){
+
+            # make sure dates match 2020 images. There is only one image for each year,
+            # so we set Date to be the beginning of the year 2020
+            visit <- visit %>%
+                dplyr::mutate(Date = "2020-02-01")
+
+        }
+
+        if(upload_asset){
+            visit %>%
+                dplyr::select(-c(StartDate, TotalHours)) %>%
+                dplyr::distinct(Date, Pentad, .keep_all = TRUE) %>%
+                ABDtools::uploadFeaturesToEE(asset_id = eeid,
+                                             load = FALSE,
+                                             monitor = monitor)
+        }
+
+        # Load pentads from GEE
+        ee_visit <- rgee::ee$FeatureCollection(eeid)
 
         # We need to subset the image collection to South Africa
         ee_collection <- rgee::ee$ImageCollection("WorldPop/GP/100m/pop")
