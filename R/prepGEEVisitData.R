@@ -45,7 +45,7 @@ prepGEEVisitData <- function(config, visits, asset_id,
 
         # Save geometry for later
         gm <- visit %>%
-            dplyr::distinct(Pentad)
+            dplyr::distinct(Pentad, geometry)
 
         # Set a name for the asset
         eeid <- file.path(rgee::ee_get_assethome(), asset_id)
