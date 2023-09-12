@@ -3,6 +3,7 @@
 export("%>%")
 export(addDuToitCounts)
 export(addExtraSitesToSummary)
+export(addSiteVarEETimeLimit)
 export(addSpOccDetCovt)
 export(combineAbuDiags)
 export(combineOccuDiags)

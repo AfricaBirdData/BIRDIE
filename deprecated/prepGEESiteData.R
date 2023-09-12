@@ -126,15 +126,108 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     # Number of pixels with water each year
     band <- "waterClass"
-    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "JRC/GSW1_4/YearlyHistory",
-                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                         band = band,
-                                                         group_type = "year",
-                                                         groups = config$years,
-                                                         reducer = "mean",
-                                                         unmask = FALSE)
 
-    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
+    # Last year in the GEE collection
+    last_year <- 2021
+    ee_collection <- rgee::ee$ImageCollection("JRC/GSW1_4/YearlyHistory")
+
+    if(any(config$years > last_year)){
+
+        message(paste("Using", last_year, "for", band, "for years after", last_year))
+
+        years_after <- config$years[config$years > last_year]
+        years_before <- config$years[!config$years > last_year]
+
+        # Add year "last year" to retrieve info from the last year available
+        if(length(years_before) == 0){
+            years_before <- last_year
+        }
+
+        if(length(years_before) == 1){
+
+            dates <- paste0(range(years_before) + c(0,1), "-01-01")
+
+            ee_layer <- ee_collection$
+                select(band)$
+                filterDate(dates[1], dates[2])$
+                first()
+
+
+            # Annotate with water extension (count of pixels)
+            out_count <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                                 image = ee_layer,
+                                                 reducer = "count",
+                                                 bands = band,
+                                                 monitor = monitor,
+                                                 unmask = FALSE)
+
+            # Annotate with water recurrence (mean water class)
+            out_mean <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
+                                                image = ee_layer,
+                                                reducer = "mean",
+                                                bands = band,
+                                                monitor = monitor,
+                                                unmask = FALSE)
+
+            # Rename because variables are named after reducer when annotated with
+            # images and not with year, like when annotated with collections
+            var_name <- paste0(band, "_", years_before)
+
+            out_count <- out_count %>%
+                dplyr::rename(!!var_name := paste0(band, "_count"))
+
+            out_mean <- out_mean %>%
+                dplyr::rename(!!var_name := paste0(band, "_mean"))
+
+        } else {
+
+            yr_range <- c(min(years_before), max(years_before))
+
+            # Find mean for each pixel and year
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                                 dates = paste0(yr_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = years_before,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
+
+            # Find count for each pentad and year
+            out_count <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
+
+            # Mean recurrence of pixels with water each year
+            out_mean <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+        }
+
+        # Create columns for years > last_year
+        for(y in seq_along(years_after)){
+
+            var_name <- paste0(band, "_", years_after[y])
+
+            out_count <- out_count %>%
+                dplyr::mutate(!!var_name := paste0(band, "_", last_year))
+
+            out_mean <- out_mean %>%
+                dplyr::mutate(!!var_name := paste0(band, "_", last_year))
+        }
+
+    } else {
+
+        # Find mean human density for each pixel and year
+        stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                             band = band,
+                                                             group_type = "year",
+                                                             groups = config$years,
+                                                             reducer = "mean",
+                                                             unmask = FALSE)
+
+        # Find count for each pentad and year
+        out_count <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
+        out_mean <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+    }
 
     # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
