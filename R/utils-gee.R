@@ -533,7 +533,7 @@ prepGEEVisitData <- function(config, visits, asset_id,
             if(upload_asset){
                 visit_2020 %>%
                     dplyr::select(year, CardNo, Date, Pentad, ObserverNo) %>%
-                    dplyr::distinct(Date, Pentad) %>%
+                    dplyr::distinct(Date, Pentad, .keep_all = TRUE) %>%
                     ABDtools::uploadFeaturesToEE(asset_id = eeid,
                                                  load = FALSE,
                                                  monitor = monitor)
