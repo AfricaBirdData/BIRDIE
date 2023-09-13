@@ -4,7 +4,10 @@ rm(list = ls())
 
 # Set the parent directory where all model fits can be found.
 # The parent directory needs to host all of the species directories
-files_dir <- "analysis/out_nosync"
+files_dir <- "/drv_birdie/birdie_ftp"
+
+# Set the directory where the file with the model fit names is stored
+out_dir <- "/home/birdie/analysis"
 
 # Extract file names without full path to handle more easily
 ff <- list.files(path = files_dir,
@@ -31,14 +34,14 @@ keep <- ff_df %>%
     pull(file_full)
 
 
-# Now we need the full paths of the files
+# If we needed the full paths of the files (we tipically don't for transfers)
 ff_full <- list.files(path = files_dir,
                       pattern = "^occu_fit",
                       full.names = TRUE,
                       recursive = TRUE)
 
 
-# Select files to keep
-ff_keep <- ff_full[ff %in% keep]
+# Select files to keep (change to ff_full if needed)
+ff_keep <- ff[ff %in% keep]
 
-writeLines(ff_keep, con = "analysis/out_nosync/files_to_keep.txt")
+writeLines(ff_keep, con = file.path(out_dir, "files_to_keep.txt"))
