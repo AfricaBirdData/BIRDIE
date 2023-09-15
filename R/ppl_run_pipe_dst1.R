@@ -230,7 +230,7 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
             # Save predictions data frame
             summfile <- setSpOutFilePath("occu_pred", config, year, sp_code, ".csv")
             pred_from_data[["df"]] %>%
-                write.csv(file.path(config$out_dir, sp_code, summfile),
+                write.csv(summfile,
                           row.names = FALSE)
 
             # Save plot
