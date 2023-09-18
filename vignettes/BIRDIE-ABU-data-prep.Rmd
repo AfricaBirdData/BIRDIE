@@ -80,8 +80,8 @@ of July.
 
 ## Annotate with environmental covariates
 
-We may use environmental covariates to model abundance, which
-requires count data to be annotated with this information. To 
+Although we are not currently using covariates in our modelling, we may use environmental
+covariates to model abundance, which requires count data to be annotated with this information. To 
 facilitate the automation of this process and periodic updates when new data becomes
 available, we use the data sets and functionality offered by Google Earth Engine (GEE).
 
@@ -112,6 +112,12 @@ on the same year. This is because summer occur in January and therefore the aver
 conditions on the previous year are likely to affect summer populations more directly
 than those on the same year, which have still not presented themselves at the time of
 counting.
+
+Another important thing to keep in mind is that some environmental layers used don't have
+information past a certain date. We have set up the functions in such a way that data past
+the last date of the layer get annotated with the latest available information (last date of the layer).
+Whenever the pipeline is run it is advised to review the environmental layer used and 
+the last date information is available for, and update the functions if necessary.
 
 ## Format data for state-space modelling
 
