@@ -114,7 +114,8 @@ and [`ABDtools`](https://github.com/AfricaBirdData/ABDtools).
 Once these two packages are installed and configured, we can use their functionality in the pipeline.
 There are two functions in BIRDIE that are used to annotate ABAP data: `prepGEESiteData()` and `prepGEEVisitData()`,
 which are used to annotate site and visit data, respectively.
-See `?prepGEESiteData()` and `?prepGEEVisitData()` for details.
+See `?prepGEESiteData()` and `?prepGEEVisitData()` for details. All GEE related functions
+have been packaged in the file `R/utils-gee.R`
 
 Annotating with different variables using GEE require different procedures. Therefore,
 there is no way to flexibly communicate to these functions which variables we want to
@@ -126,6 +127,12 @@ the covariates we want to use in the models to the `configPipeline()` function i
 control script (see *BIRDIE-spp-distributions*). These
 covariates must be among those provided by `prepGEESiteData()` and `prepGEEVisitData()`
 and have the same names.
+
+Another important thing to keep in mind is that some environmental layers used don't have
+information past a certain date. We have set up the functions in such a way that data past
+the last date of the layer get annotated with the latest available information (last date of the layer).
+Whenever the pipeline is run it is advised to review the environmental layer used and 
+the last date information is available for, and update the functions if necessary.
 
 This now brings us to the next part of the data preparation, which is the formatting
 of site, visit and detection data.
