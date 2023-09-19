@@ -15,6 +15,9 @@ analysis/data/*
 # Ignore compiled models
 analysis/models/*.rds
 
+# Ignored compiled htmls
+analysis/scripts/*.html
+
 # Ignore output and auxiliary files in the communications folder
 comms/output/*
 comms/**/*.nav

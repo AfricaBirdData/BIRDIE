@@ -1,0 +1,343 @@
+---
+title: "Server/High Performance Cluster procedures"
+author: "Pachi Cervantes"
+date: "2023-09-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+## Introduction
+
+In this document we describe some of the basic procedures that are necessary to
+run the BIRDIE pipeline in the remote server dedicated to the project
+(called 'BIRDIE server' from now on). The same
+procedures apply to running the pipeline in High Performance Clusters (HPC), with some
+caveats. We make notes of these caveats in the different sections as necessary.
+
+## Sync local files and repositories
+
+There are at least two possible ways of sync our local files and the files in the
+remote servers:
+
+### Pull from GitHub
+
+The simplest way, if our local copy is synchronised with the GitHub repository is
+to pull the repo into the server. The BIRDIE server has a copy of the BIRDIE, ABAP,
+CWAC and ABDtools at `/drv_birdie/Working/git`. Note that we do not keep remote copies
+of the GitHub repositories in the HPCs.
+
+To pull the latest copy of the BIRDIE repo from GitHub we can do:
+
+```{bash}
+cd /drv_birdie/Working/git
+sudo git pull https://github.com/AfricaBirdData/BIRDIE.git
+```
+
+Then, we will be requested our credentials. The other repos can be pulled similarly
+by changing the name (i.e., ABAP.git, CWAC.git, etc).
+
+Note that sometimes, we might have modified some of the scripts in the dedicated
+server. This often happens when we modify parameters to run the pipeline, and in
+this case the pull request will fail. If we are willing to lose the changes done to
+the scripts we can do:
+
+```{bash}
+sudo git reset --hard HEAD
+```
+
+This command will reset the repo to the last version that was synchronised with
+GitHub and this will allow the new pull request.
+
+### Transfer local files
+
+Some times we just want to transfer certain files from our local machine (or between
+remote servers), but not synchronise the whole repo. We can do this in at least
+two ways.
+
+```{bash}
+scp myname@myIP:/path/to/file path/to/transferred/file
+```
+
+This is the simplest way to transfer a file and it should be run from the receiving
+system. If we were to run it from the sending system then we would need to change
+the order of the transfer arguments as such
+
+
+```{bash}
+scp path/to/transferred/file myname@myIP:/path/to/file
+```
+
+For example to transfer from our local machine to the BIRDIE server we would run
+
+```{bash}
+scp path/to/transferred/file birdie@137.158.76.140:/path/to/file
+```
+
+To transfer a whole directory we pass on the `-r` option:
+
+
+```{bash}
+scp -r path/to/transferred/directory birdie@137.158.76.140:/path/to/directory
+```
+
+Other IPs are `my_hpc_user@hpc.uct.ac.za` for the UCT HPC and `my_hpc_user@scp.chpc.ac.za`
+for the NICIS CHPC.
+
+A more efficient option to sync directories when we want to move many files or only
+files that have been modified is to use `rsync`:
+
+```{bash}
+rsync -a path/to/transferred/directory birdie@137.158.76.140:/path/to/directory
+```
+
+This command will synchronise all files in `path/to/transferred/directory` that have
+been modified with respect to what is found at `birdie@137.158.76.140:/path/to/directory`.
+
+An interesting feature of the `rsync` command is that it allows us to transfer/sync only
+the files that we are interested in, by passing them as a `.txt` file.
+
+```{bash}
+rsync -ahR --files-from=/path/to/files/document.txt path/to/transferred/directory birdie@137.158.76.140:/path/to/directory
+```
+
+This command requires that the `document.txt` file has in each line the path to one
+file, relative to `path/to/transferred/directory`. This means that the file names
+must not contain reference to `path/to/transferred/directory`, but they must make
+reference to any directories from there on. So to transfer the files 
+`path/to/transferred/directory/dir1/file1.ext` and `path/to/transferred/directory/dir1/file2.ext`,
+the file `document.txt` would have the lines:
+
+```{bash}
+/dir1/file1.ext
+/dir1/file2.ext
+```
+
+There are many ways we can create the list of files we want to sync. There is a
+script in `analysis/scripts/misc/create_directory_paths` that can help us do this
+from R.
+
+`rsync` has multiple other options that will not be covered here.
+
+## Update installed R packages
+
+In the servers there are no graphical user interfaces (GUI), so no RStudio or anything
+like that. Therefore, we must update R packages directly from R.
+
+```{bash}
+R
+update.packages(ask = FALSE)
+```
+
+This will update all installed packages. To update the packages from our
+GitHub repos we can run (once in R)
+
+```{r}
+remotes::install_github('AfricaBirdData/BIRDIE',
+                        auth_token = mygithubtoken,
+                        dependencies = FALSE) 
+```
+
+Where `mygithubtoken` is the token provided to you by GitHub. Once repos become
+public, there is no need to provide a token. For example, ABAP is already public
+and so we can run
+
+
+```{r}
+remotes::install_github('AfricaBirdData/ABAP',
+                        dependencies = FALSE) 
+```
+
+An important note is that in the HPCs we don't usually have access to the default
+directory where the R package library. Instead we typically use a personal library
+that is located on our home directory. To make things easier to update we should
+run something like:
+
+```{r}
+withr::with_libpaths(new="/home/myuser/R/x86_64-pc-linux-gnu-library/4.2",
+                     remotes::install_github('AfricaBirdData/BIRDIE',
+                                             auth_token = 'mytoken',
+                                             dependencies = FALSE) )
+```
+
+Here we assume that our account in the cluster is called my user and that we want
+are using R version 4.2. The name of the library directory is the default at the
+moment, but might have to be modified.
+
+## Modify scripts in remote
+
+Sometimes we need to modify certain parameters in the scripts that we want to R
+in our remote servers. The easiest way to do this is by using the `nano` command.
+For example
+
+```{bash}
+sudo nano /drv_birdie/Working/git/BIRDIE/analysis/scripts/pipeline_script_dst.R
+```
+
+would open an editor to modify the script used to run the distribution module of 
+the pipeline. We typically need to add the `sudo` command to be able to save the
+file once it is modified.
+
+## Run scripts in remote
+
+Something that is important to understand is that if we naively run an R script
+from a remote server and close the connection, we automatically kill the R script.
+Therefore, we need to use detachable sessions that are provided by the `screen` command
+to be able to close the session and keep the script running.
+
+**IMPORTANT: we should not use screens in the HPCs!** HPCs have their own way of dealing with background
+jobs and typically don't allow the use of screens. Use these only when working on
+the BIRDIE dedicated server or other Ubuntu systems that allow it.
+
+### Use screens on the BIRDIE server
+
+In Ubuntu systems, we can use the `screen` command to open a session that can be
+detached from the main session and so it can run in the background.
+
+To open a new screen session run
+
+```{bash}
+screen -S mynewscreen
+```
+
+A new session will open. We can go back to the main session with holding `Ctrl + a + d`.
+
+To return to the `mynewscreen` session we can type
+
+```{bash}
+screen -r mynewscreen
+```
+
+The option `-S` will open a new screen while the option `-r` will switch to an
+existing screen.
+
+To see what screens are active type
+
+```{bash}
+screen -ls
+```
+
+To close a screen, go to the corresponding screen and type
+
+```{bash}
+exit
+```
+
+There are many other commands that can be used with `screen` but we will not cover
+them here. Google is your friend.
+
+### A typical workflow
+
+To give an example, consider that we want to run the distribution module of the pipeline
+from the BIRDIE dedicated server.
+
+Once we have logged into the server we would open a new screen to work from:
+
+```{bash}
+screen -S dst
+```
+
+A new session will start. Then, we modify the script to do whatever we need
+
+
+```{bash}
+sudo nano /drv_birdie/Working/git/BIRDIE/analysis/scripts/pipeline_script_dst.R
+```
+
+Once modified, we save and start an R session
+
+```{bash}
+R
+```
+
+Once in R we run the script
+
+```{bash}
+source("/drv_birdie/Working/git/BIRDIE/analysis/scripts/pipeline_script_dst.R")
+```
+
+The script will start running and while we wait for it to finish, we can detach the
+screen by holding `Ctrl + a + d`, which brings us to the main session. From here we
+can keep working on something else or even close the session with `exit`. When we
+want to check on the progress of the R script we can go back to the detached session
+with 
+
+```{bash}
+screen -r dst
+```
+
+NOTE: We could also run the script directly from the shell with `Rscript`. So directly
+from the shell, without opening an R session, we can type
+
+```{bash}
+Rscript /drv_birdie/Working/git/BIRDIE/analysis/scripts/pipeline_script_dst.R
+```
+
+and the script would run. I prefer opening an R session because I find it easier to deal
+with errors and warnings, but it is a matter of choice.
+
+
+## Some specific use cases
+
+Something important to keep in mind is that it is not always possible to run all
+steps in the pipeline at once. For example, computing nodes in the HCPs usually
+don't have internet access, so it is not possible to annotate data with GEE or
+download data from ABAP/CWAC servers. Therefore, we need to run some modules in
+the BIRDIE server and then transfer the necessary data to the HPCs.
+
+In the next sections, we describe how to run some of the common tasks necessary
+to run the pipeline.
+
+### Annotate data with Google Earth Engine
+
+Connection to Google Earth Engine must be done from the BIRDIE server. The HPCs
+don't always have internet connection.
+
+Once the `rgee` package is installed and configured we should be able to run the
+functions `ppl_run_pipe_dst1` or `ppl_run_pipe_abu1` with the argument "data" in
+steps and data would get annotated with GEE environmental data. See `?prepGEESiteData`,
+`?prepGEEVisitData`, and `?prepGEECatchmData` for details on how to use these
+functions.
+
+An important thing to keep in mind is that the first time that we try to connect
+to GEE, Google Drive will ask for our credentials. The default way to enter the
+credentials is via a web browser, and since there is no graphical interface in the server,
+the process will fail. There are different ways around this (one would be to install an
+X server to be able to use a graphical interface), but the one I use is to log in
+Google Drive from a local machine with a web browser and then transfer the login
+data to the BIRDIE server.
+
+The login data is typically stored in "/home/.config/earthengine". Transfer this directory
+to the same location in the server. You might need to transfer to the FTP directory first
+because this is open to external connections, and then move the directory from FTP to 
+/home.
+
+### Run pipeline in parallel
+
+Some of the modules of the pipeline can use a considerable amount of RAM memory.
+Therefore it is recommended to always make tests to make sure we will not kill the
+session by running out of memory. HPCs have powerful machines and it is recommended
+to use them to run jobs in parallel.
+
+We have prepared a special script that is used to run pipeline modules in parallel
+`analysis/scripts/pipeline_script_dst_parall.R`. It is difficult to come up with a
+script that can be used in all cases, so it is usually necessary to modify a few
+things depending on where the script is ran. We have added some options that are
+used frequently and then commented them to leave up to the user whether they need
+to be run or not.
+
+### Prepare model outputs to export to the database
+
+Once all models for a certain module have run and we are ready to export the outputs
+to the database, we still need to take an extra "export" step. We have left this step
+out of the main pipeline flow because it needs to be run only once for all species
+and years.
+
+We have prepared a script and some functions that will do the job for us. We can
+find the script in `analysis/scripts/merge_pipeline_outputs.R`. The script mainly
+uses the function `createCombinedExportFile()` and can prepare both abundance and
+distribution model outputs. The task of this function is to put together all model
+predictions for the species and years that we need in a single file, and export this
+file to a directory of our choice.
