@@ -88,6 +88,9 @@ rsync -aP crvfra001@hpc.uct.ac.za:/scratch/crvfra001/birdie/output/ /drv_birdie/
 It is recommended that this is done from a linux "screen" to allow it to run in the background
 because it might take some time.
 
+We can also sync files that are listed in a txt file (in this case, we are sending from BIRDIE to NICIS CHPC)
+rsync -ahR --files-from=/home/birdie/analysis/files_to_keep.txt /drv_birdie/birdie_ftp/ fcervantes@scp.chpc.ac.za:/mnt/lustre/users/fcervantes/birdie/output
+
 
 ## DELETING OLD FITS FROM HPC
 
@@ -99,3 +102,29 @@ prepared a script to do this. See `jobs/delete_old_fits-job.sh`.
 ## RESET GIT AND PULL
 sudo git reset --hard HEAD
 sudo git pull https://github.com/AfricaBirdData/BIRDIE.git
+
+
+## FIND FILES
+
+With regular expressions (e.g.)
+find ./4 -type f -name "occu_ppc*" -regextype egrep -regex '.*(201[4-9]).*'
+
+Adding multiple criteria
+find ./4 -type f -name "occu_ppc*" -not -name "*ZA.rds" -regextype egrep -regex '.*(201[4-9]).*'
+
+Find patterns and rename
+find . -type f -name "occu_ppc*" -not -name "*_ZA.rds" -exec bash -c 'mv $0 ${0/ZA.rds/_ZA.rds}' {} \;
+
+## Add Earth Engine credentials
+
+The main problem is that the first time we log in Google Drive from the server,
+the package will try to launch a web browser to enter our credentials interactively.
+Since there is no graphical interphase in the server, the process will fail. There
+are different ways around this (one would be to install an X server to be able to use
+a graphical interphase), but the one I use is to log in Google Drive from a local machine
+with a web browser and then transfer the login data to the BIRDIE server.
+
+The login data is typically stored in "/home/.config/earthengine". Transfer this directory
+to the same location in the server. You might need to transfer to the FTP directory first
+because this is open to external connections, and then move the directory from FTP to 
+/home.
