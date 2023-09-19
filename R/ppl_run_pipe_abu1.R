@@ -187,16 +187,29 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnos
             # Log summary status
             ppl_log["summary"] <- 0
 
+            # If count and fit are not available return only counts
+
         } else if(exists("extra_counts")){
 
             summs <- extra_counts %>%
-                dplyr::filter(Season %in% c("S", "W")) %>%
-                tidyr::pivot_wider(names_from = "Season", values_from = "count") %>%
-                dplyr::mutate(species = sp_code) %>%
-                dplyr::rename(site = "LocationCode",
-                              summer.count = "S",
-                              winter.count = "W") %>%
-                dplyr::select("species", "site", "year", "summer.count", "winter.count")
+                dplyr::filter(Season %in% c("S", "W"))
+
+            # But if there are not counts in summer or winter, then return empty
+            if(nrow(summs) > 0){
+                summs <- summs %>%
+                    tidyr::pivot_wider(names_from = "Season", values_from = "count") %>%
+                    dplyr::mutate(species = sp_code) %>%
+                    dplyr::rename(site = "LocationCode",
+                                  summer.count = "S",
+                                  winter.count = "W") %>%
+                    dplyr::select("species", "site", "year", "summer.count", "winter.count")
+            } else {
+                summs <- data.frame(species = sp_code,
+                                    site = NA,
+                                    year = config$years,
+                                    summer.count = NA,
+                                    winter.count = NA)
+            }
 
             # Save predictions to disk
             outfile <- setSpOutFilePath("ssm_pred", config, config$years_ch, sp_code, "_all.csv")
