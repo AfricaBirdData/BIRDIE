@@ -116,7 +116,7 @@ the file `document.txt` would have the lines:
 ```
 
 There are many ways we can create the list of files we want to sync. There is a
-script in `analysis/scripts/misc/create_directory_paths` that can help us do this
+script in `analysis/scripts/create_path_list.R` that can help us do this
 from R.
 
 `rsync` has multiple other options that will not be covered here.
@@ -341,3 +341,23 @@ uses the function `createCombinedExportFile()` and can prepare both abundance an
 distribution model outputs. The task of this function is to put together all model
 predictions for the species and years that we need in a single file, and export this
 file to a directory of our choice.
+
+
+### Find and transfer latest model fits
+
+It is sometimes necessary to find the latest occupancy model fits. For example, this
+is necessary to transfer them to the HPCs and use them to set priors for new models.
+
+We have created an R script that makes this easy `analysis/scripts/create_path_list.R`.
+The idea is similar to what we described in the section about transferring local files.
+We will create a list of files we want to transfer and then we will use `rsync` to
+transfer these files to wherever we want. The script might need some tweaks to adapt
+it to what we want to do.
+
+Once we have produced our list of file paths we can use `rsync`
+
+
+```{bash}
+rsync -ahR --files-from=/path/to/files/document.txt path/to/transferred/directory birdie@137.158.76.140:/path/to/directory
+```
+
