@@ -8,6 +8,7 @@ rm(list = ls())
 config <- configPipeline(
     year = 2022,
     dur = 30,
+    region = "southafrica",
     module = "abu",
     mod_file = "cwac_ssm_two_season_mean_rev_jump.R",
     package = "jagsUI",
