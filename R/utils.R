@@ -243,8 +243,12 @@ createCombinedExportFile <- function(config, type = c("abu", "dst")){
 
             if(file.exists(abu_file)){
                 new_abu <- utils::read.csv(abu_file, colClasses = c(site = "character"))
-                new_abu <- round(new_abu, 3)
+
+                new_abu <- new_abu %>%
+                    dplyr::mutate(dplyr::across(dplyr::where(is.numeric), ~ round(.x, 3)))
+
                 abu_out <- dplyr::bind_rows(abu_out, new_abu)
+
             } else {
                 abu_out <- abu_out
             }
