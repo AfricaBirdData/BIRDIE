@@ -150,7 +150,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnos
         countsfile <- setSpOutFilePath("abu_model_data", config, config$years_ch, sp_code, ".csv")
 
         if(file.exists(countsfile)){
-            counts <- utils::read.csv(countsfile)
+            counts <- utils::read.csv(countsfile, colClasses = c(LocationCode = "character"))
         }
 
         fitfile <- setSpOutFilePath("ssm_fit", config, config$years_ch, sp_code, ".rds")
@@ -161,7 +161,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnos
         # Extra counts at sites with insufficient data
         extracountsfile <- setSpOutFilePath("cwac_data_w_miss", config, config$years_ch, sp_code, ".csv")
         if(file.exists(extracountsfile)){
-            extra_counts <- utils::read.csv(extracountsfile)
+            extra_counts <- utils::read.csv(extracountsfile, colClasses = c(LocationCode = "character"))
         }
 
         # If files are available summarise fit
@@ -176,7 +176,8 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnos
             summs <- ppl_summarise_ssm(fit, counts, sp_code, linear=linear, config)
 
             # Add data from sites with insufficient data
-            extra_counts <- read.csv(setSpOutFilePath("cwac_data_w_miss", config, config$years_ch, sp_code, ".csv"))
+            extra_counts <- read.csv(setSpOutFilePath("cwac_data_w_miss", config, config$years_ch, sp_code, ".csv"),
+                                     colClasses = c(LocationCode = "character"))
             summs <- addExtraSitesToSummary(extra_counts, summs)
 
             # Save predictions to disk

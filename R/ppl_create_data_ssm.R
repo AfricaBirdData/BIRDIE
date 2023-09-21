@@ -100,7 +100,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config, force_gee = TR
         } else if(length(sites_good) < 5){
 
             sink(setSpOutFilePath("Less_5_CWAC_sites", config, config$years_ch, sp_code, ".txt"))
-            message(paste("Less than suitable 5 CWAC sites for species", sp_code, "on years 1993-2021"))
+            message(paste("Less than 5 suitable CWAC sites for species", sp_code, "on years 1993-2021"))
             sink()
 
         }
@@ -246,7 +246,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config, force_gee = TR
         outfile <- setSpOutFilePath("cwac_data_w_miss", config, config$years_ch, sp_code, ".csv")
 
         if(!exists("counts") & file.exists(outfile)){
-            counts <- utils::read.csv(outfile)
+            counts <- utils::read.csv(outfile, colClasses = c(LocationCode = "character"))
         } else if(!exists("counts") & !file.exists(outfile)){
             stop("No dataset with missing counts found. Perhaps you need to run the 'missing' step?")
         }
@@ -344,7 +344,7 @@ ppl_create_data_ssm <- function(sp_code, year, catchment, config, force_gee = TR
 
         if(file.exists(outfile)){
 
-            counts <- read.csv(outfile)
+            counts <- read.csv(outfile, colClasses = c(LocationCode = "character"))
 
             # Remove seasons other than summer and winter
             counts_mod <- counts %>%
