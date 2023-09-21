@@ -242,7 +242,7 @@ createCombinedExportFile <- function(config, type = c("abu", "dst")){
             abu_file <- setSpOutFilePath("ssm_pred", config, config$years_ch, sp_code, "_all.csv")
 
             if(file.exists(abu_file)){
-                new_abu <- utils::read.csv(abu_file)
+                new_abu <- utils::read.csv(abu_file, colClasses = c(site = "character"))
                 new_abu <- round(new_abu, 3)
                 abu_out <- dplyr::bind_rows(abu_out, new_abu)
             } else {
