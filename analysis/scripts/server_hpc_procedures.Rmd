@@ -32,7 +32,7 @@ of the GitHub repositories in the HPCs.
 To pull the latest copy of the BIRDIE repo from GitHub we can do:
 
 ```{bash}
-cd /drv_birdie/Working/git
+cd /drv_birdie/Working/git/BIRDIE
 sudo git pull https://github.com/AfricaBirdData/BIRDIE.git
 ```
 
@@ -120,6 +120,49 @@ script in `analysis/scripts/create_path_list.R` that can help us do this
 from R.
 
 `rsync` has multiple other options that will not be covered here.
+
+## Find files in the servers
+
+It is often useful to be able to find files programmatically in the servers. For
+this we can use the `find` command.
+
+For example
+```{bash}
+find ./4 -type f -name "occu_ppc*"
+```
+
+This will look into directory `4` find any files that contain the pattern "occu_ppc"
+
+We can also use regular expressions
+```{bash}
+find ./4 -type f -name "occu_ppc*" -regextype egrep -regex '.*(201[4-9]).*'
+```
+
+This will look into directory `4` find any files that contain the pattern "occu_ppc"
+and the numbers 2014 to 2019.
+
+We can add multiple criteria
+```{bash}
+find ./4 -type f -name "occu_ppc*" -not -name "*ZA.rds" -regextype egrep -regex '.*(201[4-9]).*'
+```
+
+The above command will look into directory `4` find any files that contain the pattern
+"occu_ppc" and the numbers 2014 to 2019, and not the pattern "ZA.rds"
+
+We can also find patterns and rename
+```{bash}
+find . -type f -name "occu_ppc*" -not -name "*_ZA.rds" -exec bash -c 'mv $0 ${0/.rds/_ZA.rds}' {} \;
+```
+
+This will look for any files starting with "occu_ppc" that don't contain the pattern
+"_ZA.rds" and will change the pattern ".rds" into "_ZA.rds"
+
+We can also delete the files found by adding `-delete` at the end
+```{bash}
+find . -type f -name "occu_ppc*" -not -name "*_ZA.rds" -delete
+```
+
+
 
 ## Update installed R packages
 
