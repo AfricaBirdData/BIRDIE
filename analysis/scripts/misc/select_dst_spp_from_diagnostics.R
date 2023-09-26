@@ -11,7 +11,7 @@ rm(list = ls())
 det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"),
                  det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
 
-config <- configPipeline(year = 2010,
+config <- configPipeline(year = 2022,
                          dur = 3,
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
                                      "watrec", "watext", "log_watext", "watext:watrec",
@@ -21,18 +21,20 @@ config <- configPipeline(year = 2010,
                                         "dist_coast", "elev"),
                          package = "spOccupancy",
                          data_dir = "analysis/hpc/imports",
-                         out_dir = "analysis/hpc/imports",
+                         out_dir = "analysis/nicis_chpc/imports",
                          server = TRUE)
+
+year_sel <- 2021
 
 # Select species
 sp_codes <- config$species
 sp_codes <- c(sp_codes, 566, 463, 220, 4127, 461, 764, 653, 626, 613, 4125, 1037, 486, 479)
 
 # Inspect diagnostics
-diags <- combineOccuDiags(config, sp_codes, 2009)
+diags <- combineOccuDiags(config, sp_codes, year_sel)
 
 # Look for problem species
-spp <- selectSppFromDiag(config, sp_codes = sp_codes, 2009)
+spp <- selectSppFromDiag(config, sp_codes = sp_codes, year_sel)
 
 
 diags %>%
