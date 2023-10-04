@@ -2,11 +2,9 @@ Package: BIRDIE
 Title: South African Biodiversity Data Pipeline for Wetlands and Waterbirds
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "BIRDIE Development Team",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           email = "f.cervantesperalta@gmail.com")
 Description: This repository contains code and documentation related to the
        South Africa Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) project
 License: MIT + file LICENSE
@@ -47,3 +45,4 @@ Suggests:
     furrr,
     jagsUI
 VignetteBuilder: knitr
+URL: https://africabirddata.github.io/BIRDIE/
