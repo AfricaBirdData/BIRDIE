@@ -5,7 +5,24 @@
 #'
 #' @format A data frame with 147 rows and 19 variables:
 #' \describe{
-#'   \item{item}{DESCRIPTION}
-#'   ...
+#'   \item{Assess_for_AEWA}{Assessment for AEWA?}
+#'   \item{Common_group}{Taxonomic group.}
+#'   \item{Common_name}{Common name of the species.}
+#'   \item{Common_species}{Taxonomic species.}
+#'   \item{Family}{Taxnomic family.}
+#'   \item{Feeding_guild}{Feeding guild information.}
+#'   \item{Feeding_guild_alt}{Alternative feeding guild information.}
+#'   \item{Foraging_habitat_guild}{Foraging habitat guild information.}
+#'   \item{Foraging_habitat_guild_detail}{Detailed foraging habitat guild information.}
+#'   \item{Genus}{Taxonomic genus.}
+#'   \item{Key_habitat_indicator}{Key habitat indicator.}
+#'   \item{Migrant_type}{Migrant type.}
+#'   \item{Order}{Taxonomic order.}
+#'   \item{Recorded_Barberspan}{Recorded Barberspan?}
+#'   \item{Species}{Species information.}
+#'   \item{Species_group_guild}{Species group guild information.}
+#'   \item{SppRef}{Species reference code.}
+#'   \item{Status}{Status information.}
+#'   \item{WetlandIntCode}{Wetlands International code.}
 #' }
 "waterbirds"

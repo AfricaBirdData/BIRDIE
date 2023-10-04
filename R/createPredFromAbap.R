@@ -7,8 +7,6 @@
 #' database.
 #'
 #' @inheritParams ppl_run_pipe_dst1
-#' @param fit An occupancy model fit to summarise occupancy and detection
-#' probabilities from.
 #' @param year_sel Year in data to run model for.
 #'
 #' @return

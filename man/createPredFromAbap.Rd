@@ -13,9 +13,6 @@ createPredFromAbap(sp_code, year_sel, config)
 
 \item{config}{A list with pipeline configuration parameters.
 See \code{\link{configPipeline}}}
-
-\item{fit}{An occupancy model fit to summarise occupancy and detection
-probabilities from.}
 }
 \description{
 This function is used when it is not possible to run an occupancy model for
