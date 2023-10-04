@@ -31,6 +31,7 @@ jobs:
           use-public-rspm: true
 
       - uses: r-lib/actions/setup-r-dependencies@v2
+        run: remotes::install_deps(dependencies = TRUE)
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
