@@ -26,7 +26,7 @@
   <div class="dropdown-menu" aria-labelledby="dropdown-articles">
     <a class="dropdown-item" href="../articles/v01-birdie-basics.html">BIRDIE: Basics</a>
     <a class="dropdown-item" href="../articles/v02-birdie-spp-abundance.html">BIRDIE: Species abundance</a>
-    <a class="dropdown-item" href="../articles/v03-birdie-spp-distributions.html">BIRDIE: species distributions</a>
+    <a class="dropdown-item" href="../articles/v03-birdie-spp-distributions.html">BIRDIE: Species distributions</a>
     <a class="dropdown-item" href="../articles/v04-birdie-abu-data-prep.html">BIRDIE ABU: Data preparation</a>
     <a class="dropdown-item" href="../articles/v05-birdie-abu-model-fitting.html">BIRDIE ABU: Model fitting</a>
     <a class="dropdown-item" href="../articles/v06-birdie-abu-model-diagnostics.html">BIRDIE ABU: Model diagnostics</a>
@@ -96,28 +96,28 @@ variables measured across years.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">gatherYearFromVars</span><span class="op">(</span>x <span class="op">=</span> <span class="va">df</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span><span class="op">[</span><span class="op">-</span><span class="fl">1</span><span class="op">]</span>, sep <span class="op">=</span> <span class="st">"_"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 20 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       id  year      v1       v2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1  <span style="text-decoration: underline;">2</span>010   0.123   0.011<span style="text-decoration: underline;">8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     1  <span style="text-decoration: underline;">2</span>011  91.8   103.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>     2  <span style="text-decoration: underline;">2</span>010   1.41    0.757 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>     2  <span style="text-decoration: underline;">2</span>011 127.    104.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>     3  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.610</span>   0.926 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>     3  <span style="text-decoration: underline;">2</span>011 116.    101.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>     4  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.234</span>   0.441 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>     4  <span style="text-decoration: underline;">2</span>011 105.    104.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>     5  <span style="text-decoration: underline;">2</span>010   0.154   0.943 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>     5  <span style="text-decoration: underline;">2</span>011  95.5   102.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span>     6  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.170</span>   0.203 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span>     6  <span style="text-decoration: underline;">2</span>011  87.9   105.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span>     7  <span style="text-decoration: underline;">2</span>010   1.19    0.954 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span>     7  <span style="text-decoration: underline;">2</span>011 129.    105.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span>     8  <span style="text-decoration: underline;">2</span>010   0.474   0.034<span style="text-decoration: underline;">1</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span>     8  <span style="text-decoration: underline;">2</span>011 116.    110.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span>     9  <span style="text-decoration: underline;">2</span>010   0.987   0.206 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span>     9  <span style="text-decoration: underline;">2</span>011  97.4   108.    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span>    10  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.423</span>   0.925 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span>    10  <span style="text-decoration: underline;">2</span>011 100.    104.    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       id  year       v1      v2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1  <span style="text-decoration: underline;">2</span>010   0.011<span style="text-decoration: underline;">9</span>   0.799</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     1  <span style="text-decoration: underline;">2</span>011 113.     105.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>     2  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.976</span>    0.328</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>     2  <span style="text-decoration: underline;">2</span>011  99.2    108.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>     3  <span style="text-decoration: underline;">2</span>010   0.116    0.609</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>     3  <span style="text-decoration: underline;">2</span>011 104.     108.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>     4  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">2.82</span>     0.325</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>     4  <span style="text-decoration: underline;">2</span>011 109.     103.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>     5  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">1.63</span>     0.783</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>     5  <span style="text-decoration: underline;">2</span>011 105.     104.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">11</span>     6  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">1.59</span>     0.926</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">12</span>     6  <span style="text-decoration: underline;">2</span>011 102.     105.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">13</span>     7  <span style="text-decoration: underline;">2</span>010   0.373    0.613</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">14</span>     7  <span style="text-decoration: underline;">2</span>011  94.1    105.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">15</span>     8  <span style="text-decoration: underline;">2</span>010   0.847    0.505</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">16</span>     8  <span style="text-decoration: underline;">2</span>011  99.2    102.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">17</span>     9  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">1.42</span>     0.606</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">18</span>     9  <span style="text-decoration: underline;">2</span>011 111.     102.   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">19</span>    10  <span style="text-decoration: underline;">2</span>010  -<span style="color: #BB0000;">0.505</span>    0.863</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">20</span>    10  <span style="text-decoration: underline;">2</span>011  76.0    109.   </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
