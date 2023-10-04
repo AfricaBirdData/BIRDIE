@@ -52,10 +52,6 @@ Explain who is the intended user for this documentation
 The BIRDIE repository has the typical structure of an R package, because it is indeed
 an R package, with a few additional directories.
 
-```{r, echo=FALSE}
-fs::dir_tree(path = gsub("/vignettes", "", getwd()), recurse = FALSE, type = "directory")
-```
-
 - The directories: `R`, `data`, `man` and `vignettes`, are standard R-package directories
 - `beta` is a place to test new functionality and it can get quite messy
 - `deprecated` has functions that were used at some point but that are not longer used. These may be deleted periodically.
@@ -66,11 +62,6 @@ the pipeline uses or produces.
 The structure of the BIRDIE root directory is important for the repository to work as a package.
 Maintaining the structure of the `analysis` directory is also important, because it allows us to
 use the pipeline in different machines and find what we need.
-
-
-```{r, echo=FALSE}
-fs::dir_tree(path = gsub("/vignettes", "/analysis", getwd()), recurse = FALSE, type = "directory")
-```
 
 In particular, there are some sub-directories: `data`, `output`, `models` and `scripts` 
 that are needed to be able to run the pipeline. Some pipeline functions use paths to these directories, so
