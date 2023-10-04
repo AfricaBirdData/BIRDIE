@@ -2,7 +2,7 @@
 title: "BIRDIE: species distributions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{BIRDIE-spp-distributions}
+  %\VignetteIndexEntry{BIRDIE: species distributions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

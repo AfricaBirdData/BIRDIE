@@ -1,8 +1,8 @@
 ---
-title: "BIRDIE-DST: Model summary"
+title: "BIRDIE DST: Model summary"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{BIRDIE-DST: Model summary}
+  %\VignetteIndexEntry{BIRDIE DST: Model summary}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
