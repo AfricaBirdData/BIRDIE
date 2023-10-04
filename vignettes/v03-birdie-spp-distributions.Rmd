@@ -1,8 +1,8 @@
 ---
-title: "BIRDIE: species distributions"
+title: "BIRDIE: Species distributions"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{BIRDIE: species distributions}
+  %\VignetteIndexEntry{BIRDIE: Species distributions}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
