@@ -5,20 +5,20 @@
 
 withr::with_libpaths(new="/home/fcervantes/R/x86_64-pc-linux-gnu-library/4.2",
                      remotes::install_github('AfricaBirdData/BIRDIE',
-                                             auth_token = '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',
+                                             auth_token = 'mytoken',
                                              dependencies = FALSE) )
 
 withr::with_libpaths(new="/home/fcervantes/R/x86_64-pc-linux-gnu-library/4.2",
                      remotes::install_github('AfricaBirdData/ABAP',
-                                             auth_token = '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',
+                                             auth_token = 'mytoken',
                                              dependencies = NA) )
 
 withr::with_libpaths(new="/home/fcervantes/R/x86_64-pc-linux-gnu-library/4.2",
                      remotes::install_github('AfricaBirdData/CWAC',
-                                             auth_token = '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',
+                                             auth_token = 'mytoken',
                                              dependencies = FALSE) )
 
 withr::with_libpaths(new="/home/fcervantes/R/x86_64-pc-linux-gnu-library/4.2",
                      remotes::install_github('AfricaBirdData/ABDtools',
-                                             auth_token = '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',
+                                             auth_token = 'mytoken',
                                              dependencies = FALSE) )
