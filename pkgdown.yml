@@ -1,0 +1,20 @@
+pandoc: 2.19.2
+pkgdown: 2.0.7
+pkgdown_sha: ~
+articles:
+  v01-birdie-basics: v01-birdie-basics.html
+  v02-birdie-spp-abundance: v02-birdie-spp-abundance.html
+  v03-birdie-spp-distributions: v03-birdie-spp-distributions.html
+  v04-birdie-abu-data-prep: v04-birdie-abu-data-prep.html
+  v05-birdie-abu-model-fitting: v05-birdie-abu-model-fitting.html
+  v06-birdie-abu-model-diagnostics: v06-birdie-abu-model-diagnostics.html
+  v07-birdie-abu-model-summary: v07-birdie-abu-model-summary.html
+  v08-birdie-dst-data-prep: v08-birdie-dst-data-prep.html
+  v09-birdie-dst-model-fitting: v09-birdie-dst-model-fitting.html
+  v10-birdie-dst-diagnostics: v10-birdie-dst-diagnostics.html
+  v11-birdie-dst-model-summary: v11-birdie-dst-model-summary.html
+last_built: 2023-10-04T14:51Z
+urls:
+  reference: https://africabirddata.github.io/BIRDIE/reference
+  article: https://africabirddata.github.io/BIRDIE/articles
+
