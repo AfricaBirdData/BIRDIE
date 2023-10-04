@@ -44,5 +44,10 @@ Suggests:
     future,
     furrr,
     jagsUI
+Remotes:
+    AfricaBirdData/ABAP
+    AfricaBirdData/CWAC
+    AfricaBirdData/ABDtools
+    r-glennie/occuR
 VignetteBuilder: knitr
 URL: https://africabirddata.github.io/BIRDIE/
