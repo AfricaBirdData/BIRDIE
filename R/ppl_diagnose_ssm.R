@@ -26,9 +26,27 @@ ppl_diagnose_ssm <- function(fit, counts, sp_code, config){
     gof <- diagnoseGofJagsSsm(fit, counts)
     gof <- round(gof, 3)
 
+    # Diagnose uncertainty level (>50 times the estimate is considered too
+    # much to be useful)
+    sts <- fit$mean$stt_s
+    sds <- fit$sd$stt_s
+    q975 <- fit$q97.5$stt_s
+
+    # Find maximum estimates and maximum upper limit (in the last 10 years) per site
+    keep <- (ncol(sts) - 10):ncol(sts)
+    max_sts <- apply(sts, 1, max, na.rm = TRUE)
+    max_q975 <- apply(q975[,keep], 1, max, na.rm = TRUE)
+
+    # Find sites where the uncertainty is large with respect to the estimate
+    large_ci <- (exp(max_q975) - exp(max_sts)) / exp(max_sts)
+
+    drop_sites <- large_ci > 50
+
+    # Build diagnosis data frame
     diag_df$Tmean <- gof["Tmean"]
     diag_df$Tsd <- gof["Tsd"]
     diag_df$Tdiff <- gof["Tdiff"]
+    diag_df$large_ci <- paste(which(drop_sites), collapse = ",")
 
     return(diag_df)
 

@@ -15,6 +15,9 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, linear = TRUE, config, ...){
 
     fit_stats <- BIRDIE::processJAGSoutput(fit, DIC = FALSE, params.omit = NULL)
 
+    diagfile <- setSpOutFilePath("abu_diagnostics", config, config$years_ch, sp_code, ".csv")
+    diag_df <- utils::read.csv(diagfile)
+
     message("Generating plots and tables")
 
     # Plot
@@ -87,6 +90,24 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, linear = TRUE, config, ...){
 
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
-    return(out_all_sites)
+    if(!is.na(diag_df$large_ci)){
+        drop_sites <- strsplit(diag_df$large_ci, ",") %>%
+            unlist() %>%
+            as.integer()
+    } else {
+        drop_sites <- ""
+    }
+
+    bad_sites <- counts %>%
+        dplyr::filter(site_id %in% drop_sites) %>%
+        dplyr::pull(LocationCode) %>%
+        unique()
+
+    out_all_sites_small_ci <- out_all_sites %>%
+        dplyr::mutate(
+            dplyr::across(.cols = -c(1:5),
+                          ~ ifelse(site %in% bad_sites, NA, .x)))
+
+    return(out_all_sites_small_ci)
 
 }
