@@ -139,6 +139,25 @@ observed with the data (“Tdiff”), which should give us an idea of the
 magnitude of the bias, should it exist.</p>
 </div>
 <div class="section level2">
+<h2 id="diagnosing-uncertainty">Diagnosing uncertainty<a class="anchor" aria-label="anchor" href="#diagnosing-uncertainty"></a>
+</h2>
+<p>Streamlined analyses can be difficult to stabilize for all species
+and sites. Sometimes state estimate uncertainty can grow quickly,
+particularly in long periods with missing data at the beginning and end
+of the time series. We are particularly concerned with uncertainty
+exploding towards recent years, because this can impact managers and
+decision makers. Therefore, we test whether the upper limit of the
+confidence band estimated for the last 10 years ever gets higher than 50
+times the highest estimate for that period, at any site for any species.
+If this is the case we exclude estimates and uncertainty bands for those
+sites and species combinations. We still present counts.</p>
+<p>The function <code><a href="../reference/ppl_diagnose_ssm.html">ppl_diagnose_ssm()</a></code> identifies for each
+species what sites present large uncertainty at the end of the time
+series and stores them in the diagnostics file. This information will
+then be used by the summary function to exclude the corresponding
+estimates.</p>
+</div>
+<div class="section level2">
 <h2 id="shiny-apps">Shiny apps<a class="anchor" aria-label="anchor" href="#shiny-apps"></a>
 </h2>
 <p>We have developed a Shiny app that allows us to extract diagnostics

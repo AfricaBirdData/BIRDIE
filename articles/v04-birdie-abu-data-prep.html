@@ -131,11 +131,12 @@ we wanted to include we would need to modify this part of the
 <code><a href="../reference/ppl_create_data_ssm.html">ppl_create_data_ssm()</a></code> function code.</p>
 <p>Once all of the data is combined we subset those sites that have been
 counted at least five times during summer and five times during winter
-between the years 1993 and 2021. We would then only analyse data for
-those species that have been counted in at least five sites with these
-characteristics. Those species that don’t meet the requirements should
-be analysed differently, although we still don’t have an alternative
-model for them.</p>
+between the years 1993 and 2021. Those species that don’t meet the
+requirements should be analysed differently, although we still don’t
+have an alternative model for them. During model diagnosis there is
+another filter where model outputs with too large of a difference
+between the estimates and the upper limit of the credible intervals are
+also discarded (see BIRDIE ABU: Model diagnostics).</p>
 </div>
 <div class="section level2">
 <h2 id="adding-missing-counts">Adding missing counts<a class="anchor" aria-label="anchor" href="#adding-missing-counts"></a>
