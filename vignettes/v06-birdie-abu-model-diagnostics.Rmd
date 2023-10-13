@@ -66,6 +66,22 @@ have a similar dispersion as that observed in the data. Finally, for each simula
 calculate the mean difference observed with the data ("Tdiff"), which should give us an idea of the
 magnitude of the bias, should it exist.
 
+## Diagnosing uncertainty
+
+Streamlined analyses can be difficult to stabilize for all species and sites. Sometimes
+state estimate uncertainty can grow quickly, particularly in long periods with
+missing data at the beginning and end of the time series. We are particularly 
+concerned with uncertainty exploding towards recent years, because this can impact
+managers and decision makers. Therefore, we test whether the upper limit of the 
+confidence band estimated for the last 10 years ever gets higher than
+50 times the highest estimate for that period, at any site for any species. If this
+is the case we exclude estimates and uncertainty bands for those sites and species
+combinations. We still present counts.
+
+The function `ppl_diagnose_ssm()` identifies for each species what sites present
+large uncertainty at the end of the time series and stores them in the diagnostics
+file. This information will then be used by the summary function to exclude the 
+corresponding estimates.
 
 ## Shiny apps
 
