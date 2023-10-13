@@ -15,7 +15,7 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, linear = TRUE, config, ...){
 
     fit_stats <- BIRDIE::processJAGSoutput(fit, DIC = FALSE, params.omit = NULL)
 
-    diagfile <- setSpOutFilePath("abu_diagnostics", config, config$years_ch, sp_code, ".csv")
+    diagfile <- setSpOutFilePath("ssm_diagnostics", config, config$years_ch, sp_code, ".csv")
     diag_df <- utils::read.csv(diagfile)
 
     message("Generating plots and tables")

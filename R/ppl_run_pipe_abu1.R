@@ -128,7 +128,7 @@ ppl_run_pipe_abu1 <- function(sp_code, config, steps = c("data", "fit", "diagnos
 
             diags <- ppl_diagnose_ssm(fit_stats, counts, sp_code, config)
 
-            diagfile <- setSpOutFilePath("abu_diagnostics", config, config$years_ch, sp_code, ".csv")
+            diagfile <- setSpOutFilePath("ssm_diagnostics", config, config$years_ch, sp_code, ".csv")
             utils::write.csv(diags, diagfile, row.names = FALSE)
 
             # Log diagnosis status
