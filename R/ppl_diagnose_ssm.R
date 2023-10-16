@@ -46,7 +46,7 @@ ppl_diagnose_ssm <- function(fit, counts, sp_code, config){
     diag_df$Tmean <- gof["Tmean"]
     diag_df$Tsd <- gof["Tsd"]
     diag_df$Tdiff <- gof["Tdiff"]
-    diag_df$large_ci <- paste(which(drop_sites), collapse = ",")
+    diag_df$large_ci <- as.character(paste(which(drop_sites), collapse = ","))
 
     return(diag_df)
 

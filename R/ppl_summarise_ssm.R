@@ -91,7 +91,7 @@ ppl_summarise_ssm <- function(fit, counts, sp_code, linear = TRUE, config, ...){
     out_all_sites <- dplyr::bind_rows(out_all_sites)
 
     if(!is.na(diag_df$large_ci)){
-        drop_sites <- strsplit(diag_df$large_ci, ",") %>%
+        drop_sites <- strsplit(as.character(diag_df$large_ci), ",") %>%
             unlist() %>%
             as.integer()
     } else {
