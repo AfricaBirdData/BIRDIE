@@ -35,7 +35,7 @@ ppl_diagnose_ssm <- function(fit, counts, sp_code, config){
     # Find maximum estimates and maximum upper limit (in the last 10 years) per site
     keep <- (ncol(sts) - 10):ncol(sts)
     max_sts <- apply(sts, 1, max, na.rm = TRUE)
-    max_q975 <- apply(q975[,keep], 1, max, na.rm = TRUE)
+    max_q975 <- apply(q975[ , keep, drop = FALSE], 1, max, na.rm = TRUE)
 
     # Find sites where the uncertainty is large with respect to the estimate
     large_ci <- (exp(max_q975) - exp(max_sts)) / exp(max_sts)
