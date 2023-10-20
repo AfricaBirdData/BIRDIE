@@ -27,7 +27,7 @@ to have access to the scripts.
 
 Inside of the package there are some vignettes that explain how to run the 
 different modules of the pipeline. These vignettes are also available as articles
-in the website africabirddata.github.io/BIRDIE/.
+in the website https://africabirddata.github.io/BIRDIE/.
 
 ## INSTRUCTIONS TO CLONE AND INSTALL PACKAGE
 
