@@ -71,12 +71,11 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="birdie">BIRDIE<a class="anchor" aria-label="anchor" href="#birdie"></a>
 </h1></div>
-<p>This repository contains code and documentation related to the South Africa Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) project: <a href="https://jrsbiodiversity.org/grants/sanbi-2020/" class="external-link uri">https://jrsbiodiversity.org/grants/sanbi-2020/</a></p>
-<div class="section level2">
-<h2 id="basic-structure">Basic structure<a class="anchor" aria-label="anchor" href="#basic-structure"></a>
-</h2>
-<p>There are two basic elements in the BIRDIE repo: i) a package that contains functions and data that is installed as an extension to base R and ii) an analysis folder that contains analysis scripts and data that runs in R but that is not integrated in R. In other words, the package adds functionality and the analysis uses this functionality. This means that to use the pipeline we don’t only have to install the package, but we also need to clone the repository. Inside the package there are some vignettes that explain how to run the different modules of the pipeline.</p>
-</div>
+<p>This repository contains code and documentation related to the South Africa Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) project: <a href="https://jrsbiodiversity.org/grants/sanbi-2020/" class="external-link uri">https://jrsbiodiversity.org/grants/sanbi-2020/</a>.</p>
+<p>The aim of the BIRDIE project is to develop a data-to-decision pipeline for wetlands and waterbirds that uses use statistical analyses to compute policy-relevant indicators using citizen science data. The data pipeline initiates pulling data from different databases and repositories, data then moves through cleaning and validation steps, and into statistical analyses and summaries that result in indicators that are useful for decision makers. These indicators are then post-processed and presented on website. These indicators are useful to support South Africa’s national and international reporting requirements, management of wetland sites, and broader interest in wetlands and waterbirds.</p>
+<p>This repository contains the code necessary for data acquisition and statistical modelling, which are conducted in R. Modelling outputs are then exported to a MySQL database that is hosted on a different system together with the website and the API services that allow communication between the two. However, here we will not be concerned with anything beyond the computation of basic indicators in R.</p>
+<p>There are two basic elements in the BIRDIE repo: i) a package that contains functions and data that is installed as an extension to base R and ii) an analysis folder that contains analysis scripts that run in R. In other words, the package adds functionality to R and the analysis scripts use this functionality. This means that to use the pipeline we don’t only have to install the package, but we also need to clone the repository to have access to the scripts.</p>
+<p>Inside of the package there are some vignettes that explain how to run the different modules of the pipeline. These vignettes are also available as articles in the website africabirddata.github.io/BIRDIE/.</p>
 <div class="section level2">
 <h2 id="instructions-to-clone-and-install-package">INSTRUCTIONS TO CLONE AND INSTALL PACKAGE<a class="anchor" aria-label="anchor" href="#instructions-to-clone-and-install-package"></a>
 </h2>
