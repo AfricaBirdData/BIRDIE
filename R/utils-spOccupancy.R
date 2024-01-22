@@ -544,11 +544,11 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
 
     } else {
 
-        # Look for the most recent model fit in the last 10 years
-        filenames <- setSpOutFilePath("occu_fit", config, year_sel-c(1:10), sp_code, ".rds")
+        # Look for the most recent model fit within 40 years
+        filenames <- setSpOutFilePath("occu_fit", config, year_sel + seq(-20, 20, 1), sp_code, ".rds")
         files_exist <- file.exists(filenames)
         if(any(files_exist)){
-            filename <- filenames[min(which(files_exist))]
+            filename <- filenames[max(which(files_exist))]
         } else {
             filename <- NULL
         }
