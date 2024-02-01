@@ -204,8 +204,11 @@ defineSpOccuPriors <- function(prev_fit, config){
         new_shape.p.ig <- new_prior_mean_sigma.sq.p / new_scale.p.ig
 
         # Substitute where necessary
-        scale.p.ig[names(scale.p.ig) %in% names(new_scale.p.ig)] <- new_scale.p.ig[match(names(scale.p.ig), names(new_scale.p.ig))]
-        shape.p.ig[names(shape.p.ig) %in% names(new_shape.p.ig)] <- new_shape.p.ig[match(names(shape.p.ig), names(new_shape.p.ig))]
+        keep <- match(names(scale.p.ig), names(new_scale.p.ig))
+        keep <- keep[!is.na(keep)]
+
+        scale.p.ig[which(names(scale.p.ig) %in% names(new_scale.p.ig))] <- new_scale.p.ig[keep]
+        shape.p.ig[which(names(shape.p.ig) %in% names(new_shape.p.ig))] <- new_shape.p.ig[keep]
 
     }
 
@@ -219,8 +222,11 @@ defineSpOccuPriors <- function(prev_fit, config){
         new_shape.psi.ig <- new_prior_mean_sigma.sq.psi / new_scale.psi.ig
 
         # Substitute where necessary
-        scale.psi.ig[names(scale.psi.ig) %in% names(new_scale.psi.ig)] <- new_scale.psi.ig[match(names(scale.psi.ig), names(new_scale.psi.ig))]
-        shape.psi.ig[names(shape.psi.ig) %in% names(new_shape.psi.ig)] <- new_shape.psi.ig[match(names(shape.psi.ig), names(new_shape.psi.ig))]
+        keep <- match(names(scale.psi.ig), names(new_scale.psi.ig))
+        keep <- keep[!is.na(keep)]
+
+        scale.psi.ig[which(names(scale.psi.ig) %in% names(new_scale.psi.ig))] <- new_scale.psi.ig[keep]
+        shape.psi.ig[which(names(shape.psi.ig) %in% names(new_shape.psi.ig))] <- new_shape.psi.ig[keep]
 
     }
 
@@ -546,7 +552,9 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
 
         # Look for the most recent model fit within 40 years
         filenames <- setSpOutFilePath("occu_fit", config, year_sel + seq(-20, 20, 1), sp_code, ".rds")
+
         files_exist <- file.exists(filenames)
+
         if(any(files_exist)){
             filename <- filenames[max(which(files_exist))]
         } else {
