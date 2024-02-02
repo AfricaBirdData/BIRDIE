@@ -7,12 +7,12 @@ det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"
                  det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
 
 # Configure pipeline
-ncores <- 19
+ncores <- 10
 parall <- ncores != 1
 annotate <- FALSE
 prep_site_visit <- FALSE
 
-config <- configPipeline(year = 2019,
+config <- configPipeline(year = 2020,
                          dur = 3,
                          module = "dst",
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
@@ -55,10 +55,16 @@ if(annotate){
 
 # RUN PIPELINE ------------------------------------------------------------
 
-# Add some extra species for Alan
+sp_codes <- config$species
+
+# Add some extra species if necessary
 # sp_codes <- c(config$species, 566, 463, 220, 4127, 461, 764, 653, 626, 613, 4125, 1037, 486, 479)
-sp_codes <- c(95, 91, 96, 89, 88, 102, 90, 94, 98, 99, 97, 100, 274, 233, 237, 238, 235, 245, 246, 281, 231, 228, 288, 289, 287, 290, 291, 296, 298, 305, 304, 269, 270, 256, 258, 264, 250, 253, 263, 268, 52, 61, 58, 59, 60, 64, 55, 56, 63, 54, 57, 62, 74, 73, 75, 77, 76, 42, 41, 48, 50, 47, 86, 87, 5, 4, 6, 72, 81, 83, 84, 85, 397, 394, 395, 149, 167, 216, 214, 203, 210, 197, 208, 212, 764, 4125)
-# sp_codes <- sp_codes[1:100]
+
+# Run only for some species
+# sp_codes <- c(95, 103, 96, 89, 88, 102, 90, 94, 98, 99, 97, 104, 100, 237, 238, 235, 245)
+
+# Split species into groups
+# sp_codes <- split(sp_codes, cut(seq_along(sp_codes), 3, labels = FALSE))[[1]]
 
 # 1. Run data preparation routines in series ------------------------------
 
@@ -100,16 +106,38 @@ if(parall){
 
 for(t in seq_along(config$years)){
 
-    if(t %in% c(1, 2)) next
+    # Run only for certain year
+    # if(t %in% c(2, 3)) next
 
     year_sel <- config$years[t]
 
     furrr::future_map(sp_codes, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config,
-                                               .steps = c("fit", "diagnose"), time_limit = 12*3600),
+                                               .steps = c("fit", "diagnose"), time_limit = 14*3600),
                       .options = furrr::furrr_options(seed = TRUE,
                                                       packages = c("BIRDIE", "spOccupancy")))
 
+
+    # If fitting detection model1,
+    if(identical(config$det_mod, det_mods$det_mod1)){
+
+        #identify species for which diagnostics failed
+        spp <- selectSppFromDiag(config, sp_codes, year_sel)
+        bad_spp <- spp$bad_fit
+
+        # Run model with detection model 2 if model 1 diagnostics were not satisfactory
+        config$det_mod <- det_mods$det_mod2
+
+        furrr::future_map(bad_spp, ~pipe_prll_fit(.x, year_sel, .spatial = FALSE, config,
+                                                  .steps = c("fit", "diagnose"), time_limit = 14*3600),
+                          .options = furrr::furrr_options(seed = TRUE,
+                                                          packages = c("BIRDIE", "spOccupancy")))
+    }
+
 }
+
+
+
+
 
 if(parall){
     future::plan("sequential")
