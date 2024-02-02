@@ -36,5 +36,5 @@
 
 module load software/R-4.2.0 software/geos-3.10.2 software/gdal-2.4.2   # The last two are needed for the package sf
 
-R CMD BATCH ~/birdie/scripts/pipeline_distr_hpc_parall.R
+R CMD BATCH ~/birdie/scripts/pipeline_script_hpc_parall.R
 
