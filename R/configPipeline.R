@@ -81,7 +81,7 @@ configPipeline <- function(year, dur, region = c("southafrica", "kenya"), module
 
 
     # Define species to fit models to
-    species <- unique(BIRDIE::waterbirds$SppRef) # For now, we want to select species present at Barberspan
+    species <- sort(unique(BIRDIE::waterbirds$SppRef)) # For now, we want to select species present at Barberspan
 
     # Remove species without a code
     species <- species[!is.na(species)]
