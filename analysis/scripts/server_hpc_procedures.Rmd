@@ -404,3 +404,51 @@ Once we have produced our list of file paths we can use `rsync`
 rsync -ahR --files-from=/path/to/files/document.txt path/to/transferred/directory birdie@137.158.76.140:/path/to/directory
 ```
 
+### Import model fits from HPC to BIRDIE server
+
+When using the HPC it is important to import model fits frequently because there
+is limited storage in the HPC, and we need to delete old model fits before running
+new models.
+
+Import from HPC to BIRDIE server is done from the server.
+
+First we open a new screen, because the process can take some time and screens
+allow us to run processes in the background:
+
+
+
+```{bash}
+screen -S screenname # to create a screen
+# OR
+screen -r screenname # to open an existing screen
+```
+
+Once in the screen we need to edit the script `create_path_list.R` to define a
+list of files to import, run this script in R, and finally use `rsync` to import
+the files.
+
+```{bash}
+# Edit create_path_list.R
+sudo nano /drv_birdie/Working/git/BIRDIE/analysis/scripts/create_path_list.R
+```
+
+Then, in R:
+
+```{r}
+source("/drv_birdie/Working/git/BIRDIE/analysis/scripts/create_path_list.R")
+```
+
+Once it has run, make sure the list of files is correct. To do this, go back to
+the Linux console and open the file `analysis/path_list.txt`
+
+```{bash}
+nano analysis/path_list.txt
+```
+
+Once we are happy with the files to import we can run `rsync` with the correct
+paths (note that in the example below it is the UCT HPC and my own directory structure)
+
+```{bash}
+sudo rsync -ahR --files-from=/home/birdie/analysis/path_list.txt username@hpc.uct.ac.za:/scratch/username/birdie/output /drv_birdie/birdie_ftp/
+```
+
