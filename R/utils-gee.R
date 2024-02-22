@@ -51,21 +51,43 @@ prepGEESiteData <- function(config, pentads, asset_id,
     # Define bands
     bands <- c("pr", "tmmn", "tmmx")
 
-    # Define function
-    f <- function(band, years, .ee_pentads, .config, .monitor){
+    # Define multi-year function
+    if(length(config$years) > 1){
 
-        stackCollection <- ABDtools::EEcollectionToMultiband(collection = "IDAHO_EPSCOR/TERRACLIMATE",
-                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                             band = band,
-                                                             group_type = "year",
-                                                             groups = years,
-                                                             reducer = "mean",
-                                                             unmask = FALSE)
+        f <- function(band, years, .ee_pentads, .config, .monitor){
 
-        # Extract values from all bands of the image
-        out <- ABDtools::addVarEEimage(.ee_pentads, stackCollection, "mean", monitor = .monitor)
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = "IDAHO_EPSCOR/TERRACLIMATE",
+                                                                 dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = years,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
 
-        return(out)
+            # Extract values from all bands of the image
+            out <- ABDtools::addVarEEimage(.ee_pentads, stackCollection, "mean", monitor = .monitor)
+
+            return(out)
+
+        }
+
+    } else {
+
+        f <- function(band, years, .ee_pentads, .config, .monitor){
+
+            out <- ABDtools::addVarEEcollection(ee_feats = .ee_pentads,
+                                                collection = "IDAHO_EPSCOR/TERRACLIMATE",
+                                                dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                temp_reducer = "mean",
+                                                spt_reducer = "mean",
+                                                bands = band,
+                                                unmask = FALSE,
+                                                monitor = .monitor,
+                                                transfer = list(via = "drive", container = "rgee_backup"))
+
+            return(out)
+
+        }
 
     }
 
@@ -92,7 +114,8 @@ prepGEESiteData <- function(config, pentads, asset_id,
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
                                    image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
                                    reducer = "count",
-                                   monitor = monitor)
+                                   monitor = monitor,
+                                   transfer = list(via = "drive", container = "rgee_backup"))
 
     out <- out %>%
         dplyr::rename(wetext_2018 = count) %>%
@@ -107,7 +130,8 @@ prepGEESiteData <- function(config, pentads, asset_id,
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
                                    image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
                                    reducer = "mean",
-                                   monitor = monitor)
+                                   monitor = monitor,
+                                   transfer = list(via = "drive", container = "rgee_backup"))
 
     sitedata <- sitedata %>%
         dplyr::left_join(out %>%
@@ -144,17 +168,34 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     } else {
 
-        # Find mean human density for each pixel and year
-        stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
-                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                             band = band,
-                                                             group_type = "year",
-                                                             groups = config$years,
-                                                             reducer = "mean",
-                                                             unmask = FALSE)
+        if(length(config$years) > 1){
 
-        # Find count for each pentad and year
-        out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor)
+            # Find mean human density for each pixel and year
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                                 dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = config$years,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
+
+            # Find count for each pentad and year
+            out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "count", monitor = monitor,
+                                           transfer = list(via = "drive", container = "rgee_backup"))
+
+        } else {
+
+            out <- ABDtools::addVarEEcollection(ee_feats = ee_pentads,
+                                                collection = ee_collection,
+                                                dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                temp_reducer = "mean",
+                                                spt_reducer = "count",
+                                                bands = band,
+                                                unmask = FALSE,
+                                                monitor = .monitor,
+                                                transfer = list(via = "drive", container = "rgee_backup"))
+
+        }
 
     }
 
@@ -178,17 +219,33 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     } else {
 
-        # Find mean human density for each pixel and year
-        stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
-                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                             band = band,
-                                                             group_type = "year",
-                                                             groups = config$years,
-                                                             reducer = "mean",
-                                                             unmask = FALSE)
+        if(length(config$years) > 1){
 
-        # Find mean for each pentad and year
-        out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+            # Find mean human density for each pixel and year
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                                 dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = config$years,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
+
+            # Find mean for each pentad and year
+            out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+        } else {
+
+            out <- ABDtools::addVarEEcollection(ee_feats = ee_pentads,
+                                                collection = ee_collection,
+                                                dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                temp_reducer = "mean",
+                                                spt_reducer = "mean",
+                                                bands = band,
+                                                unmask = FALSE,
+                                                monitor = .monitor,
+                                                transfer = list(via = "drive", container = "rgee_backup"))
+
+        }
 
     }
 
@@ -228,16 +285,33 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     # Find mean NDVI for each pixel and year
     band <- "NDVI"
-    stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
-                                                         dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                         band = band,
-                                                         group_type = "year",
-                                                         groups = config$years,
-                                                         reducer = "mean",
-                                                         unmask = FALSE)
 
-    # Find mean (mean) NDVI for each pentad and year
-    out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+    if(length(config$years) > 1){
+
+        stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
+                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                             band = band,
+                                                             group_type = "year",
+                                                             groups = config$years,
+                                                             reducer = "mean",
+                                                             unmask = FALSE)
+
+        # Find mean (mean) NDVI for each pentad and year
+        out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+    } else {
+
+        out <- ABDtools::addVarEEcollection(ee_feats = ee_pentads,
+                                            collection = "MODIS/006/MOD13A2",
+                                            dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                            temp_reducer = "mean",
+                                            spt_reducer = "mean",
+                                            bands = band,
+                                            unmask = FALSE,
+                                            monitor = monitor,
+                                            transfer = list(via = "drive", container = "rgee_backup"))
+
+    }
 
     # Fix covariates (it is important not to use "_" in names other than to separate the year
     out <- out %>%
@@ -272,17 +346,33 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     } else {
 
-        # Find mean human density for each pixel and year
-        stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
-                                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
-                                                             band = band,
-                                                             group_type = "year",
-                                                             groups = config$years,
-                                                             reducer = "mean",
-                                                             unmask = FALSE)
+        if(length(config$years) > 1){
 
-        # Find mean (mean) human density for each pentad and year
-        out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+            # Find mean human density for each pixel and year
+            stackCollection <- ABDtools::EEcollectionToMultiband(collection = ee_collection,
+                                                                 dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                                 band = band,
+                                                                 group_type = "year",
+                                                                 groups = config$years,
+                                                                 reducer = "mean",
+                                                                 unmask = FALSE)
+
+            # Find mean (mean) human density for each pentad and year
+            out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
+
+        } else {
+
+            out <- ABDtools::addVarEEcollection(ee_feats = ee_pentads,
+                                                collection = ee_collection,
+                                                dates = paste0(config$year_range + c(0,1), "-01-01"),
+                                                temp_reducer = "mean",
+                                                spt_reducer = "mean",
+                                                bands = band,
+                                                unmask = FALSE,
+                                                monitor = monitor,
+                                                transfer = list(via = "drive", container = "rgee_backup"))
+
+        }
 
     }
 
@@ -969,7 +1059,8 @@ addSiteVarEETimeLimit <- function(ee_feats, ee_collection, band, last_year, redu
                                        reducer = reducer,
                                        bands = band,
                                        monitor = monitor,
-                                       unmask = unmask)
+                                       unmask = unmask,
+                                       transfer = list(via = "drive", container = "rgee_backup"))
 
         # Rename because variables are named after reducer when annotated with
         # images and not with year, like when annotated with collections
@@ -992,7 +1083,8 @@ addSiteVarEETimeLimit <- function(ee_feats, ee_collection, band, last_year, redu
                                                              unmask = unmask)
 
         # Annotate with image
-        out <- ABDtools::addVarEEimage(ee_feats, stackCollection, reducer, monitor = monitor)
+        out <- ABDtools::addVarEEimage(ee_feats, stackCollection, reducer, monitor = monitor,
+                                       transfer = list(via = "drive", container = "rgee_backup"))
 
     }
 
