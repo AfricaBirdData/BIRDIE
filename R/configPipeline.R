@@ -110,7 +110,7 @@ configPipeline <- function(year, dur, region = c("southafrica", "kenya"), module
         }
 
         if(is.null(out_dir)){
-            out_dir <- "analysis/out_nosync"
+            out_dir <- "analysis/output"
         }
 
         if(is.null(mod_dir)){
