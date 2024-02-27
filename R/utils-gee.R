@@ -108,6 +108,14 @@ prepGEESiteData <- function(config, pentads, asset_id,
                                     .fns = ~.x/10)) %>%
         sf::st_drop_geometry()
 
+    if(length(config$years) == 1){
+        sitedata <- sitedata %>%
+            dplyr::rename_with(.fn =  ~gsub("_mean", paste0("_", config$years), .x),
+                               .cols = dplyr::ends_with("_mean"))
+    }
+
+
+
     # Annotate with National Wetland Map --------------------------------------
 
     # Count pixels with wetland (wetland extension)
