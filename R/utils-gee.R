@@ -329,6 +329,12 @@ prepGEESiteData <- function(config, pentads, asset_id,
                                     .fns = ~.x/10000)) %>%
         sf::st_drop_geometry()
 
+    if(length(config$years) == 1){
+        out <- out %>%
+            dplyr::rename_with(.fn =  ~gsub("_mean", paste0("_", config$years), .x),
+                               .cols = dplyr::ends_with("_mean"))
+    }
+
     sitedata <- sitedata %>%
         dplyr::left_join(out, by = "Name")
 
