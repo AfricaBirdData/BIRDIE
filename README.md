@@ -1,7 +1,6 @@
 # BIRDIE
 This repository contains code and documentation related to the South Africa 
-Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) 
-project: https://jrsbiodiversity.org/grants/sanbi-2020/.
+Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE) <a href="https://jrsbiodiversity.org/grants/sanbi-2020/" target="_blank">project</a>.
 
 The aim of the BIRDIE project is to develop a data-to-decision pipeline for wetlands
 and waterbirds that uses use statistical analyses to compute policy-relevant indicators
@@ -26,8 +25,7 @@ pipeline we don't only have to install the package, but we also need to clone th
 to have access to the scripts.
 
 Inside of the package there are some vignettes that explain how to run the 
-different modules of the pipeline. These vignettes are also available as articles
-in the website https://africabirddata.github.io/BIRDIE/.
+different modules of the pipeline. These vignettes are also available as <a href="https://africabirddata.github.io/BIRDIE/" target="_blank">articles</a>.
 
 ## INSTRUCTIONS TO CLONE AND INSTALL PACKAGE
 
@@ -61,6 +59,6 @@ To deal with these lurking issues, I would suggest opening and working on a topi
 
 Opening branches is quick and easy, so there is no harm in opening multiple branches a day. However, it is important to merge and delete them often to keep things tidy. Git provides functionality to deal with conflicting branches. More about branches here:
 
-https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
+<a href="https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell" target="_blank">Git Branching in a Nutshell</a>
 
 Another idea is to use the 'issues' tab that you find in the project header. There, we can identify issues with the package, assign tasks and warn other contributors that we will be working on the code.
