@@ -61,13 +61,17 @@ such as convergence of parameters and posterior predictive checks</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ppl_diagnose_occu</span><span class="op">(</span><span class="va">fit</span>, data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">sp_code</span>, <span class="va">year</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ppl_diagnose_occu</span><span class="op">(</span><span class="va">fit</span>, ppc <span class="op">=</span> <span class="cn">NULL</span>, data <span class="op">=</span> <span class="cn">NULL</span>, <span class="va">sp_code</span>, <span class="va">year</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
     <dl><dt>fit</dt>
 <dd><p>A <code>spOccupancy</code> model fit to ABAP data.</p></dd>
+
+
+<dt>ppc</dt>
+<dd><p>A list with the outputs from <a href="diagnoseGofSpOccu.html">diagnoseGofSpOccu</a>.</p></dd>
 
 
 <dt>data</dt>
@@ -88,7 +92,9 @@ spOccupancy (currently used) fit objects contain the data used to fit the model.
     
 
 <p>A data frame with Rhat values for the different parameters estimated
-by the model is returned.</p>
+by the model is returned. If <code>ppc</code> is provided it will save some time because
+posterior simulations can be time consuming. Sometimes the posterior GOF test
+and posterior simulations might be available from previous pipeline runs.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
