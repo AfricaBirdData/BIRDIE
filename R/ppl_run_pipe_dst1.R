@@ -181,7 +181,17 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
             filename <- setSpOutFilePath("occu_fit", config, year, sp_code, ".rds")
             fit <- readRDS(filename)
 
-            diags <- ppl_diagnose_occu(fit, data=NULL, sp_code, year)
+            # Try to detect a posterior predictive check file
+            ppcfile <- setSpOutFilePath("occu_ppc", config, year, sp_code, ".rds")
+
+            if(file.exists(ppcfile)){
+                warning("Using existing posterior predictive checks for diagnostics. Delete existing ppc files to compute a new one")
+                ppc <- readRDS(ppcfile)
+            } else {
+                ppc <- NULL
+            }
+
+            diags <- ppl_diagnose_occu(fit, ppc = ppc, data=NULL, sp_code, year)
 
             # Save basic diagnostics (convergence and Bayesian p-value)
             diags$rhat$bayes_p <- diags$gof$bayes_p
