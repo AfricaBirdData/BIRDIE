@@ -65,6 +65,7 @@ createOccuData <- function(config, sp_code, years,
         # Subset visits that correspond to the years of interest
         visit_data <- visit_data %>%
             dplyr::filter(year %in% years) %>%
+            dplyr::select(-hum.km2) %>%
             tidyr::drop_na()   # I'M REMOVING VISITS WITH NA DATA! MAKE SURE THIS MAKES SENSE
 
         # Create additional detection variables
@@ -74,8 +75,8 @@ createOccuData <- function(config, sp_code, years,
                           obs_id = as.numeric(ObserverNo),
                           tdiff = tmmx - tmmn,
                           hours = TotalHours,
-                          log_hours = log(hours + 1),
-                          log_hum.km2 = log(hum.km2 + 1)) %>%
+                          # log_hum.km2 = log(hum.km2 + 1),
+                          log_hours = log(hours + 1)) %>%
             dplyr::left_join(site_data %>%
                                  dplyr::select(Pentad, site_id) %>%
                                  dplyr::distinct(),
