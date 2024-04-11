@@ -22,6 +22,10 @@
 
 gatherYearFromVars <- function(x, vars, sep){
 
+    if("sf" %in% class(x)){
+        stop("gatherYearFromVars does not take sf objects, please try as.data.frame(x)")
+    }
+
     x <- x %>%
         tidyr::pivot_longer(cols = dplyr::all_of(vars)) %>%
         tidyr::separate(name, into = c("covt", "year"), sep = sep) %>%

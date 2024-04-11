@@ -24,6 +24,14 @@ ppl_diagnose_occu <- function(fit, ppc = NULL, data = NULL, sp_code, year){
     # Diagnose convergence
     diag_out$rhat <- diagnoseRhatSpOccu(fit, sp_code, year)
 
+    # Add original number of visits to get an idea of data lost to NA covariates
+    year_sel <- year
+    geevisitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
+    geevisitdata <- utils::read.csv(geevisitfile)
+    diag_out$rhat$nvisits0 <- geevisitdata |>
+        dplyr::filter(year == year_sel) |>
+        nrow()
+
     # Diagnose model fit
     if(is.null(ppc)){
         post_sims <- simDetSpOccu(fit)

@@ -355,7 +355,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
     if(any(config$years > last_year)){
 
         out <- addSiteVarEETimeLimit(ee_pentads, ee_collection, band, last_year,
-                                     reducer=reducer, unmask=FALSE,
+                                     reducer=reducer, unmask=TRUE,
                                      monitor= monitor, config=config)
 
     } else {
@@ -369,7 +369,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
                                                                  group_type = "year",
                                                                  groups = config$years,
                                                                  reducer = "mean",
-                                                                 unmask = FALSE)
+                                                                 unmask = TRUE)
 
             # Find mean (mean) human density for each pentad and year
             out <- ABDtools::addVarEEimage(ee_pentads, stackCollection, "mean", monitor = monitor)
@@ -382,7 +382,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
                                                 temp_reducer = "mean",
                                                 spt_reducer = "mean",
                                                 bands = band,
-                                                unmask = FALSE,
+                                                unmask = TRUE,
                                                 monitor = monitor,
                                                 transfer = list(via = "drive", container = "rgee_backup"))
 
@@ -660,7 +660,8 @@ prepGEEVisitData <- function(config, visits, asset_id,
                                                     reducer = "mean",                          # We only need spatial reducer
                                                     maxdiff = 200,                              # This is the maximum time difference that GEE checks
                                                     bands = c("population"),
-                                                    monitor = monitor)
+                                                    monitor = monitor,
+                                                    unmask = TRUE)
 
         visit <- visit %>%
             sf::st_drop_geometry() %>%
