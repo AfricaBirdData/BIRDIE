@@ -42,6 +42,13 @@ ppl_create_site_visit <- function(config,
     sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
     detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
 
+    message(paste("Looking for file", visitfile))
+    if(file.exists(visitfile)){message("OK")}
+    message(paste("Looking for file", sitefile))
+    if(file.exists(sitefile)){message("OK")}
+    message(paste("Looking for file", detfile))
+    if(file.exists(detfile)){message("OK")}
+
     if(force_site_visit){
         prep_data <- TRUE
     } else if(!file.exists(sitefile) | !file.exists(visitfile)){
@@ -57,6 +64,11 @@ ppl_create_site_visit <- function(config,
 
         geesitefile <- file.path(config$out_dir, paste0("site_dat_sa_gee_", config$years_ch, ".csv"))
         geevisitfile <- file.path(config$out_dir, paste0("visit_dat_sa_gee_", config$years_ch, ".csv"))
+
+        message(paste("Looking for file", geesitefile))
+        if(file.exists(geesitefile)){message("OK")}
+        message(paste("Looking for file", geevisitfile))
+        if(file.exists(geevisitfile)){message("OK")}
 
         if(!file.exists(geesitefile) | !file.exists(geevisitfile) | force_gee_dwld){
             # Initialize Earth Engine
