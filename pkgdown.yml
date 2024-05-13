@@ -1,5 +1,5 @@
 pandoc: 3.1.11
-pkgdown: 2.0.8
+pkgdown: 2.0.9
 pkgdown_sha: ~
 articles:
   v01-birdie-basics: v01-birdie-basics.html
@@ -13,7 +13,7 @@ articles:
   v09-birdie-dst-model-fitting: v09-birdie-dst-model-fitting.html
   v10-birdie-dst-diagnostics: v10-birdie-dst-diagnostics.html
   v11-birdie-dst-model-summary: v11-birdie-dst-model-summary.html
-last_built: 2024-04-11T17:19Z
+last_built: 2024-05-13T07:59Z
 urls:
   reference: https://africabirddata.github.io/BIRDIE/reference
   article: https://africabirddata.github.io/BIRDIE/articles
