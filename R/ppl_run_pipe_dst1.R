@@ -226,12 +226,18 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
             fit <- readRDS(filename)
         }
 
-        # Load diagnostic file
-        diagfile <- setSpOutFilePath("occu_diagnostics", config, year, sp_code, ".csv")
-        diags <- utils::read.csv(diagfile)
-        diag_pass <- diags$bayes_p > 0.1 && diags$bayes_p < 0.9
+        diag_pass <- FALSE
 
-        if(exists("fit") & diag_pass){
+        if(exists("fit")){
+
+            # Load diagnostic file
+            diagfile <- setSpOutFilePath("occu_diagnostics", config, year, sp_code, ".csv")
+            diags <- utils::read.csv(diagfile)
+            diag_pass <- diags$bayes_p > 0.1 && diags$bayes_p < 0.9
+
+        }
+
+        if(exists("fit") && diag_pass){
 
             ppl_summarise_occu(fit, sp_code, year, config)
             # Create log
