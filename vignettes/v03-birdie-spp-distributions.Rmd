@@ -71,7 +71,7 @@ config <- configPipeline(year = 2010,
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
                                      "watrec", "watext", "log_watext", "watext:watrec",
                                      "ndvi", "prcp", "tdiff"),
-                         det_mod = det_mods$det_mod1,
+                         det_mod = det_mods$det_mod2,
                          fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                         "dist_coast", "elev"),
                          package = "spOccupancy",
@@ -79,27 +79,56 @@ config <- configPipeline(year = 2010,
                          out_dir = "analysis/output",    # this might have to be adapted?
                          server = FALSE)
 ```
-
-
-In the piece of code above, we list a couple of possible detection models that we
+Before configuring the pipeline,  we list a couple of possible detection models that we
 can choose from (handy if we are planning of conducting several runs of the pipeline
-with different models), and then we create a `config` object that will be used
-throughout the pipeline by several functions.
+with different models). This is not required though and the detection model can be specified in the same manner as the occupancy model in the `configPipeline' function below. 
 
 The `configPipeline()` function, allows us to let the pipeline know what models
-we want to run, for what years, what packages we want to use, etc. For detailed
-information see `?configPipeline`.
+we want to run, for what years, what packages we want to use and where the data is stored and where our outputs should be stored. For example, in the above, we've specified year as 2010 and duration as 3, which equates to running the distirbution pipeline for the years 2008, 2009 and 2010. We've specified the occupancy covariates to be used for each model and chosen the detection model from the list created previously. Currently, the detection model that is used for the BIRDIE project is the second model specified. Lastly, the directories are specified and specify `server = FALSE` to indicate that we are not running the pipeline on the BIRDIE server. Running the pipeline on the server requires specifying the configuration slightly differently. For detailed information on the arguments see `?configPipeline`.
 
-(Note: there might be a better way of doing this, such as creating environment variables
-or something like this, but this works for now)
+(Note: there might be a better way of doing this, such as creating environment variables or something like this, but this works for now)
 
+### One species vs many species 
+
+To run the pipeline for one species and **for the first time**, the function `ppl_run_pipe_dst1` is envoked as follows: 
+
+```{r, eval =FALSE}
+
+spcode4_2023_dst <- ppl_run_pipe_dst1(sp_code = config$species[1],
+                  year = 2023, # this is the year models will run for
+                  config = config,
+                  steps = c("data","fit","diagnose","summary"),
+                  force_gee_dwld = TRUE,
+                  force_site_visit =  TRUE,
+                  force_abap_dwld = TRUE,
+                  monitor_gee = TRUE,
+                  print_fitting = TRUE,
+                  spatial = FALSE)
+
+
+````
+
+The first argument specifies the ABAP species code, here we've simply extracted the first species code from the `config' object created. The year is specified again and the steps of the pipeline are specified. The steps are covered in detail in the remaining sections. The next three arguments specify whether site and visit data should be obtained, annotated and formatted for model fitting. Here we've set them all to true, more on this in the detailed section on data preparation. The next two arguments specify whether periodic messages of the state of the downloads
+from GEE and model fitting should be printed in the console. The last argument indicates whether the occupancy models fitted should be spatial or non-spatial. 
+
+To run the pipeline for all the species, nested for loops are used to iterate over the years for each species. The first for loop runs through the species: 
+
+```{r, eval = FALSE}
+
+for(i in seq_along(config$species)){
+
+    # Select one species code
+    sp_code <- config$species[i]
+
+
+```
+
+Before running the models, a log-file is created.
 
 ### Create logs
 
-
 ```{r, eval=FALSE}
-
-# Create log?
+# Create log file 
     if(i == 1){
         createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
                   year = NA, data = NA, fit = NA, diagnose = NA, summary = NA,
@@ -119,13 +148,14 @@ stored on the `utils.R` file, notably see `?createLog()` for general logs and
 We see that for if we run the pipeline for several species, it makes sense to create
 a log file only for the first species (that is why `if(i == 1)`), and then use this file to store information
 for all species, each in one row of the .csv file. If we just created one log for
-each species, then there would be one .csv log file for each species. The past this
+each species, then there would be one .csv log file for each species. After this
 first setup phase, the pipeline will look for the most recent log file and add information
 to it, regardless of whether information is already present or not.
 
 
 ### Run modules
 
+Then the distribution module is run for each of the years specificied in the conifguration object in the nested for loop: 
 
 ```{r, eval=FALSE}
 
@@ -138,11 +168,11 @@ for(t in seq_along(config$years)){
                                   config = config,
                                   steps = c("data", "fit", "summary", "diagnose"),
                                   force_gee_dwld = FALSE,
-                                  monitor_gee = TRUE,
                                   force_site_visit = TRUE,
                                   force_abap_dwld = FALSE,
-                                  spatial = FALSE,
-                                  print_fitting = TRUE)
+                                  monitor_gee = TRUE,
+                                  print_fitting = TRUE,
+                                  spatial = FALSE,)
     
     message(paste("Pipeline DST1 status =", out_dst1))
     
@@ -154,12 +184,10 @@ for(t in seq_along(config$years)){
 
 ```
 
-The final part of the script runs the modules of the pipeline that we are interested in
-(currently there is only one, because "module 2 - Area of Occupancy and other derived
-indicators", is now run by the data base).
-It will loop through the different years that we have set during the configuration
-phase and it will run the main function of the distribution module `ppl_run_pipe_dst1()`.
-This function can run all the steps of the module: data preparation, model fitting, 
+Currently there is only one distribution module, because "module 2 - Area of Occupancy and other derived
+indicators", is now run by the data base. Note the difference in the data preparation arguments. More on this in the data preparation section. 
+
+The `ppl_run_pipe_dst1()` function can run all the steps of the module: data preparation, model fitting, 
 model diagnostics and model summary, or it can run just some of them. It will use the
 `config` object to know what package it should use for model fitting and the paths to
 store model-ready data and model outputs. Note that some of the steps, may take quite long.
