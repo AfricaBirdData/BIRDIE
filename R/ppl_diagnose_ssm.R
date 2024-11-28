@@ -32,15 +32,15 @@ ppl_diagnose_ssm <- function(fit, counts, sp_code, config){
     sds <- fit$sd$stt_s
     q975 <- fit$q97.5$stt_s
 
-    # Find maximum estimates and maximum upper limit (in the last 10 years) per site
+    # Calculate ratio upper bound to estimate (log scale)
+    ratios <- q975 - sts
+
+    # Find maximum ratio per site
     keep <- (ncol(sts) - 10):ncol(sts)
-    max_sts <- apply(sts, 1, max, na.rm = TRUE)
-    max_q975 <- apply(q975[ , keep, drop = FALSE], 1, max, na.rm = TRUE)
+    max_ratio <- apply(ratios, 1, max, na.rm = TRUE)
 
     # Find sites where the uncertainty is large with respect to the estimate
-    large_ci <- (exp(max_q975) - exp(max_sts)) / exp(max_sts)
-
-    drop_sites <- large_ci > 50
+    drop_sites <- max_ratio > 3.9 # This is 50 in the original scale
 
     # Build diagnosis data frame
     diag_df$Tmean <- gof["Tmean"]
