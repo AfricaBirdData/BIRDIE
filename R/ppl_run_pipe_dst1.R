@@ -123,7 +123,7 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
 
         # Dump a message for debugging
         sink(file.path(config$out_dir, "reports", paste0(Sys.time(), "_Fitting_species_", sp_code, "_year_", year, ".txt")))
-        print(paste(Sys.time(), "Fitting occupancy model to species", sp_code, "for year", year_sel))
+        print(paste(Sys.time(), "Fitting occupancy model to species", sp_code, "for year", year))
         sink()
 
         # Fit model

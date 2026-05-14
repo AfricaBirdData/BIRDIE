@@ -502,7 +502,7 @@ diagnoseRhatSpOccu <- function(fit, sp_code, year){
 #' @export
 #'
 #' @examples
-fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial = FALSE, sp_sites, ...){
+fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial = FALSE, sp_sites, year_sel, ...){
 
     # Prepare data for spOccupancy
     occu_data <- prepSpOccuData_single(site_data_year, visit_data_year, config, spatial = spatial, sp_sites)
