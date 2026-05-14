@@ -1,0 +1,45 @@
+# Fit occupancy models in parallel
+
+Wrapper around ppl_run_pipe_dst1 (fit step) for furrr parallel calls
+
+## Usage
+
+``` r
+pipe_prll_fit(
+  .sp_code,
+  .year,
+  .spatial = FALSE,
+  .config,
+  .steps = c("fit", "diagnose"),
+  time_limit = NULL
+)
+```
+
+## Arguments
+
+- .sp_code:
+
+  Species SAFRING code
+
+- .year:
+
+  Year to run to the pipeline for
+
+- .spatial:
+
+  Whether a spatial model should be fit. Defaults to FALSE.
+
+- .config:
+
+  Config object from
+  [`configPipeline`](https://africabirddata.github.io/BIRDIE/reference/configPipeline.md)
+
+- .steps:
+
+  Character vector with the steps the pipeline should run. Typically
+  c("fit", "diagnose"). However, be aware that "diagnose" uses a lot of
+  RAM.
+
+- time_limit:
+
+  Computation time limit for each core in seconds.

@@ -132,7 +132,7 @@ wrappers around <a href="https://github.com/AfricaBirdData/ABAP/blob/main/R/abap
 and <a href="https://github.com/AfricaBirdData/ABAP/blob/main/R/abapToSpOcc_multi.R" class="external-link"><code>ABAP::abapToSpOcc_multi()</code></a>.</p></li>
 <li><p>Define priors and initial values. For species we don’t have any
 models fit, we use the default priors from <code>spOccupancy</code> (see
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/PGOcc.html" class="external-link">?spOccupancy::PGOcc</a></code> for details). However, if we have model
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/PGOcc.html" class="external-link">?spOccupancy::PGOcc</a></code> for details). However, if we have model
 fits for previous years, we center the priors in the previous parameter
 estimate (if it exists - we might have fitted a different model - more
 of this later) and use the standard deviation of the estimate plus one,
@@ -141,9 +141,9 @@ sqrt(2.5)), in which case we use the latter. An important function to
 this is <code>defineSpOccuPriors()</code> (in
 <code>R/utils-spOccupancy.R</code>).</p></li>
 <li><p>Run the model. We fit the model using
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/PGOcc.html" class="external-link">spOccupancy::PGOcc()</a></code> since we are not currently using
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/PGOcc.html" class="external-link">spOccupancy::PGOcc()</a></code> since we are not currently using
 spatial effects. If we did, then we would use
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/spPGOcc.html" class="external-link">spOccupancy::spPGOcc()</a></code>. Finally, we add information about
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/spPGOcc.html" class="external-link">spOccupancy::spPGOcc()</a></code>. Finally, we add information about
 priors and covariate scales to the model fit to be used in other
 operations later.</p></li>
 </ol>
@@ -178,7 +178,7 @@ functionality still needs to be developed.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

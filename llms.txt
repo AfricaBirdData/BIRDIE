@@ -1,0 +1,222 @@
+# BIRDIE
+
+This repository contains code and documentation related to the South
+Africa Biodiversity Data Pipeline for Wetlands and Waterbirds (BIRDIE)
+[project](https://jrsbiodiversity.org/grants/sanbi-2020/).
+
+The aim of the BIRDIE project is to develop a data-to-decision pipeline
+for wetlands and waterbirds that uses use statistical analyses to
+compute policy-relevant indicators using citizen science data. The data
+pipeline initiates pulling data from different databases and
+repositories, data then moves through cleaning and validation steps, and
+into statistical analyses and summaries that result in indicators that
+are useful for decision makers. These indicators are then post-processed
+and presented on website. These indicators are useful to support South
+Africa’s national and international reporting requirements, management
+of wetland sites, and broader interest in wetlands and waterbirds.
+
+This repository contains the code necessary for data acquisition and
+statistical modelling, which are conducted in R. Modelling outputs are
+then exported to a MySQL database that is hosted on a different system
+together with the website and the API services that allow communication
+between the two. However, here we will not be concerned with anything
+beyond the computation of basic indicators in R.
+
+There are two basic elements in the BIRDIE repo: i) a package that
+contains functions and data that is installed as an extension to base R
+and ii) an analysis folder that contains analysis scripts that run in R.
+In other words, the package adds functionality to R and the analysis
+scripts use this functionality. This means that to use the pipeline we
+don’t only have to install the package, but we also need to clone the
+repository to have access to the scripts.
+
+Inside of the package there are some vignettes that explain how to run
+the different modules of the pipeline. These vignettes are also
+available as [articles](https://africabirddata.github.io/BIRDIE/).
+
+## INSTRUCTIONS TO CLONE AND INSTALL PACKAGE
+
+1.  Clone the repository to your local machine:
+    - In RStudio, create a new project
+    - In the ‘Create project’ menu, select ‘Version Control’/‘Git’
+    - Copy the repository URL (click on the ‘Code’ green button and copy
+      the link)
+    - Choose the appropiate directory and ‘Create project’
+2.  Install the package ‘devtools’ in case you don´t have it and run
+    `devtools::install(build_vignettes = TRUE)` from the project
+    directory
+3.  Remember to pull the latest version regularly
+
+## INSTRUCTIONS TO CONTRIBUTE CODE TO THE PACKAGE
+
+For site owners:
+
+There is the danger of multiple people working simultaneously on the
+project code. If you make changes locally on your computer and, before
+you push your changes, others push theirs, there might be conflicts.
+This is because the HEAD pointer in the main branch has moved since you
+started working.
+
+To deal with these lurking issues, I would suggest opening and working
+on a topic branch. This is a just a regular branch that has a short
+lifespan. In steps:
+
+- Open a branch at your local machine
+- Push to the remote repo
+- Make your changes in your local machine
+- Commit and push to remote
+- Merge your changes:
+  - In the GitHub repo you will now see an option that notifies of
+    changes in a branch: click compare and pull request.
+  - If there are no conflicts ‘merge pull request’
+- Delete the branch. You will have to delete it in the remote repo
+  (GitHub) and also in your local machine. In your local machine you
+  have to use Git directly, apparently RStudio doesn´t do it:
+  - In your local machine, change to master branch.
+  - Either use the Git GUI (go to branches/delete/select branch/push).
+  - Or use the console typing ‘git branch -d your_branch_name’.
+
+Opening branches is quick and easy, so there is no harm in opening
+multiple branches a day. However, it is important to merge and delete
+them often to keep things tidy. Git provides functionality to deal with
+conflicting branches. More about branches here:
+
+[Git Branching in a
+Nutshell](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell)
+
+Another idea is to use the ‘issues’ tab that you find in the project
+header. There, we can identify issues with the package, assign tasks and
+warn other contributors that we will be working on the code.
+
+# Package index
+
+## All functions
+
+- [`addDuToitCounts()`](https://africabirddata.github.io/BIRDIE/reference/addDuToitCounts.md)
+  : Add DuToit's Pan data from Doug
+- [`addExtraSitesToSummary()`](https://africabirddata.github.io/BIRDIE/reference/addExtraSitesToSummary.md)
+  : Add raw counts to CWAC SSM predictions
+- [`addSiteVarEETimeLimit()`](https://africabirddata.github.io/BIRDIE/reference/addSiteVarEETimeLimit.md)
+  : Annotate site data with Google Earth Engine with a time limit
+- [`addSpOccDetCovt()`](https://africabirddata.github.io/BIRDIE/reference/addSpOccDetCovt.md)
+  : Add detection covariate to spOccupancy data list
+- [`barberspan`](https://africabirddata.github.io/BIRDIE/reference/barberspan.md)
+  : Barberspan CWAC data
+- [`combineAbuDiags()`](https://africabirddata.github.io/BIRDIE/reference/combineAbuDiags.md)
+  : Combine species abundance diagnostics into a single object
+- [`combineOccuDiags()`](https://africabirddata.github.io/BIRDIE/reference/combineOccuDiags.md)
+  : Combine species occupancy diagnostics into a single object
+- [`configPipeline()`](https://africabirddata.github.io/BIRDIE/reference/configPipeline.md)
+  : Configure pipeline parameters
+- [`createCombinedExportFile()`](https://africabirddata.github.io/BIRDIE/reference/createCombinedExportFile.md)
+  : Create a combined file for export to data mart
+- [`createLog()`](https://africabirddata.github.io/BIRDIE/reference/createLog.md)
+  : Create pipeline event log
+- [`createOccuData()`](https://africabirddata.github.io/BIRDIE/reference/createOccuData.md)
+  : Create data for fitting an occupancy model
+- [`createPredFromAbap()`](https://africabirddata.github.io/BIRDIE/reference/createPredFromAbap.md)
+  : Create prediction object directly from ABAP data
+- [`diagnoseGofJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseGofJagsSsm.md)
+  : Diagnose goodness-of-fit for JAGS state-space model
+- [`diagnoseGofSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseGofSpOccu.md)
+  : Conduct goodness-of-fit test for spOccupancy models
+- [`diagnoseRhatJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseRhatJagsSsm.md)
+  : Diagnose convergence for JAGS state-space model
+- [`diagnoseRhatSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseRhatSpOccu.md)
+  : Diagnose convergence for spOccupancy model
+- [`fitSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/fitSpOccu.md)
+  : Fit spOccupancy model
+- [`gatherYearFromVars()`](https://africabirddata.github.io/BIRDIE/reference/gatherYearFromVars.md)
+  : Gather years from variables with year
+- [`logFitStatus()`](https://africabirddata.github.io/BIRDIE/reference/logFitStatus.md)
+  : Generate fit status messages
+- [`pipe_prll_fit()`](https://africabirddata.github.io/BIRDIE/reference/pipe_prll_fit.md)
+  : Fit occupancy models in parallel
+- [`plotDetections()`](https://africabirddata.github.io/BIRDIE/reference/plotDetections.md)
+  : Plot detection from occupancy data
+- [`plotJagsSsm2ss()`](https://africabirddata.github.io/BIRDIE/reference/plotJagsSsm2ss.md)
+  : Plot state series of a JAGS state-space model with two seasons
+- [`plotOccuVars()`](https://africabirddata.github.io/BIRDIE/reference/plotOccuVars.md)
+  : Plot occupancy covariates
+- [`postPredDistJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/postPredDistJagsSsm.md)
+  : Prepare posterior predictive distribution for JAGS state-space model
+- [`ppl_create_data_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_data_ssm.md)
+  : Prepare covariate data for abundance pipeline
+- [`ppl_create_indtr_file()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_indtr_file.md)
+  : Create indicator storage files
+- [`ppl_create_site_visit()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_site_visit.md)
+  : Create site and visit occupancy files
+- [`ppl_diagnose_occu()`](https://africabirddata.github.io/BIRDIE/reference/ppl_diagnose_occu.md)
+  : Run diagnostics for occupancy model fit
+- [`ppl_diagnose_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_diagnose_ssm.md)
+  : Run diagnostics for a state-space model fit
+- [`ppl_fit_occu_model()`](https://africabirddata.github.io/BIRDIE/reference/ppl_fit_occu_model.md)
+  : Fit occupancy model
+- [`ppl_fit_ssm_model()`](https://africabirddata.github.io/BIRDIE/reference/ppl_fit_ssm_model.md)
+  : Fit state-space JAGS model
+- [`ppl_run_pipe_abu1()`](https://africabirddata.github.io/BIRDIE/reference/ppl_run_pipe_abu1.md)
+  : Run abundance pipeline ABU1
+- [`ppl_run_pipe_dst1()`](https://africabirddata.github.io/BIRDIE/reference/ppl_run_pipe_dst1.md)
+  : Run distribution indicators pipeline module 1
+- [`ppl_summarise_occu()`](https://africabirddata.github.io/BIRDIE/reference/ppl_summarise_occu.md)
+  : Summarise predictions from occupancy model
+- [`ppl_summarise_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_summarise_ssm.md)
+  : Summarise predictions from state-space JAGS model
+- [`predictSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/predictSpOccu.md)
+  : Predict from spOccupancy model fit
+- [`prepGEECatchmData()`](https://africabirddata.github.io/BIRDIE/reference/prepGEECatchmData.md)
+  : Prepare Google Earth Engine data for catchments
+- [`prepGEESiteData()`](https://africabirddata.github.io/BIRDIE/reference/prepGEESiteData.md)
+  : Prepare Google Earth Engine site data
+- [`prepGEEVisitData()`](https://africabirddata.github.io/BIRDIE/reference/prepGEEVisitData.md)
+  : Prepare Google Earth Engine visit data
+- [`prepSpOccuData_multi()`](https://africabirddata.github.io/BIRDIE/reference/prepSpOccuData_multi.md)
+  : Prepare spOccupancy data for multi-season model fitting
+- [`prepSpOccuData_single()`](https://africabirddata.github.io/BIRDIE/reference/prepSpOccuData_single.md)
+  : Prepare spOccupancy data for single-season model fitting
+- [`prepSsmData()`](https://africabirddata.github.io/BIRDIE/reference/prepSsmData.md)
+  : Prepare CWAC data to fit a state-space model
+- [`processJAGSoutput()`](https://africabirddata.github.io/BIRDIE/reference/processJAGSoutput.md)
+  : Process JAGS model outputs
+- [`scaleSpOccVars()`](https://africabirddata.github.io/BIRDIE/reference/scaleSpOccVars.md)
+  : Scale covariates in spOccupancy-type data
+- [`selectSppFromDiag()`](https://africabirddata.github.io/BIRDIE/reference/selectSppFromDiag.md)
+  : Select species based on model diagnostics
+- [`setSpOutFilePath()`](https://africabirddata.github.io/BIRDIE/reference/setSpOutFilePath.md)
+  : Set a standard path for a pipeline output file associated with a
+  species
+- [`simDetSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/simDetSpOccu.md)
+  : Simulate detections from spOccupancy fit
+- [`summariseSpOccu()`](https://africabirddata.github.io/BIRDIE/reference/summariseSpOccu.md)
+  : Summarise spOccupancy occupancy estimates
+- [`summaryJags()`](https://africabirddata.github.io/BIRDIE/reference/summaryJags.md)
+  : Summarise JAGS model fit
+- [`waterbirds`](https://africabirddata.github.io/BIRDIE/reference/waterbirds.md)
+  : BIRDIE's waterbird masterlist
+
+# Articles
+
+### All vignettes
+
+- [BIRDIE:
+  Basics](https://africabirddata.github.io/BIRDIE/articles/v01-birdie-basics.md):
+- [BIRDIE: Species
+  abundance](https://africabirddata.github.io/BIRDIE/articles/v02-birdie-spp-abundance.md):
+- [BIRDIE: Species
+  distributions](https://africabirddata.github.io/BIRDIE/articles/v03-birdie-spp-distributions.md):
+- [BIRDIE ABU: Data
+  preparation](https://africabirddata.github.io/BIRDIE/articles/v04-birdie-abu-data-prep.md):
+- [BIRDIE ABU: Model
+  fitting](https://africabirddata.github.io/BIRDIE/articles/v05-birdie-abu-model-fitting.md):
+- [BIRDIE ABU: Model
+  diagnostics](https://africabirddata.github.io/BIRDIE/articles/v06-birdie-abu-model-diagnostics.md):
+- [BIRDIE ABU: Model
+  summary](https://africabirddata.github.io/BIRDIE/articles/v07-birdie-abu-model-summary.md):
+- [BIRDIE DST: Data
+  preparation](https://africabirddata.github.io/BIRDIE/articles/v08-birdie-dst-data-prep.md):
+- [BIRDIE DST: Model
+  fitting](https://africabirddata.github.io/BIRDIE/articles/v09-birdie-dst-model-fitting.md):
+- [BIRDIE DST: Model
+  diagnostics](https://africabirddata.github.io/BIRDIE/articles/v10-birdie-dst-diagnostics.md):
+- [BIRDIE DST: Model
+  summary](https://africabirddata.github.io/BIRDIE/articles/v11-birdie-dst-model-summary.md):

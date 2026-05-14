@@ -1,0 +1,90 @@
+# BIRDIE ABU: Model diagnostics
+
+## Introduction
+
+The species abundance module (ABU) of the BIRDIE pipeline has four main
+steps: data preparation, model fitting, model diagnostics and model
+summary. See the *BIRDIE: basics* and *BIRDIE: species abundance*
+vignettes for general details about BIRDIE and about the DST module,
+respectively. In this vignette, we will go through the different tasks
+that are performed during the step of the DST module: **model
+diagnostics**.
+
+The main function used for model diagnosis is
+[`ppl_diagnose_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_diagnose_ssm.md).
+This is a `ppl_` function, and therefore it doesn’t do much processing
+itself (see *BIRDIE: basics* if this is confusing), but it does call the
+right functions to do the work.
+
+During the diagnostics step we look at two indicators: the Gelman-Rubin
+convergence diagnostic ($`\hat{R}`$) and a goodness-of-fit Bayesian
+p-value. The first diagnostic is computed by the function
+[`diagnoseRhatJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseRhatJagsSsm.md)
+and the second one by the function
+[`diagnoseGofJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseGofJagsSsm.md)
+(both functions are found in `R/utils-jags.R`).
+
+[`ppl_diagnose_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_diagnose_ssm.md)
+combines the output of these two functions into a single table that is
+stored in
+`analysis/output/sp_code/abu_diagnostics_spOccupancy_YYYY_sp_code.csv`,
+where `YYYY` is the year of the data we are fitting a model to and
+`sp_code` is the species code. In this way, it is easy to extract all
+diagnostic files from the different directories, combine them into a
+table and quickly explore potential issues.
+
+## Diagnosing convergence
+
+The function
+[`diagnoseRhatJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseRhatJagsSsm.md)
+extracts $`\hat{R}`$ values computed by `JAGS` for each of the estimated
+parameters and tabulates them. In this table, each parameter appears in
+one column and gets a 0 if $`|1 - \hat{R}| < 0.1`$ and a 1 otherwise.
+Some extra columns are added, such as number of non-convergent
+parameters, number of detections observed, number of observations, etc.
+
+## Diagnosing goodness-of-fit
+
+The function
+[`diagnoseGofJagsSsm()`](https://africabirddata.github.io/BIRDIE/reference/diagnoseGofJagsSsm.md)
+conducts posterior predictive checks (PPC) and calculates a Bayesian
+p-value.
+
+The procedure consists of simulating a number of count data sets from
+the posterior distribution and comparing them with the observed data.
+
+We calculate the mean and standard deviation for each of the simulated
+data sets. Then, we calculate the number of data sets that are below and
+above the mean observed in the data (“Tmean”). If we obtain proportions
+close to 0.5 it means that our predictions are unbiased. We follow a
+similar procedure with the standard deviations (“Tsd”) to see if our
+predictions have a similar dispersion as that observed in the data.
+Finally, for each simulation we calculate the mean difference observed
+with the data (“Tdiff”), which should give us an idea of the magnitude
+of the bias, should it exist.
+
+## Diagnosing uncertainty
+
+Streamlined analyses can be difficult to stabilize for all species and
+sites. Sometimes state estimate uncertainty can grow quickly,
+particularly in long periods with missing data at the beginning and end
+of the time series. We are particularly concerned with uncertainty
+exploding towards recent years, because this can impact managers and
+decision makers. Therefore, we test whether the upper limit of the
+confidence band estimated for the last 10 years ever gets higher than 50
+times the highest estimate for that period, at any site for any species.
+If this is the case we exclude estimates and uncertainty bands for those
+sites and species combinations. We still present counts.
+
+The function
+[`ppl_diagnose_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_diagnose_ssm.md)
+identifies for each species what sites present large uncertainty at the
+end of the time series and stores them in the diagnostics file. This
+information will then be used by the summary function to exclude the
+corresponding estimates.
+
+## Shiny apps
+
+We have developed a Shiny app that allows us to extract diagnostics for
+any species and year and explore them in an interactive way. The app is
+still experimental and can be found at `analysis/tools/diagnose_dabu`

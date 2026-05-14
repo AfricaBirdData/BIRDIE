@@ -97,7 +97,7 @@ Africa from a fitted model and summarise these predictions.</p>
 </h2>
 <p><code><a href="../reference/predictSpOccu.html">predictSpOccu()</a></code> is used for predicting from a model fit
 and it is basically a wrapper around
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/predict.PGOcc.html" class="external-link">spOccupancy::predict.PGOcc()</a></code>. However, it has a few data
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/predict.PGOcc.html" class="external-link">spOccupancy::predict.PGOcc()</a></code>. However, it has a few data
 preparation steps to make sure the data we pass on to the predict
 function has the same variables and on the same scale as the data we
 used for fitting the model. Model are fitted using only those pentads
@@ -126,7 +126,7 @@ posterior predictive samples.</p>
 <p>We also compute the realized occupancy from the posterior predictive
 samples and the data. The realized occupancy is the probability of
 occurrence conditional on the observed data, such that</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>o</mi><mi>c</mi><mi>c</mi><mi>u</mi><mo stretchy="false" form="prefix">|</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>=</mo><mn>1</mn><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">P[occu | obs = 1] = 1</annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">[</mo><mi>o</mi><mi>c</mi><mi>c</mi><mi>u</mi><mo stretchy="false" form="prefix">|</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>=</mo><mn>0</mn><mo stretchy="true" form="postfix">]</mo></mrow><mo>=</mo><mfrac><mrow><mi>ψ</mi><mi>q</mi></mrow><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ψ</mi><mo>+</mo><mi>ψ</mi><mi>q</mi><mo stretchy="true" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">P[occu | obs = 0] = \frac{\psi q}{(1 - \psi + \psi q)}</annotation></semantics></math>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">[</mo><mi>o</mi><mi>c</mi><mi>c</mi><mi>u</mi><mo stretchy="false" form="prefix">|</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>=</mo><mn>1</mn><mo stretchy="false" form="postfix">]</mo><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">P[occu | obs = 1] = 1</annotation></semantics></math><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">[</mo><mi>o</mi><mi>c</mi><mi>c</mi><mi>u</mi><mo stretchy="false" form="prefix">|</mo><mi>o</mi><mi>b</mi><mi>s</mi><mo>=</mo><mn>0</mn><mo stretchy="false" form="postfix">]</mo><mo>=</mo><mfrac><mrow><mi>ψ</mi><mi>q</mi></mrow><mrow><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>ψ</mi><mo>+</mo><mi>ψ</mi><mi>q</mi><mo stretchy="false" form="postfix">)</mo></mrow></mfrac></mrow><annotation encoding="application/x-tex">P[occu | obs = 0] = \frac{\psi q}{(1 - \psi + \psi q)}</annotation></semantics></math>
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>o</mi><mi>b</mi><mi>s</mi><mo>=</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">obs = 1</annotation></semantics></math>
 when the species was detected at a site on any visit, and
@@ -134,7 +134,7 @@ when the species was detected at a site on any visit, and
 when the species was not detected at a site on any visit,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ψ</mi><annotation encoding="application/x-tex">\psi</annotation></semantics></math>
 is the probability of occurrence estimated by our model and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><msubsup><mo>∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">q = \prod_{i=1}^N (1 - p_i)</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>q</mi><mo>=</mo><msubsup><mo>∏</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></msubsup><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo>−</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">q = \prod_{i=1}^N (1 - p_i)</annotation></semantics></math>,
 with
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>p</mi><mi>i</mi></msub><annotation encoding="application/x-tex">p_i</annotation></semantics></math>
 being the probability of detection on visit
@@ -170,7 +170,7 @@ tasks is <code><a href="../reference/createPredFromAbap.html">createPredFromAbap
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

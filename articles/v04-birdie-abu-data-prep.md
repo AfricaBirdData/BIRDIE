@@ -1,0 +1,149 @@
+# BIRDIE ABU: Data preparation
+
+``` r
+
+library(BIRDIE)
+```
+
+## Introduction
+
+The species abundance module (ABU) of the BIRDIE pipeline has four main
+steps: data preparation, model fitting, model diagnostics and model
+summary. See the *BIRDIE: basics* and *BIRDIE: species abundance*
+vignettes for general details about BIRDIE and about the ABU module,
+respectively. In this vignette, we will go through the different tasks
+that are performed during the first step of the ABU module: **data
+preparation**.
+
+The main function used for data preparation is
+[`ppl_create_data_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_data_ssm.md).
+This is a `ppl_` function, and therefore it doesn’t do much processing
+itself (see *BIRDIE: basics* if this is confusing), but it does call the
+right functions to do the work.
+
+Data preparation has three main tasks:
+
+- Download CWAC data and subset sites suitable for modelling
+- Complete the dataset by adding missing counts (with NA)
+- Annotate count data with environmental covariates
+- Format data for state-space modelling
+
+By just running
+[`ppl_create_data_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_data_ssm.md)
+all of the tasks will be performed and our data will be prepared.
+However, to understand what goes on “under the hood”, we will explain
+each of these tasks, and how they are conducted, below.
+
+Note that data preparation can be time-consuming and it is more
+efficient to prepare data for multiple years at once. We are currently
+fitting 20 years of data at a time, and so that is the number of years
+that will be prepared by
+[`ppl_create_data_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_data_ssm.md).
+The number of years prepared is given by the `dur` argument of the
+[`configPipeline()`](https://africabirddata.github.io/BIRDIE/reference/configPipeline.md)
+function.
+
+## Download CWAC data and subset sites
+
+There is a first section in the `ppl_create_ssm_data()` function that
+run when we tell the function to subset sites or to complete the dataset
+with missing counts. In this section we will download CWAC data using
+the function
+[`CWAC::getCwacSppCounts()`](https://rdrr.io/pkg/CWAC/man/getCwacSppCounts.html)
+from the [`CWAC` R package](https://github.com/AfricaBirdData/CWAC). We
+then proceed to include any data that we have and are not on the CWAC
+data base. At the moment of writing we have data from DuToit’s pan
+contributed by Doug Harebottle. These data is formatted and incorporated
+to the data downloaded from CWAC. If we had any other data we wanted to
+include we would need to modify this part of the
+[`ppl_create_data_ssm()`](https://africabirddata.github.io/BIRDIE/reference/ppl_create_data_ssm.md)
+function code.
+
+Once all of the data is combined we subset those sites that have been
+counted at least five times during summer and five times during winter
+between the years 1993 and 2021. Those species that don’t meet the
+requirements should be analysed differently, although we still don’t
+have an alternative model for them. During model diagnosis there is
+another filter where model outputs with too large of a difference
+between the estimates and the upper limit of the credible intervals are
+also discarded (see BIRDIE ABU: Model diagnostics).
+
+## Adding missing counts
+
+When data comes out of the CWAC database there is no reference to
+missing counts, meaning that if in any year nobody went to count a
+certain wetland during a certain season this data point would just be
+absent from the data set. What we would like instead is a record for
+that season and year with a missing (`NA`) count. This is convenient for
+multiple reasons, but perhaps the most important one is that `JAGS` will
+automatically treat these missing data points as parameters that need to
+be estimated. We give missing summer counts a date that corresponds to
+the first day of January (perhaps we should reconsider this, because
+summer counts only start on the 15th of January) and to winter counts we
+assign the first of July.
+
+## Annotate with environmental covariates
+
+Although we are not currently using covariates in our modelling, we may
+use environmental covariates to model abundance, which requires count
+data to be annotated with this information. To facilitate the automation
+of this process and periodic updates when new data becomes available, we
+use the data sets and functionality offered by Google Earth Engine
+(GEE).
+
+The functionality to connect and transfer data to/from GEE is provided
+by the [`ABDtools` R
+package](https://github.com/AfricaBirdData/ABDtools). This package
+basically wraps functions from
+[`rgee`](https://github.com/r-spatial/rgee); another package on which it
+depends heavily. Therefore, it is a requirement to have `rgee` properly
+installed and configured to be able to perform data-annotation tasks.
+Check the GitHub repos for [`rgee`](https://github.com/r-spatial/rgee)
+and [`ABDtools`](https://github.com/AfricaBirdData/ABDtools).
+
+Once these two packages are installed and configured, we can use their
+functionality in the pipeline. In BIRDIE we use the function
+[`prepGEECatchmData()`](https://africabirddata.github.io/BIRDIE/reference/prepGEECatchmData.md)
+to annotate CWAC data. See `?prepGEECatchmData()` for details. The
+function makes reference to “catchment” because at the moment this
+function is prepared to use the quinary catchment CWAC sites are located
+at as a reference area for the covariates. So rather than extracting
+environmental information from some specific point location, we extract
+all pixels contained in the quinary catchment and we take the average
+value of the covariate across those pixels.
+
+Annotating with different variables using GEE requires different
+procedures. Therefore, there is no way to flexibly communicate to these
+functions which variables we want to annotate our data with. Instead, we
+have **hard-coded** the variables we are using for the BIRDIE pipeline.
+If we wanted to change the variables we use, then we would have to
+modify the
+[`prepGEECatchmData()`](https://africabirddata.github.io/BIRDIE/reference/prepGEECatchmData.md)
+function. This is not ideal, but it is how it is set up currently.
+
+One important thing to keep in mind is that we consider that waterbird
+summer populations should be affected by the environmental conditions of
+the previous year, rather than on the same year. This is because summer
+occur in January and therefore the average conditions on the previous
+year are likely to affect summer populations more directly than those on
+the same year, which have still not presented themselves at the time of
+counting.
+
+Another important thing to keep in mind is that some environmental
+layers used don’t have information past a certain date. We have set up
+the functions in such a way that data past the last date of the layer
+get annotated with the latest available information (last date of the
+layer). Whenever the pipeline is run it is advised to review the
+environmental layer used and the last date information is available for,
+and update the functions if necessary.
+
+## Format data for state-space modelling
+
+In a final step we prepare the data for modelling. We will not format it
+to fit into any specific package yet. Here we create certain variables
+that are useful such as ids for site, year and visit.
+
+Very importantly, here there is a choice to make in terms of what to do
+when seasonal counts are duplicated. For now, we keep all counts that
+are labelled as `summer` or `winter` counts in the CWAC data and
+consider them to be replicates.

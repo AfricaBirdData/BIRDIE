@@ -111,7 +111,7 @@ them into a table and quickly explore potential issues.</p>
 values computed by <code>spOccupancy</code> for each of the estimated
 parameters and tabulates them. In this table, each parameter appears in
 one column and gets a 0 if
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">|</mo><mn>1</mn><mo>−</mo><mover><mi>R</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">|</mo></mrow><mo>&lt;</mo><mn>0.1</mn></mrow><annotation encoding="application/x-tex">|1 - \hat{R}| &lt; 0.1</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo stretchy="false" form="prefix">|</mo><mn>1</mn><mo>−</mo><mover><mi>R</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="prefix">|</mo><mo>&lt;</mo><mn>0.1</mn></mrow><annotation encoding="application/x-tex">|1 - \hat{R}| &lt; 0.1</annotation></semantics></math>
 and a 1 otherwise. Some extra columns are added, such as number of
 non-convergent parameters, number of detections observed, number of
 sites visited, etc.</p>
@@ -121,14 +121,14 @@ sites visited, etc.</p>
 </h2>
 <p>The function <code><a href="../reference/diagnoseGofSpOccu.html">diagnoseGofSpOccu()</a></code> conducts posterior
 predictive checks (PPC) and calculates a Bayesian p-value. This function
-is a modification of the <code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code> making a
+is a modification of the <code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code> making a
 slightly more efficient use of RAM memory, but at the expense of adding
 some dependencies (on which BIRDIE already depended anyway, notably <a href="https://github.com/tidyverse/dplyr" class="external-link"><code>dplyr</code></a>).</p>
 <p>The procedure to estimate the Bayesian p-value is the same used by
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code>. However
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code>. However
 <code><a href="../reference/diagnoseGofSpOccu.html">diagnoseGofSpOccu()</a></code> only conducts chi-squared test at the
 moment, and it only aggregates data per site and not per visit. With
-<code><a href="https://www.jeffdoser.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code> one can aggregate data per site or
+<code><a href="https://www.doserlab.com/files/spoccupancy-web/reference/ppcOcc.html" class="external-link">spOccupancy::ppcOcc()</a></code> one can aggregate data per site or
 visit and conduct Freeman-Tuckey and Chi-squared tests.</p>
 <p>The procedure consists of simulating a number of
 detection/non-detection data sets from the posterior distribution and
@@ -140,13 +140,13 @@ each site (i.e., we aggregate detections by site).</p>
 <p>To make the comparison we first calculate a Chi-squared statistic for
 the data, for each Monte Carlo Markov Chain (MCMC) iteration
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math></p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>χ</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow><mrow><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msubsup><mo>=</mo><munderover><mo>∑</mo><mrow><mi>y</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mtext mathvariant="normal">Observed</mtext><mi>y</mi></msub><mo>−</mo><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup></mfrac></mrow><annotation encoding="application/x-tex">\chi_{obs}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{Observed}_y - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}</annotation></semantics></math>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>χ</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow><mrow><mn>2</mn><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><mo>=</mo><munderover><mo>∑</mo><mrow><mi>y</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mfrac><mrow><mo stretchy="false" form="prefix">(</mo><msub><mtext mathvariant="normal">Observed</mtext><mi>y</mi></msub><mo>−</mo><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><msup><mo stretchy="false" form="postfix">)</mo><mn>2</mn></msup></mrow><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup></mfrac></mrow><annotation encoding="application/x-tex">\chi_{obs}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{Observed}_y - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}</annotation></semantics></math>
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mtext mathvariant="normal">Observed</mtext><mi>y</mi></msub><annotation encoding="application/x-tex">\textrm{Observed}_y</annotation></semantics></math>
 is the number of detections observed at site
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>y</mi><annotation encoding="application/x-tex">y</annotation></semantics></math>
 and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\textrm{Expected}_y^{(i)}</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><annotation encoding="application/x-tex">\textrm{Expected}_y^{(i)}</annotation></semantics></math>
 is the expected number of detections estimated for site
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>y</mi><annotation encoding="application/x-tex">y</annotation></semantics></math>
 during MCMC iteration
@@ -155,7 +155,7 @@ during MCMC iteration
 simulated from MCMC iteration
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>i</mi><annotation encoding="application/x-tex">i</annotation></semantics></math>
 we compute</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>χ</mi><mrow><mi>s</mi><mi>i</mi><mi>m</mi></mrow><mrow><mn>2</mn><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msubsup><mo>=</mo><munderover><mo>∑</mo><mrow><mi>y</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mfrac><msup><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mtext mathvariant="normal">sim</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo>−</mo><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>i</mi><mo stretchy="true" form="postfix">)</mo></mrow></msubsup></mfrac></mrow><annotation encoding="application/x-tex">\chi_{sim}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{sim}_y^{(i)} - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}</annotation></semantics></math>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>χ</mi><mrow><mi>s</mi><mi>i</mi><mi>m</mi></mrow><mrow><mn>2</mn><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><mo>=</mo><munderover><mo>∑</mo><mrow><mi>y</mi><mo>=</mo><mn>1</mn></mrow><mi>N</mi></munderover><mfrac><mrow><mo stretchy="false" form="prefix">(</mo><msubsup><mtext mathvariant="normal">sim</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><mo>−</mo><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup><msup><mo stretchy="false" form="postfix">)</mo><mn>2</mn></msup></mrow><msubsup><mtext mathvariant="normal">Expected</mtext><mi>y</mi><mrow><mo stretchy="false" form="prefix">(</mo><mi>i</mi><mo stretchy="false" form="postfix">)</mo></mrow></msubsup></mfrac></mrow><annotation encoding="application/x-tex">\chi_{sim}^{2(i)} = \sum_{y=1}^N\frac{(\textrm{sim}_y^{(i)} - \textrm{Expected}_y^{(i)})^2}{\textrm{Expected}_y^{(i)}}</annotation></semantics></math>
 A Bayesian p-value is computed as the proportion of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>χ</mi><mrow><mi>s</mi><mi>i</mi><mi>m</mi></mrow><mn>2</mn></msubsup><mo>&gt;</mo><msubsup><mi>χ</mi><mrow><mi>o</mi><mi>b</mi><mi>s</mi></mrow><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">\chi_{sim}^{2} &gt; \chi_{obs}^{2}</annotation></semantics></math>.</p>
 </div>
@@ -178,7 +178,7 @@ is still experimental and can be found at
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
