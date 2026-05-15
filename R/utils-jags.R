@@ -566,20 +566,24 @@ diagnoseGofJagsSsm <- function(fit, counts, linear = TRUE){
                          ss = sum(larger_ss/dplyr::n())) %>%
         unlist()
 
-    # Calculate discrepancy statistic as the mean difference between sim state and
-    # observed state
+    # Calculate mean observed state (there could be more than one observation per
+    # site_id, year, season)
     mu_t <- post_sims %>%
-        dplyr::filter(iter != 0) %>%
+        dplyr::filter(iter == 0) %>%
         dplyr::group_by(site_id, year, season) %>%
-        dplyr::summarise(stt = mean(state, na.rm = TRUE)) %>%
+        dplyr::summarise(stt = mean(obs_sim, na.rm = TRUE)) %>%
         dplyr::ungroup()
 
-    # Calculate mean difference between sims and estimated state
+    # Calculate discrepancy statistic as the mean difference between sim state and
+    # observed state
     Ty_dd <- post_sims %>%
+        dplyr::filter(iter != 0) %>%
         dplyr::left_join(mu_t, by = c("site_id", "year", "season")) %>%
         dplyr::mutate(diff = obs_sim - stt) %>%
         dplyr::summarise(Ty = mean(diff, na.rm = TRUE)) %>%
         dplyr::pull(Ty) %>% round(digits = 3)
+
+    gof_ty[3] <- Ty_dd
 
     return(gof_ty)
 
