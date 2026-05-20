@@ -674,7 +674,7 @@ postPredDistJagsSsm <- function(fit, data, obs_error = TRUE, nsamples){
         tidyr::pivot_longer(cols = -c(iter, site_id), names_to = "year", values_to = "state") %>%
         dplyr::mutate(year = as.integer(year),
                       season = "W") %>%
-        dplyr::left_join(error_s, by = c("iter", "site_id"))
+        dplyr::left_join(error_w, by = c("iter", "site_id"))
 
     post_sims <- rbind(sims_s, sims_w)
 
