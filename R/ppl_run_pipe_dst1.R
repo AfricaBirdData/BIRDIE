@@ -55,6 +55,9 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
         sitefile <- file.path(config$out_dir, paste0("occu_site_dat_sa_", config$years_ch, ".csv"))
         detfile <- file.path(config$out_dir, sp_code, paste0("occu_det_dat_sa_", config$years_ch, ".csv"))
 
+        # create directory?
+        dir.create(file.path(config$out_dir, sp_code), recursive = TRUE, showWarnings = FALSE)
+
         # Save data
         occu_data$visit %>%
             dplyr::select(-obs) %>%
@@ -123,7 +126,7 @@ ppl_run_pipe_dst1 <- function(sp_code, year, config,
 
         # Dump a message for debugging
         sink(file.path(config$out_dir, "reports", paste0(Sys.time(), "_Fitting_species_", sp_code, "_year_", year, ".txt")))
-        print(paste(Sys.time(), "Fitting occupancy model to species", sp_code, "for year", year_sel))
+        print(paste(Sys.time(), "Fitting occupancy model to species", sp_code, "for year", year))
         sink()
 
         # Fit model
