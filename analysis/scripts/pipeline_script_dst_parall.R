@@ -7,12 +7,12 @@ det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"
                  det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
 
 # Configure pipeline
-ncores <- 10
+ncores <- 3
 parall <- ncores != 1
 annotate <- FALSE
 prep_site_visit <- FALSE
 
-config <- configPipeline(year = 2020,
+config <- configPipeline(year = 2024,
                          dur = 3,
                          module = "dst",
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
@@ -22,9 +22,9 @@ config <- configPipeline(year = 2020,
                          fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                         "dist_coast", "elev"),
                          package = "spOccupancy",
-                         data_dir = "/home/fcervantes/birdie/data",
-                         out_dir = "/mnt/lustre/users/fcervantes/birdie/output",
-                         server = TRUE)
+                         data_dir = NULL,
+                         out_dir = NULL,
+                         server = FALSE)
 
 # Create log (we do this once for each period defined by config$years)
 createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
@@ -142,3 +142,4 @@ for(t in seq_along(config$years)){
 if(parall){
     future::plan("sequential")
 }
+

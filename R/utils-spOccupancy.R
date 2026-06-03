@@ -636,31 +636,35 @@ fitSpOccu <- function(site_data_year, visit_data_year, config, sp_code, spatial 
 
         # Run model
 
-        fit <- tryCatch({
-            out <- spOccupancy::PGOcc(occ.formula = reformulate(config$occ_mod),
-                                      det.formula = reformulate(config$det_mod),
-                                      data = occu_data, inits = inits, priors = priors,
-                                      n.samples = n_samples, n.omp.threads = 1,
-                                      n.thin = 20, n.chains = 3,
-                                      verbose = TRUE, n.report = n_samples)
+        # Use withCallingHandlers for warnings so that a warning raised during
+        # model fitting is logged but does NOT abort the fit (which would leave
+        # `out` undefined). tryCatch still handles genuine errors by returning NULL.
+        fit <- withCallingHandlers(
+            tryCatch({
+                out <- spOccupancy::PGOcc(occ.formula = reformulate(config$occ_mod),
+                                          det.formula = reformulate(config$det_mod),
+                                          data = occu_data, inits = inits, priors = priors,
+                                          n.samples = n_samples, n.omp.threads = 1,
+                                          n.thin = 20, n.chains = 3,
+                                          verbose = TRUE, n.report = n_samples)
 
-            out
+                out
 
-        },
-        error = function(cond) {
-            sink(file.path(config$out_dir, paste0("reports/error_occu_fit_", year_sel, "_", sp_code, ".txt")))
-            print(cond)
-            sink()
-            message(cond)
-            return(NULL)
-        },
-        warning = function(cond) {
-            sink(file.path(config$out_dir, paste0("reports/warning_occu_fit_", year_sel, "_", sp_code, ".txt")))
-            print(cond)
-            sink()
-            message(cond)
-            return(out)
-        })
+            },
+            error = function(cond) {
+                sink(file.path(config$out_dir, paste0("reports/error_occu_fit_", year_sel, "_", sp_code, ".txt")))
+                print(cond)
+                sink()
+                message(cond)
+                return(NULL)
+            }),
+            warning = function(cond) {
+                sink(file.path(config$out_dir, paste0("reports/warning_occu_fit_", year_sel, "_", sp_code, ".txt")))
+                print(cond)
+                sink()
+                message(cond)
+                invokeRestart("muffleWarning")
+            })
 
     }
 

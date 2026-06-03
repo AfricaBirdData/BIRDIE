@@ -6,8 +6,8 @@ rm(list = ls())
 # Configuration -----------------------------------------------------------
 
 config <- configPipeline(
-    year = 2022,
-    dur = 30,
+    year = 2024,
+    dur = 32,
     region = "southafrica",
     module = "abu",
     mod_file = "cwac_ssm_two_season_mean_rev_jump.R",
@@ -38,7 +38,7 @@ createLog(config, log_file = NULL, date_time = NULL, species = NA, model = NA,
 
 # Run modules -------------------------------------------------------------
 
-for(i in 1:length(config$species)){
+for(i in 2:length(config$species)){
 
     sp_code <- config$species[i]
 

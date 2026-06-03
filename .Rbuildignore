@@ -13,3 +13,5 @@ deprecated/*
 ^docs$
 ^pkgdown$
 ^\.github$
+^\.positai$
+^\.claude$

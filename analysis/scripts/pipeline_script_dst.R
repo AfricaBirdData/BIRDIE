@@ -10,7 +10,7 @@ det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"
                  det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
 
 # Configure pipeline
-config <- configPipeline(year = 2010,
+config <- configPipeline(year = 2024,
                          dur = 3,
                          module = "dst",
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
@@ -52,7 +52,7 @@ for(i in seq_along(config$species)){
         out_dst1 <- ppl_run_pipe_dst1(sp_code = sp_code,
                                       year = year_sel,
                                       config = config,
-                                      steps = c("data", "fit", "diagnose", "summary"),
+                                      steps = c("data","fit", "diagnose", "summary"),
                                       force_gee_dwld = FALSE,
                                       monitor_gee = TRUE,
                                       force_site_visit = TRUE,
