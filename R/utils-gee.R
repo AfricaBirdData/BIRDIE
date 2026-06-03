@@ -296,7 +296,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     if(length(config$years) > 1){
 
-        stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/006/MOD13A2",
+        stackCollection <- ABDtools::EEcollectionToMultiband(collection = "MODIS/061/MOD13A2",
                                                              dates = paste0(config$year_range + c(0,1), "-01-01"),
                                                              band = band,
                                                              group_type = "year",
@@ -310,7 +310,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
     } else {
 
         out <- ABDtools::addVarEEcollection(ee_feats = ee_pentads,
-                                            collection = "MODIS/006/MOD13A2",
+                                            collection = "MODIS/061/MOD13A2",
                                             dates = paste0(config$year_range + c(0,1), "-01-01"),
                                             temp_reducer = "mean",
                                             spt_reducer = "mean",
