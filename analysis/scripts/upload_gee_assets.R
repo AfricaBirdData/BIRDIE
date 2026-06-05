@@ -8,6 +8,11 @@ ee_Initialize()
 
 rm(list = ls())
 
+# rgee upload functionality might not work. If this happens we can upload this
+# raster manually from Google Earth Engine code editor. The asset should still be
+# named 'wetland_map_sa' and should be uploaded to 'projects/ee-seecatuct/assets/myassets'
+
+
 # Upload National Wetland Map ---------------------------------------------
 
 # Read in NWM
