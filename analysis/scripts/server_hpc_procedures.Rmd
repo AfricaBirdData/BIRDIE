@@ -177,6 +177,8 @@ update.packages(ask = FALSE)
 This will update all installed packages. To update the packages from our
 GitHub repos we can run (once in R)
 
+THIS DOES NOT WORK 
+
 ```{r}
 remotes::install_github('AfricaBirdData/BIRDIE',
                         auth_token = mygithubtoken,
@@ -189,7 +191,7 @@ and so we can run
 
 
 ```{r}
-remotes::install_github('AfricaBirdData/ABAP',
+remotes::install_github('AfricaBirdData/BIRDIE',
                         dependencies = FALSE) 
 ```
 
