@@ -71,9 +71,13 @@ ppl_create_site_visit <- function(config,
         if(file.exists(geevisitfile)){message("OK")}
 
         if(!file.exists(geesitefile) | !file.exists(geevisitfile) | force_gee_dwld){
-            # Initialize Earth Engine
+
             rgee::ee_check()
-            rgee::ee_Initialize(user = "birdie", project = 'ee-seecatuct', drive = TRUE)
+
+            ee <- load_ee()
+            ee$Authenticate(quiet = TRUE)
+            ee$Initialize(project = "ee-seecatuct")
+            # rgee::ee_Initialize(user = "birdie", project = 'ee-seecatuct', drive = TRUE)
         }
 
         # Download from GEE if file doesn't exit

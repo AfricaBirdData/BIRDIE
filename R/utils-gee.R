@@ -29,7 +29,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
     # Load pentads to/from to GEE ---------------------------------------------
 
     # Set a name for the asset
-    eeid <- file.path(rgee::ee_get_assethome(), asset_id)
+    eeid <- file.path(get_assethome(), asset_id)
 
     # Upload to EE (if not done already)
     if(upload_asset){
@@ -120,7 +120,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     # Count pixels with wetland (wetland extension)
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
-                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   image = file.path(get_assethome(), 'wetland_map_sa'),
                                    reducer = "count",
                                    monitor = monitor,
                                    transfer = list(via = "drive", container = "rgee_backup"))
@@ -136,7 +136,7 @@ prepGEESiteData <- function(config, pentads, asset_id,
 
     # Average wetland condition (wetland extension)
     out <- ABDtools::addVarEEimage(ee_feats = ee_pentads,
-                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   image = file.path(get_assethome(), 'wetland_map_sa'),
                                    reducer = "mean",
                                    monitor = monitor,
                                    transfer = list(via = "drive", container = "rgee_backup"))
@@ -509,7 +509,7 @@ prepGEEVisitData <- function(config, visits, asset_id,
             dplyr::distinct(Pentad, geometry)
 
         # Set a name for the asset
-        eeid <- file.path(rgee::ee_get_assethome(), asset_id)
+        eeid <- file.path(get_assethome(), asset_id)
 
         # Upload to EE (if not done already)
         if(upload_asset){
@@ -710,7 +710,7 @@ prepGEEVisitData <- function(config, visits, asset_id,
 #' @param monitor Logical. If TRUE (default) monitoring printed messages produced
 #' by `rgee` will displayed. If FALSE, only high-level messages will be displayed.
 #'
-#' @details It is assumed that there is an asset on `rgee::ee_get_assethome()`
+#' @details It is assumed that there is an asset on `get_assethome()`
 #' named 'quin_catchm' that has the polygons defining the quinary catchments.
 #' Note that we add an extra year before the start of the series. This is because
 #' summer waterbird populations should be affected by the conditions in the previous
@@ -731,7 +731,7 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE){
     # Load quinaries to GEE -----------------------------------------------------
 
     # Set a name for the asset
-    eeCatchm_id <- file.path(rgee::ee_get_assethome(), 'quin_catchm')
+    eeCatchm_id <- file.path(get_assethome(), 'quin_catchm')
 
     # Load catchm from GEE
     ee_catchm <- rgee::ee$FeatureCollection(eeCatchm_id)
@@ -786,7 +786,7 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE){
 
     # Count pixels with wetland (wetland extension)
     out <- ABDtools::addVarEEimage(ee_feats = ee_catchm,
-                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   image = file.path(get_assethome(), 'wetland_map_sa'),
                                    reducer = "count",
                                    monitor = TRUE)
 
@@ -804,7 +804,7 @@ prepGEECatchmData <- function(sp_code, catchment, config, monitor = TRUE){
 
     # Average wetland condition (wetland extension)
     out <- ABDtools::addVarEEimage(ee_feats = ee_catchm,
-                                   image = file.path(rgee::ee_get_assethome(), 'wetland_map_sa'),
+                                   image = file.path(get_assethome(), 'wetland_map_sa'),
                                    reducer = "mean",
                                    monitor = TRUE)
 
@@ -1117,3 +1117,33 @@ addSiteVarEETimeLimit <- function(ee_feats, ee_collection, band, last_year, redu
 
 }
 
+# This will be used instead of get_assethome
+get_assethome <- function(){
+
+    if(!"ee" %in% ls()){
+        ee <- load_ee()
+    }
+
+    # Call the live Google backend
+    roots <- ee$data$getAssetRoots()
+
+    if (length(roots) > 0) {
+        # Extract the ID from the first available asset root
+        return(roots[[1]]$id)
+    } else {
+        return(NULL)
+    }
+}
+
+# This function is used to load 'ee' from earthengine-api
+load_ee <- function(){
+
+    # Find rgee environment
+    envs <- reticulate::conda_list()
+    target_env <- envs[envs$name == "rgee-env", "python"]
+    reticulate::use_condaenv(dirname(dirname(target_env)), required = TRUE)
+
+    # Initialize directly via the Python API
+    reticulate::import("ee")
+
+}

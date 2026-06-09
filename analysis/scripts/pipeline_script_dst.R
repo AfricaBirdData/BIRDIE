@@ -10,18 +10,18 @@ det_mods <- list(det_mod1 = c("(1|obs_id)", "log_hours", "prcp", "tdiff", "cwac"
                  det_mod2 = c("(1|obs_id)", "(1|site_id)", "log_hours", "prcp", "tdiff", "cwac"))
 
 # Configure pipeline
-config <- configPipeline(year = 2010,
-                         dur = 3,
+config <- configPipeline(year = 2024,
+                         dur = 1,
                          module = "dst",
                          occ_mod = c("log_dist_coast", "elev", "log_hum.km2", "wetcon",
                                      "watrec", "watext", "log_watext", "watrec:watext",
                                      "ndvi", "prcp", "tdiff"),
-                         det_mod = det_mods$det_mod1,
+                         det_mod = det_mods$det_mod2,
                          fixed_vars = c("Pentad", "lon", "lat", "watocc_ever", "wetext_2018","wetcon_2018",
                                         "dist_coast", "elev"),
                          package = "spOccupancy",
                          data_dir = NULL,     # this might have to be adapted?
-                         out_dir = NULL,     # this might have to be adapted?
+                         out_dir = "analysis/out_nosync",     # this might have to be adapted?
                          server = FALSE)
 
 
@@ -53,6 +53,7 @@ for(i in seq_along(config$species)){
                                       year = year_sel,
                                       config = config,
                                       steps = c("data", "fit", "diagnose", "summary"),
+                                      # force_gee_dwld = ifelse(i == 1, TRUE, FALSE),
                                       force_gee_dwld = FALSE,
                                       monitor_gee = TRUE,
                                       force_site_visit = TRUE,
