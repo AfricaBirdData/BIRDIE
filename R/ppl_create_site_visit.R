@@ -75,9 +75,9 @@ ppl_create_site_visit <- function(config,
             rgee::ee_check()
 
             ee <- load_ee()
-            ee$Authenticate(quiet = TRUE)
-            ee$Initialize(project = "ee-seecatuct")
-            # rgee::ee_Initialize(user = "birdie", project = 'ee-seecatuct', drive = TRUE)
+            # ee$Authenticate(quiet = TRUE)
+            # ee$Initialize(project = "ee-seecatuct")
+            rgee::ee_Initialize(user = "birdie", project = 'ee-seecatuct', drive = TRUE)
         }
 
         # Download from GEE if file doesn't exit
@@ -92,7 +92,7 @@ ppl_create_site_visit <- function(config,
             geesitedata <- prepGEESiteData(config = config,
                                            pentads = pentads_sa,
                                            asset_id = "birdie_pentads_sa",  # HARD CODED
-                                           upload_asset = TRUE,
+                                           upload_asset = FALSE,
                                            monitor = monitor_gee)
 
             utils::write.csv(geesitedata, geesitefile, row.names = FALSE)
